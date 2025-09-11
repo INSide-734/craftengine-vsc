@@ -1,0 +1,109 @@
+{
+  "name": "craftengine-vsc",
+  "displayName": "craftengine-vsc",
+  "description": "",
+  "version": "0.0.2",
+  "engines": {
+    "vscode": "^1.103.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:yaml",
+    "workspaceContains:**/*.yml",
+    "workspaceContains:**/*.yaml"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "CraftEngine Helper",
+      "properties": {
+        "craftengine.files.exclude": {
+          "type": "string",
+          "default": "**/node_modules/**",
+          "description": "A glob pattern of files to exclude from template scanning."
+        },
+        "craftengine.parser.templateKey": {
+          "type": "string",
+          "default": "templates",
+          "description": "The top-level key in YAML files where templates are defined."
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "yaml",
+        "aliases": [
+          "YAML",
+          "yaml"
+        ],
+        "extensions": [
+          ".yml",
+          ".yaml"
+        ]
+      }
+    ],
+    "completionFilters": {
+      "yaml": {
+        "template:": false
+      }
+    },
+    "commands": [
+      {
+        "command": "craftengine.insertTemplateSnippet",
+        "title": "Insert CraftEngine Template Snippet"
+      },
+      {
+        "command": "craftengine.rebuildCache",
+        "title": "Rebuild Template Cache"
+      },
+      {
+        "command": "craftengine.debugCache",
+        "title": "Debug Template Cache"
+      },
+      {
+        "command": "craftengine.checkYamlExtension",
+        "title": "Check Red Hat YAML Extension Status"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "clean": "rimraf out",
+    "compile": "npm run clean && tsc -p ./",
+    "compile:watch": "tsc -watch -p ./",
+    "watch": "npm run clean && tsc -watch -p ./",
+    "pretest": "npm run clean && npm run compile && npm run lint",
+    "lint": "eslint src --fix",
+    "lint:check": "eslint src",
+    "test": "cross-env NODE_ENV=test vscode-test",
+    "test:unit": "npm run pretest && npm run test",
+    "test:watch": "npm run pretest && cross-env NODE_ENV=test vscode-test --watch",
+    "test:verbose": "cross-env NODE_ENV=test TEST_VERBOSE=true vscode-test",
+    "test:silent": "cross-env NODE_ENV=test TEST_SILENT=true vscode-test",
+    "test:clean": "npm run pretest && cross-env NODE_ENV=test TEST_SILENT=true vscode-test",
+    "package": "npm run clean && npm run compile && vsce package",
+    "package:pre-release": "npm run clean && npm run compile && vsce package --pre-release",
+    "release:notes": "node scripts/generate-release-notes.js",
+    "dev": "npm run clean && npm run compile && npm run watch"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.103.0",
+    "@types/yaml": "^1.9.6",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "cross-env": "^10.0.0",
+    "eslint": "^9.32.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.3",
+    "yaml": "^2.3.1"
+  }
+}
