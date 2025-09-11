@@ -8,6 +8,10 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -68,6 +72,13 @@ jobs:
           name: extension-package
           path: ./
 
+      - name: List downloaded files
+        run: |
+          echo "Files in current directory:"
+          ls -la
+          echo "Files matching *.vsix:"
+          ls -la *.vsix || echo "No .vsix files found"
+
       - name: Generate release notes
         id: release-notes
         run: |
@@ -87,7 +98,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: ./craftengine-vsc-${{ github.event.release.tag_name }}.vsix
+          files: "*.vsix"
           body: ${{ steps.release-notes.outputs.notes }}
           draft: false
           prerelease: false
