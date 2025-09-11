@@ -32,7 +32,7 @@ function parseChangelog(changelogContent, targetVersion) {
   const lines = changelogContent.split("\n");
   let currentVersion = null;
   let inTargetVersion = false;
-  let changelogContent = "";
+  let parsedChangelogContent = "";
   let majorFeatures = [];
   let newFeatures = [];
   let improvements = [];
@@ -47,7 +47,7 @@ function parseChangelog(changelogContent, targetVersion) {
       currentVersion = versionMatch[1];
       inTargetVersion = currentVersion === targetVersion;
       if (inTargetVersion) {
-        changelogContent += line + "\n";
+        parsedChangelogContent += line + "\n";
       }
       continue;
     }
@@ -62,7 +62,7 @@ function parseChangelog(changelogContent, targetVersion) {
       break;
     }
 
-    changelogContent += line + "\n";
+    parsedChangelogContent += line + "\n";
 
     // 解析不同类型的更改
     if (line.startsWith("### Added")) {
@@ -105,7 +105,7 @@ function parseChangelog(changelogContent, targetVersion) {
   }
 
   return {
-    changelogContent: changelogContent.trim(),
+    changelogContent: parsedChangelogContent.trim(),
     majorFeatures,
     newFeatures,
     improvements,
