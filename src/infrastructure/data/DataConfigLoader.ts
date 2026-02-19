@@ -103,14 +103,14 @@ export class DataConfigLoader implements IDataConfigLoader {
         const filePath = path.join(this.dataDir, normalizedPath);
 
         try {
-            // 使用异步方式检查文件是否存在
+            // 直接读取文件，避免 access + readFile 的竞态条件
+            let content: string;
             try {
-                await fs.promises.access(filePath, fs.constants.R_OK);
+                content = await fs.promises.readFile(filePath, 'utf-8');
             } catch {
                 throw new ConfigLoadError(relativePath, 'File not found');
             }
 
-            const content = await fs.promises.readFile(filePath, 'utf-8');
             const data: unknown = JSON.parse(content);
 
             // 如果提供了验证器，进行数据结构验证

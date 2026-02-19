@@ -194,7 +194,7 @@ export class SchemaDiagnosticFormatter {
                 return error.message.replace(/^⚠️\s*/, '');
             }
             default:
-                return error.message.replace(/^[❌⚠️💡📝🔢✓📦📋∅➕✂️⬆️⬇️🗑️📏]\s*/g, '');
+                return error.message.replace(/^(?:❌|⚠️|💡|📝|🔢|✓|📦|📋|∅|➕|✂️|⬆️|⬇️|🗑️|📏)\s*/g, '');
         }
     }
 

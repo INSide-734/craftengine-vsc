@@ -181,15 +181,13 @@ export class SchemaFileLoader {
             // 获取文件路径（优先工作区）
             const { filePath, source } = await this.resolveSchemaPath(filename);
 
-            // 检查文件是否存在
+            // 直接读取文件，避免 access + readFile 的竞态条件
+            let content: string;
             try {
-                await fs.access(filePath);
+                content = await fs.readFile(filePath, 'utf-8');
             } catch {
                 throw new SchemaNotFoundError(filename);
             }
-
-            // 读取并解析文件
-            const content = await fs.readFile(filePath, 'utf-8');
             const schema: JsonSchemaNode = JSON.parse(content);
             
             // 添加元数据

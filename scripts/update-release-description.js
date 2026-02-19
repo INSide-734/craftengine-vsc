@@ -15,17 +15,17 @@ if (args.length < 2) {
   process.exit(1);
 }
 
-const version = args[0];
 const releaseId = args[1];
 
 // 读取生成的发布说明
 const releaseNotesPath = path.join(__dirname, '..', 'release-notes.md');
-if (!fs.existsSync(releaseNotesPath)) {
+let releaseNotes;
+try {
+  releaseNotes = fs.readFileSync(releaseNotesPath, 'utf8');
+} catch {
   console.error('Release notes file does not exist, please run the generation script first');
   process.exit(1);
 }
-
-const releaseNotes = fs.readFileSync(releaseNotesPath, 'utf8');
 
 // 使用 GitHub API 更新 Release 描述
 async function updateReleaseDescription() {

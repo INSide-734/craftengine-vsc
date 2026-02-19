@@ -135,7 +135,7 @@ describe('SchemaFileLoader', () => {
 
     describe('loadSchema - error handling', () => {
         it('should throw when file does not exist', async () => {
-            vi.mocked(fs.access).mockRejectedValue(new Error('ENOENT'));
+            vi.mocked(fs.readFile).mockRejectedValue(new Error('ENOENT'));
 
             await expect(loader.loadSchema('nonexistent.json')).rejects.toThrow();
             expect(mockLogger.error).toHaveBeenCalledWith(

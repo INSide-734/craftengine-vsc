@@ -158,7 +158,7 @@ describe('EventBus Performance', () => {
         bench('exact match (10 event types)', () => {
             const target = 'template.created';
             for (const eventType of eventTypes) {
-                eventType === target;
+                void (eventType === target);
             }
         }, defaultBenchOptions);
 

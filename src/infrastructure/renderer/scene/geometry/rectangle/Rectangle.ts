@@ -17,6 +17,7 @@ export abstract class Rectangle {
   protected c = 0;
   protected d = 0;
   protected multiplier = 0;
+  public ambientOcclusion = false;
 
   constructor(
     public scene: Scene,
@@ -25,7 +26,7 @@ export abstract class Rectangle {
     public vVec: Vector3d,
     public normal: Vector3d,
     rot: ElementRotation | null,
-    public ambientOcclusion: boolean
+    _ambientOcclusion: boolean
   ) {
     // 如果有旋转且角度非零，禁用环境光遮蔽
     this.ambientOcclusion = !(rot !== null && rot.angle !== 0);

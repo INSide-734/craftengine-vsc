@@ -186,7 +186,7 @@ export class SchemaPathNavigator {
             
             // 如果下一个 Schema 没有上下文标记，继承当前上下文
             // 这样嵌套的内部引用能正确解析
-            if (nextSchema && !nextSchema[SCHEMA_METADATA.CONTEXT_SCHEMA] && currentContextSchema) {
+            if (!nextSchema[SCHEMA_METADATA.CONTEXT_SCHEMA] && currentContextSchema) {
                 // 优先使用 resolvedSchema 的 SCHEMA_DIR（来自外部引用解析），
                 // 然后是 currentContextSchema 的 SCHEMA_DIR
                 const effectiveSchemaDir = resolvedSchema?.[SCHEMA_METADATA.SCHEMA_DIR] ||

@@ -72,7 +72,7 @@ function parseChangelog(changelogContent, targetVersion) {
         const featureLine = lines[j].trim();
         if (featureLine.startsWith("-")) {
           const feature = featureLine.substring(1).trim();
-          if (feature.includes("**") && feature.includes("**")) {
+          if (feature.includes("**")) {
             // 提取主要功能（包含 ** 标记的）
             const majorFeature = feature.replace(/\*\*(.*?)\*\*/g, "$1");
             majorFeatures.push(majorFeature);

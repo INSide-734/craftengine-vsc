@@ -1,0 +1,5 @@
+name: "CraftEngine CodeQL Config"
+
+paths-ignore:
+  # CI/CD 脚本 - 文件数据流向 HTTP 请求是预期行为
+  - scripts

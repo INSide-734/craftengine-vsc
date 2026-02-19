@@ -626,7 +626,7 @@ describe('TranslationStore Performance', () => {
             
             for (const keyName of keysToCheck) {
                 const translations = store.getByName(keyName);
-                translations.length > 0;
+                void translations.length;
             }
         }, defaultBenchOptions);
     });

@@ -7,7 +7,7 @@ import { IDataStoreService } from '../../../core/interfaces/IDataStoreService';
 import { IMinecraftDataService } from '../../../core/interfaces/IMinecraftDataService';
 import { IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
 import { IBuiltinItemLoader } from '../../../core/interfaces/IItemId';
-import { ITemplateExpander } from '../../../core/interfaces/ITemplateExpander';
+
 import { IFileReader } from '../../../core/interfaces/IFileReader';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
 import { TemplateService, DataStoreService } from '../../../domain/index';

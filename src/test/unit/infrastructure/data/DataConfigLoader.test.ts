@@ -202,7 +202,7 @@ describe('DataConfigLoader', () => {
                 '../../../../infrastructure/data/DataConfigLoader.js'
             );
 
-            vi.mocked(fs.promises.access).mockRejectedValue(new Error('ENOENT'));
+            vi.mocked(fs.promises.readFile).mockRejectedValue(new Error('ENOENT'));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
 
