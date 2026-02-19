@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://craftengine.xiao-momi.com/schemas/sections/translations.schema.json",
+    "$id": "https://craftengine.dev/schemas/sections/translations.schema.json",
     "title": "CraftEngine Translations Configuration",
     "description": "i18n (server-side) and l10n (client-side) translations configuration for CraftEngine",
     "type": "object",

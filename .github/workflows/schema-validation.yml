@@ -102,8 +102,22 @@ jobs:
           echo "## JSON Schema Draft-07 Compliance" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
+          # 构建引用参数：将所有 schema 文件作为引用加载，以支持跨文件 $ref 解析
+          REF_ARGS=""
+          for ref_file in $(find schemas/ -name '*.schema.json' 2>/dev/null | sort); do
+            REF_ARGS="${REF_ARGS} -r ${ref_file}"
+          done
+
           for file in $(find schemas/ -name '*.schema.json' 2>/dev/null | sort); do
-            if ajv compile -s "$file" --spec=draft7 --strict=false 2>/dev/null; then
+            # 排除当前文件自身的引用，避免 "already exists" 错误
+            FILE_REFS=""
+            for ref_file in $(find schemas/ -name '*.schema.json' 2>/dev/null | sort); do
+              if [ "$ref_file" != "$file" ]; then
+                FILE_REFS="${FILE_REFS} -r ${ref_file}"
+              fi
+            done
+
+            if ajv compile -s "$file" ${FILE_REFS} --spec=draft7 --strict=false 2>/dev/null; then
               echo "✅ ${file}"
             else
               echo "::error file=${file}::Schema does not comply with draft-07: ${file}"
