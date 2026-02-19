@@ -44,7 +44,7 @@ jobs:
           path: base
 
       - name: Install base dependencies
-        run: cd base && pnpm install --frozen-lockfile
+        run: cd base && pnpm install --no-frozen-lockfile
 
       - name: Run benchmarks (base)
         run: cd base && pnpm run test:bench -- --outputJson=bench-base.json || true
