@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/common/patterns.schema.json",
+  "title": "Dynamic Key Patterns",
+  "description": "Pattern definitions for dynamic keys (namespaced IDs, version conditions, etc.)",
+  "$defs": {
+    "dynamicKeys": {
+      "type": "object",
+      "description": "Object with dynamic namespaced keys",
+      "patternProperties": {
+        "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$": {
+          "description": "Namespaced item key"
+        }
+      },
+      "additionalProperties": false
+    },
+    "versionConditionalConfig": {
+      "type": "object",
+      "description": "Version-conditional configuration pattern.\n\nAllows different configurations for different Minecraft versions.\nThe `default` key provides the base configuration, and version-conditional\nkeys override or merge into the default when the runtime version matches.\n\n**Usage:**\n```yaml\nsome-config:\n  default:\n    # Base configuration (always applied first)\n    key1: value1\n  $$>=1.21.4:\n    # Overrides/merges when version >= 1.21.4\n    key1: new_value\n  $$1.20.1~1.21.3:\n    # Overrides/merges when version is in range\n    key2: range_value\n```\n\n**Version Condition Formats:**\n- `$$>=1.21.4` - Greater than or equal\n- `$$<=1.21.3` - Less than or equal\n- `$$<1.21.2` - Less than\n- `$$=1.21.0` - Exact version\n- `$$1.20.1~1.21.3` - Version range (inclusive)",
+      "properties": {
+        "default": {
+          "type": "object",
+          "description": "Default configuration (applied first, then version-specific configs override/merge)"
+        }
+      },
+      "patternProperties": {
+        "^\\$\\$(>=|<=|<|=)?\\d+\\.\\d+(\\.\\d+)?(~\\d+\\.\\d+(\\.\\d+)?)?(#[a-z][a-z0-9_-]*)?$": {
+          "description": "Version-conditional configuration (overrides/merges into default)",
+          "type": "object",
+          "x-completion-key": "craftengine.versionCondition"
+        }
+      },
+      "additionalProperties": false
+    },
+    "versionConditionalValue": {
+      "type": "object",
+      "description": "Version-conditional value selection.\n\nSelects different values based on Minecraft version.\n\n**Usage (with default):**\n```yaml\nclient-bound-material:\n  default: arrow\n  $$>=1.21.2: honey_bottle\n```\n\n**Usage (without default):**\n```yaml\nclient-bound-material:\n  $$1.20.1~1.21.1: bow\n  $$1.21.2~1.21.3: honey_bottle\n```\n\nThe `default` value is optional and used when no version condition matches.",
+      "properties": {
+        "default": {
+          "description": "Default value (optional, used when no version condition matches)"
+        }
+      },
+      "patternProperties": {
+        "^\\$\\$(>=|<=|<|=)?\\d+\\.\\d+(\\.\\d+)?(~\\d+\\.\\d+(\\.\\d+)?)?$": {
+          "description": "Version-conditional value",
+          "x-completion-key": "craftengine.versionCondition"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sectionWithIdentifiers": {
+      "type": "object",
+      "description": "Section that supports identifiers (e.g., items#weapons)",
+      "patternProperties": {
+        "^[a-z][a-z0-9_-]*(#[a-z][a-z0-9_-]*)*$": {
+          "description": "Section with optional identifier"
+        }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,35 @@
+{
+  "$schema": "../../schemas/version-condition.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-04",
+  "description": "Version condition operators and patterns for CraftEngine",
+
+  "operators": [
+    { "operator": ">=", "description": "Greater than or equal", "icon": "≥" },
+    { "operator": "<=", "description": "Less than or equal", "icon": "≤" },
+    { "operator": ">", "description": "Greater than", "icon": ">" },
+    { "operator": "<", "description": "Less than", "icon": "<" },
+    { "operator": "=", "description": "Equal to", "icon": "=" }
+  ],
+
+  "syntax": {
+    "prefix": "$$",
+    "rangeSeparator": "~",
+    "sectionIdPrefix": "#"
+  },
+
+  "patterns": {
+    "versionCondition": "^\\$\\$(>=|<=|>|<|=)?\\d+\\.\\d+(\\.\\d+)?$",
+    "versionRange": "^\\$\\$\\d+\\.\\d+(\\.\\d+)?~\\d+\\.\\d+(\\.\\d+)?$",
+    "versionSection": "^\\$\\$(>=|<=|>|<|=)?\\d+\\.\\d+(\\.\\d+)?(~\\d+\\.\\d+(\\.\\d+)?)?(#[a-zA-Z_][a-zA-Z0-9_]*)?$"
+  },
+
+  "defaults": {
+    "maxVersionsToShow": 8,
+    "fallbackVersion": "1.21.4"
+  },
+
+  "documentation": {
+    "baseUrl": "https://docs.craftengine.dev/version-conditions"
+  }
+}

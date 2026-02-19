@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/types/settings.schema.json",
+  "title": "Item Settings Configuration",
+  "description": "Item settings object definitions",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../common/universal-keys.schema.json#/$defs/templateSupport"
+    },
+    {
+      "$ref": "#/$defs/settingsProperties"
+    }
+  ],
+  "$defs": {
+    "settingsProperties": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "description": "Item tags",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["default:topaz_tools", "minecraft:trimmable_armor"]]
+        },
+        "projectile": {
+          "$ref": "#/$defs/projectileSettings"
+        },
+        "equipment": {
+          "$ref": "#/$defs/equipmentSettings"
+        },
+        "equippable": {
+          "$ref": "#/$defs/equippableSettings"
+        }
+      },
+      "additionalProperties": false
+    },
+    "projectileSettings": {
+      "type": "object",
+      "description": "Projectile settings",
+      "properties": {
+        "item": {
+          "type": "string",
+          "description": "Projectile item"
+        },
+        "translation": {
+          "type": "string",
+          "description": "Translation"
+        },
+        "rotation": {
+          "type": "string",
+          "description": "Rotation"
+        },
+        "scale": {
+          "type": "number",
+          "description": "Scale"
+        }
+      }
+    },
+    "equipmentSettings": {
+      "type": "object",
+      "description": "Equipment settings",
+      "properties": {
+        "asset-id": {
+          "type": "string",
+          "description": "Asset ID"
+        },
+        "slot": {
+          "type": "string",
+          "enum": ["head", "chest", "legs", "feet", "mainhand", "offhand"],
+          "description": "Equipment slot"
+        }
+      }
+    },
+    "equippableSettings": {
+      "type": "object",
+      "description": "Equippable settings",
+      "properties": {
+        "slot": {
+          "type": "string",
+          "description": "Equippable slot"
+        },
+        "asset-id": {
+          "type": "string",
+          "description": "Asset ID"
+        },
+        "wings": {
+          "type": "string",
+          "description": "Wings model"
+        }
+      }
+    }
+  }
+}
+

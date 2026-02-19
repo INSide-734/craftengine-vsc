@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/common/universal-keys.schema.json",
+  "title": "Universal Configuration Keys",
+  "description": "Keys that can be used in any configuration object (template, arguments, version conditions)",
+  "$defs": {
+    "templateSupport": {
+      "type": "object",
+      "description": "Template and arguments support - can be used in any configuration object",
+      "x-completion-mode": "full",
+      "properties": {
+        "template": {
+          "oneOf": [
+            {
+              "type": "string",
+              "$ref": "./base.schema.json#/$defs/namespacedId",
+              "description": "Single template reference"
+            },
+            {
+              "type": "array",
+              "description": "Multiple template references (applied in order)",
+              "items": {
+                "$ref": "./base.schema.json#/$defs/namespacedId"
+              },
+              "minItems": 1
+            }
+          ],
+          "description": "Template reference - can be used in any configuration object",
+          "x-completion-provider": "craftengine.templateName",
+          "x-completion-mode": "full"
+        },
+        "arguments": {
+          "type": "object",
+          "description": "Template parameters - provides values for template placeholders. Supports extended parameter types: condition, when, to_upper_case, to_lower_case, self_increase_int, expression",
+          "additionalProperties": {
+            "$ref": "./template-arguments.schema.json#/$defs/extendedParameterValue"
+          },
+          "patternProperties": {
+            "^[a-z][a-z0-9_-]*$": {
+              "$ref": "./template-arguments.schema.json#/$defs/extendedParameterValue",
+              "x-completion-provider": "craftengine.templateParameters"
+            }
+          },
+          "x-completion-provider": "craftengine.templateParameters"
+        }
+      },
+      "patternProperties": {
+        "^\\$\\$(>=|<=|>|<|=)?\\d+\\.\\d+(\\.\\d+)?(~\\d+\\.\\d+(\\.\\d+)?)?(#[a-z][a-z0-9_-]*)?$": {
+          "description": "Version-conditional configuration block.\n\nOverrides/merges into base config when version matches.\n\nFormats: $$>=1.21.4, $$>1.21.3, $$<1.21.2, $$1.20.1~1.21.3",
+          "type": "object",
+          "x-completion-key": "craftengine.versionCondition"
+        }
+      },
+      "dependencies": {
+        "arguments": ["template"]
+      }
+    },
+    "templateOnly": {
+      "type": "object",
+      "x-completion-mode": "template-only",
+      "properties": {
+        "template": {
+          "oneOf": [
+            {
+              "type": "string",
+              "$ref": "./base.schema.json#/$defs/namespacedId"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "./base.schema.json#/$defs/namespacedId"
+              }
+            }
+          ],
+          "x-completion-provider": "craftengine.templateName",
+          "x-completion-mode": "template-only"
+        }
+      }
+    },
+    "argumentsOnly": {
+      "type": "object",
+      "x-completion-mode": "arguments-only",
+      "properties": {
+        "arguments": {
+          "type": "object",
+          "additionalProperties": true,
+          "x-completion-provider": "craftengine.templateParameters",
+          "x-completion-mode": "arguments-only"
+        }
+      }
+    }
+  }
+}
+

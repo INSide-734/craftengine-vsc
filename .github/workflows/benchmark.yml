@@ -1,0 +1,142 @@
+name: Benchmark Regression
+
+on:
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'src/**/*.ts'
+      - 'src/test/benchmark/**'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  benchmark:
+    name: Performance Benchmark
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run benchmarks (PR)
+        run: pnpm run test:bench -- --outputJson=bench-pr.json || true
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: base
+
+      - name: Install base dependencies
+        run: cd base && pnpm install --frozen-lockfile
+
+      - name: Run benchmarks (base)
+        run: cd base && pnpm run test:bench -- --outputJson=bench-base.json || true
+
+      - name: Compare benchmarks
+        id: compare
+        run: |
+          node -e "
+          const fs = require('fs');
+
+          let pr = {}, base = {};
+          try { pr = JSON.parse(fs.readFileSync('bench-pr.json', 'utf8')); } catch {}
+          try { base = JSON.parse(fs.readFileSync('base/bench-base.json', 'utf8')); } catch {}
+
+          // 提取 benchmark 结果
+          function extractResults(data) {
+            const results = {};
+            const files = data.testResults || [];
+            for (const file of files) {
+              for (const suite of (file.children || [])) {
+                for (const bench of (suite.children || [])) {
+                  if (bench.benchmark) {
+                    results[bench.name] = {
+                      hz: bench.benchmark.hz,
+                      mean: bench.benchmark.mean,
+                    };
+                  }
+                }
+              }
+            }
+            return results;
+          }
+
+          const prResults = extractResults(pr);
+          const baseResults = extractResults(base);
+
+          let rows = [];
+          let hasRegression = false;
+
+          for (const [name, prBench] of Object.entries(prResults)) {
+            const baseBench = baseResults[name];
+            if (!baseBench) {
+              rows.push('| ' + name + ' | - | ' + prBench.hz.toFixed(0) + ' ops/s | 🆕 New |');
+              continue;
+            }
+            const change = ((prBench.hz - baseBench.hz) / baseBench.hz * 100).toFixed(1);
+            const icon = change < -10 ? '🔴' : change < -5 ? '🟡' : '🟢';
+            if (change < -10) hasRegression = true;
+            rows.push('| ' + name + ' | ' + baseBench.hz.toFixed(0) + ' ops/s | ' + prBench.hz.toFixed(0) + ' ops/s | ' + icon + ' ' + change + '% |');
+          }
+
+          const table = rows.length > 0
+            ? '| Benchmark | Base | PR | Change |\n|-----------|------|-----|--------|\n' + rows.join('\n')
+            : 'No benchmark results to compare.';
+
+          const status = hasRegression ? '⚠️ Performance regression detected (>10% slower)' : '✅ No significant performance regression';
+
+          fs.writeFileSync('bench-comment.md', '## ⚡ Benchmark Results\n\n' + table + '\n\n' + status + '\n');
+          fs.writeFileSync('bench-regression.txt', hasRegression ? 'true' : 'false');
+          "
+
+          echo "regression=$(cat bench-regression.txt)" >> $GITHUB_OUTPUT
+
+      - name: Post benchmark comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '';
+            try { body = fs.readFileSync('bench-comment.md', 'utf8'); } catch { return; }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Benchmark Results')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

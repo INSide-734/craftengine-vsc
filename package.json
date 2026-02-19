@@ -1,8 +1,10 @@
 {
   "name": "craftengine-vsc",
   "displayName": "craftengine-vsc",
+  "publisher": "craftengine",
   "description": "",
-  "version": "0.0.3",
+  "version": "0.0.4",
+  "packageManager": "pnpm@10.30.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/INSide-734/craftengine-vsc.git"
@@ -39,10 +41,172 @@
           "default": "**/node_modules/**",
           "description": "A glob pattern of files to exclude from template scanning."
         },
-        "craftengine.parser.templateKey": {
+        "craftengine.validation.level": {
           "type": "string",
-          "default": "templates",
-          "description": "The top-level key in YAML files where templates are defined."
+          "enum": [
+            "strict",
+            "loose",
+            "off"
+          ],
+          "default": "loose",
+          "description": "Schema validation level: strict (no additional properties), loose (allow additional properties), off (no validation)"
+        },
+        "craftengine.validation.templateExpansion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable template expansion before schema validation. When enabled, templates are expanded to validate the complete configuration, which prevents false positives for required fields defined in templates."
+        },
+        "craftengine.schema.deployToWorkspace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Deploy schema files to workspace .craftengine/schemas/ folder for customization"
+        },
+        "craftengine.schema.autoUpdateOnVersionChange": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically update workspace schema files when extension version changes"
+        },
+        "craftengine.schema.hotReload": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable hot reload when workspace schema files are modified"
+        },
+        "craftengine.schema.customCompletion.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable schema-driven custom completion (x-completion-provider support)"
+        },
+        "craftengine.schema.customCompletion.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show debug logs for schema-driven completion"
+        },
+        "craftengine.schema.customCompletion.fallback": {
+          "type": "string",
+          "enum": [
+            "default",
+            "none",
+            "schema"
+          ],
+          "default": "default",
+          "description": "Fallback behavior when schema is not available: default (use default strategies), none (no completion), schema (only schema-based)"
+        },
+        "craftengine.completion.schemaKeys.maxEnumDisplay": {
+          "type": "number",
+          "default": 20,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum number of enum values to display in completion documentation (to avoid overly long documentation)"
+        },
+        "craftengine.templates.autoCompletion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic template completion"
+        },
+        "craftengine.templates.paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "templates/**/*.yml",
+            "templates/**/*.yaml"
+          ],
+          "description": "Glob patterns for template files"
+        },
+        "craftengine.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable template validation diagnostics"
+        },
+        "craftengine.diagnostics.schemaValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable schema-based YAML validation and diagnostics"
+        },
+        "craftengine.performance.monitoring": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable performance monitoring (development only)"
+        },
+        "craftengine.logging.level": {
+          "type": "string",
+          "enum": [
+            "DEBUG",
+            "INFO",
+            "WARN",
+            "ERROR",
+            "FATAL"
+          ],
+          "default": "INFO",
+          "description": "Log level for the extension"
+        },
+        "craftengine.logging.debugMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug mode with enhanced logging (shows detailed logs in debug console)"
+        },
+        "craftengine.logging.useDebugConsole": {
+          "type": "boolean",
+          "default": false,
+          "description": "Output logs to VSCode debug console instead of standard console"
+        },
+        "craftengine.logging.debugConsole.useColors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use ANSI colors in debug console logs"
+        },
+        "craftengine.logging.debugConsole.showTimestamp": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show timestamp in debug console logs"
+        },
+        "craftengine.logging.debugConsole.showStackTrace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show stack traces for errors in debug console"
+        },
+        "craftengine.logging.fileEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable logging to file for troubleshooting"
+        },
+        "craftengine.logging.filePath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom log file path (leave empty to use extension storage directory)"
+        },
+        "craftengine.logging.maxFileSize": {
+          "type": "number",
+          "default": 10485760,
+          "description": "Maximum log file size in bytes before rotation (default: 10MB)"
+        },
+        "craftengine.logging.maxBackupCount": {
+          "type": "number",
+          "default": 5,
+          "minimum": 0,
+          "maximum": 50,
+          "description": "Maximum number of rotated log backup files to keep"
+        },
+        "craftengine.preview.resourcePacks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Paths to Minecraft resource packs for model preview (absolute or relative to workspace)"
+        },
+        "craftengine.preview.useInternalResources": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use built-in Minecraft resources as fallback for model preview"
+        },
+        "craftengine.preview.renderSize": {
+          "type": "number",
+          "default": 256,
+          "minimum": 64,
+          "maximum": 1024,
+          "description": "Preview image size in pixels"
         }
       }
     },
@@ -80,45 +244,99 @@
       {
         "command": "craftengine.checkYamlExtension",
         "title": "Check Red Hat YAML Extension Status"
+      },
+      {
+        "command": "craftengine.getStatistics",
+        "title": "CraftEngine: Get Extension Statistics"
+      },
+      {
+        "command": "craftengine.showStatistics",
+        "title": "CraftEngine: Show Extension Statistics"
+      },
+      {
+        "command": "craftengine.reloadMinecraftItems",
+        "title": "CraftEngine: Reload Minecraft Builtin Items"
+      },
+      {
+        "command": "craftengine.schema.deploy",
+        "title": "CraftEngine: Deploy Schema to Workspace"
+      },
+      {
+        "command": "craftengine.schema.reset",
+        "title": "CraftEngine: Reset Workspace Schema (Restore Defaults)"
+      },
+      {
+        "command": "craftengine.schema.reload",
+        "title": "CraftEngine: Reload Schema from Workspace"
+      },
+      {
+        "command": "craftengine.previewItemModel",
+        "title": "CraftEngine: Preview Item Model"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "craftengine.previewItemModel",
+          "when": "editorLangId == yaml && craftengine.isItemIdAtCursor",
+          "group": "craftengine@1"
+        }
+      ]
+    }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "pnpm run package",
     "clean": "rimraf out",
-    "compile": "npm run clean && tsc -p ./",
-    "compile:watch": "tsc -watch -p ./",
-    "watch": "npm run clean && tsc -watch -p ./",
-    "pretest": "npm run clean && npm run compile && npm run lint",
+    "compile": "pnpm run clean && node esbuild.mjs",
+    "compile:watch": "node esbuild.mjs --watch",
+    "watch": "pnpm run clean && node esbuild.mjs --watch",
+    "pretest": "pnpm run clean && pnpm run compile && pnpm run lint",
     "lint": "eslint src --fix",
     "lint:check": "eslint src",
-    "test": "cross-env NODE_ENV=test vscode-test",
-    "test:unit": "npm run pretest && npm run test",
-    "test:watch": "npm run pretest && cross-env NODE_ENV=test vscode-test --watch",
-    "test:verbose": "cross-env NODE_ENV=test TEST_VERBOSE=true vscode-test",
-    "test:silent": "cross-env NODE_ENV=test TEST_SILENT=true vscode-test",
-    "test:clean": "npm run pretest && cross-env NODE_ENV=test TEST_SILENT=true vscode-test",
-    "package": "npm run clean && npm run compile && vsce package",
-    "package:pre-release": "npm run clean && npm run compile && vsce package --pre-release",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run --include 'src/test/unit/**'",
+    "test:integration": "vitest run --include 'src/test/integration/**'",
+    "test:vscode": "pnpm run compile && cross-env NODE_ENV=test vscode-test",
+    "test:e2e": "pnpm run compile && cross-env NODE_ENV=test vscode-test",
+    "test:all": "pnpm run test && pnpm run test:e2e",
+    "test:bench": "vitest bench",
+    "package": "pnpm run clean && node esbuild.mjs --production",
+    "package:pre-release": "pnpm run clean && node esbuild.mjs --production && vsce package --pre-release",
     "release:notes": "node scripts/generate-release-notes.js",
-    "dev": "npm run clean && npm run compile && npm run watch"
+    "dev": "pnpm run clean && node esbuild.mjs --watch"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.10",
+    "@types/adm-zip": "^0.5.7",
+    "@types/glob": "^8.1.0",
     "@types/node": "22.x",
     "@types/vscode": "^1.103.0",
     "@types/yaml": "^1.9.6",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
+    "@vitest/coverage-v8": "^4.0.16",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
     "cross-env": "^10.0.0",
+    "esbuild": "^0.27.3",
     "eslint": "^9.32.0",
+    "glob": "^11.0.3",
     "rimraf": "^6.0.1",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
-    "chokidar": "^3.5.3",
-    "yaml": "^2.3.1"
+    "@types/json-schema": "^7.0.15",
+    "adm-zip": "^0.5.16",
+    "ajv": "^8.17.1",
+    "sharp": "^0.33.0",
+    "yaml": "^2.8.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ]
   }
 }

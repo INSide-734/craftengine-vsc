@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/sections/loot-tables.schema.json",
+  "title": "Loot Tables Configuration",
+  "description": "Loot table definition section",
+  "type": "object",
+  "patternProperties": {
+    "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$": {
+      "$ref": "#/$defs/lootTableConfig"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "lootTableConfig": {
+      "type": "object",
+      "description": "Loot table configuration",
+      "allOf": [
+        {
+          "$ref": "../common/universal-keys.schema.json#/$defs/templateSupport"
+        },
+        {
+          "$ref": "#/$defs/lootTableProperties"
+        }
+      ],
+      "required": ["pools"]
+    },
+    "lootTableProperties": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["block", "entity", "chest", "fishing", "archaeology"],
+          "description": "Loot table type"
+        },
+        "pools": {
+          "type": "array",
+          "description": "Loot pools",
+          "items": {
+            "$ref": "#/$defs/lootPool"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "lootPool": {
+      "type": "object",
+      "required": ["rolls", "entries"],
+      "properties": {
+        "rolls": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "$ref": "#/$defs/numberProvider" }
+          ],
+          "description": "Number of rolls"
+        },
+        "bonus_rolls": {
+          "oneOf": [
+            { "type": "integer" },
+            { "$ref": "#/$defs/numberProvider" }
+          ],
+          "description": "Bonus rolls"
+        },
+        "entries": {
+          "type": "array",
+          "description": "Loot entries",
+          "items": {
+            "$ref": "#/$defs/lootEntry"
+          },
+          "minItems": 1
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Pool conditions"
+        },
+        "functions": {
+          "type": "array",
+          "description": "Pool functions"
+        }
+      }
+    },
+    "lootEntry": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["item", "loot_table", "empty", "group", "alternatives", "sequence"],
+          "description": "Entry type"
+        },
+        "name": {
+          "type": "string",
+          "description": "Loot table name (for loot_table type)",
+          "x-completion-provider": "craftengine.filePath",
+          "x-completion-options": {
+            "resourceType": "loot_table",
+            "basePath": "data/{namespace}/loot_tables",
+            "fileExtensions": [".json"],
+            "includeNamespace": true,
+            "stripExtension": true
+          }
+        },
+        "item": {
+          "type": "string",
+          "description": "Item ID (for item type)",
+          "x-completion-provider": "craftengine.itemId"
+        },
+        "weight": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Entry weight"
+        },
+        "quality": {
+          "type": "integer",
+          "description": "Quality modifier"
+        },
+        "functions": {
+          "type": "array",
+          "description": "Entry functions"
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Entry conditions"
+        }
+      }
+    },
+    "numberProvider": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    }
+  }
+}
+

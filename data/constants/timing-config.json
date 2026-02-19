@@ -1,0 +1,89 @@
+{
+  "$schema": "../../schemas/timing-config.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-04",
+  "description": "Timing and performance constants for CraftEngine extension",
+
+  "debounce": {
+    "documentDiagnostics": 500,
+    "schemaFileWatcher": 500,
+    "completionProvider": 100
+  },
+
+  "delays": {
+    "initialDiagnostics": 100,
+    "activationTimeout": 2000
+  },
+
+  "limits": {
+    "templateNestingDepth": 10,
+    "maxFileSize": 10485760,
+    "yamlScannerBatchSize": 20,
+    "minecraftDataBatchSize": 10,
+    "maxConcurrentRequests": 5,
+    "maxResultsPerStrategy": 100,
+    "searchRange": 50
+  },
+
+  "cache": {
+    "versionCacheTTL": 3600000,
+    "minecraftDataCacheTTL": 3600000,
+    "schemaCacheTTL": 300000,
+    "namespaceDiscoveryCacheTTL": 300000,
+    "templateCacheTTL": 60000,
+    "filePathCacheTTL": 30000,
+    "fileExistsCacheTTL": 10000
+  },
+
+  "network": {
+    "requestTimeout": 10000,
+    "retryAttempts": 3,
+    "retryDelayMs": 1000
+  },
+
+  "logging": {
+    "maxFileSize": 10485760,
+    "appendMode": true,
+    "rotationStrategy": "timestamp-based",
+    "maxBackupCount": 5,
+    "flushIntervalMs": 200,
+    "bufferSizeThreshold": 4096
+  },
+
+  "performance": {
+    "completionResponseTimeMs": 100,
+    "hoverResponseTimeMs": 50,
+    "diagnosticUpdateMs": 500,
+    "cacheHitRateTarget": 0.8
+  },
+
+  "diagnosticHandler": {
+    "initialDelay": 100,
+    "highPriorityDelay": 200,
+    "lowPriorityDelay": 1000,
+    "incrementalThreshold": 50,
+    "fullAnalysisLineThreshold": 50,
+    "fullAnalysisCharThreshold": 1000,
+    "eventThrottleDelay": 100
+  },
+
+  "diagnosticGroups": [
+    { "name": "syntax", "providers": ["schema"], "priority": 0 },
+    { "name": "reference", "providers": ["template", "translation", "category"], "priority": 1 },
+    { "name": "type-validation", "providers": ["filePath", "itemId"], "priority": 2 },
+    { "name": "suggestions", "providers": ["miniMessage", "versionCondition"], "priority": 3 }
+  ],
+
+  "completionManager": {
+    "activationTimeoutMs": 50,
+    "totalActivationTimeoutMs": 100
+  },
+
+  "fileIndexing": {
+    "maxRetries": 2,
+    "retryBaseDelayMs": 1000,
+    "batchSize": 10,
+    "lockCleanupIntervalMs": 300000,
+    "lockExpiryMs": 60000
+  }
+}

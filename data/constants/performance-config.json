@@ -1,0 +1,105 @@
+{
+  "$schema": "../schemas/performance-config.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-03",
+  "description": "Performance and timeout configuration for CraftEngine VS Code Extension",
+
+  "logging": {
+    "maxFileSize": 10485760,
+    "maxFileSizeDescription": "10MB",
+    "rotationStrategy": "timestamp-based",
+    "appendMode": true,
+    "maxBackupCount": 5,
+    "maxBackupCountDescription": "Keep up to 5 rotated backup files",
+    "flushIntervalMs": 200,
+    "bufferSizeThreshold": 4096
+  },
+
+  "network": {
+    "requestTimeout": 10000,
+    "requestTimeoutDescription": "10 seconds",
+    "retryAttempts": 3,
+    "retryDelayMs": 1000,
+    "maxRedirects": 5,
+    "maxResponseSize": 10485760
+  },
+
+  "completion": {
+    "debounceMs": 500,
+    "maxResultsPerStrategy": 100,
+    "cacheHitRateTarget": 0.8
+  },
+
+  "performance": {
+    "activationTimeoutMs": 2000,
+    "completionResponseTimeMs": 100,
+    "hoverResponseTimeMs": 50,
+    "diagnosticUpdateMs": 500
+  },
+
+  "batch": {
+    "tagLoadBatchSize": 10,
+    "maxConcurrentRequests": 5
+  },
+
+  "thresholds": {
+    "template.parse": 100,
+    "template.completion": 50,
+    "cache.rebuild": 5000,
+    "file.scan": 200
+  },
+
+  "caches": {
+    "diagnosticCache": {
+      "capacity": 100,
+      "ttl": 0
+    },
+    "documentParseCache": {
+      "capacity": 50
+    },
+    "yamlPathParser": {
+      "astCacheSize": 20,
+      "pathCacheSize": 100
+    },
+    "namespaceDiscovery": {
+      "ttl": 300000,
+      "maxSize": 50
+    },
+    "filePathDiagnostic": {
+      "capacity": 100,
+      "ttl": 60000,
+      "fileExistsCacheTTL": 10000
+    },
+    "schemaDiagnostic": {
+      "capacity": 100,
+      "ttl": 60000
+    },
+    "templateDiagnostic": {
+      "capacity": 300,
+      "ttl": 120000
+    },
+    "modelCache": {
+      "maxSize": 500
+    },
+    "resolvedModelCache": {
+      "size": 300
+    },
+    "textureCache": {
+      "imageCacheSize": 200,
+      "textureCacheSize": 500
+    }
+  },
+
+  "workerPool": {
+    "taskTimeout": 30000,
+    "workerTerminateTimeout": 5000
+  },
+
+  "filesystem": {
+    "skipDirectories": ["node_modules", ".git", "out", "dist", ".vscode", ".idea", "build", "target"],
+    "resourcePackCacheTTL": 300000,
+    "concurrencyLimit": 4,
+    "defaultMaxFileSize": 10485760,
+    "yamlScannerBatchSize": 20
+  }
+}

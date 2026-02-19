@@ -4,5 +4,9 @@ node_modules
 .vscode-test/
 *.vsix
 .idea/**
-test-workspace/
+/test-workspace
 docs/
+
+# 日志文件
+logs/*.log
+/coverage

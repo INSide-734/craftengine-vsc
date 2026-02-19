@@ -1,0 +1,273 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/sections/furniture.schema.json",
+  "title": "Furniture Configuration",
+  "description": "Furniture definition section (entity-based furniture system).\n\nSupports version-conditional sections with $$version#section-id: format.",
+  "type": "object",
+  "patternProperties": {
+    "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$": {
+      "$ref": "#/$defs/furnitureConfig"
+    },
+    "^\\$\\$(>=|<=|<|=)?\\d+\\.\\d+(\\.\\d+)?(~\\d+\\.\\d+(\\.\\d+)?)?#[a-z][a-z0-9_-]*$": {
+      "description": "Version-conditional section (e.g., $$>=1.21.4#my_furniture:)\n\nContains furniture definitions that only apply to specific Minecraft versions.",
+      "type": "object",
+      "x-completion-key": "craftengine.versionCondition",
+      "patternProperties": {
+        "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$": {
+          "$ref": "#/$defs/furnitureConfig"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "furnitureConfig": {
+      "type": "object",
+      "description": "Furniture configuration.\n\nSupports version-conditional block merging with $$>=1.21.4: keys.",
+      "allOf": [
+        {
+          "$ref": "../common/universal-keys.schema.json#/$defs/templateSupport"
+        },
+        {
+          "$ref": "#/$defs/furnitureProperties"
+        }
+      ],
+      "patternProperties": {
+        "^\\$\\$(>=|<=|<|=)?\\d+\\.\\d+(\\.\\d+)?(~\\d+\\.\\d+(\\.\\d+)?)?(#[a-z][a-z0-9_-]*)?$": {
+          "description": "Version-conditional configuration block",
+          "$ref": "#/$defs/furnitureProperties",
+          "x-completion-key": "craftengine.versionCondition"
+        }
+      },
+      "required": ["entity-type"]
+    },
+    "furnitureProperties": {
+      "type": "object",
+      "properties": {
+        "entity-type": {
+          "type": "string",
+          "enum": ["armor_stand", "item_display", "block_display", "text_display", "interaction"],
+          "description": "Base entity type"
+        },
+        "model": {
+          "$ref": "#/$defs/furnitureModel"
+        },
+        "placement": {
+          "$ref": "#/$defs/placementConfig"
+        },
+        "interaction": {
+          "$ref": "#/$defs/interactionConfig"
+        },
+        "physics": {
+          "$ref": "#/$defs/physicsConfig"
+        },
+        "drops": {
+          "$ref": "#/$defs/dropsConfig"
+        },
+        "display": {
+          "$ref": "#/$defs/displayConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "furnitureModel": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["item", "block", "custom"]
+        },
+        "item": {
+          "type": "string",
+          "description": "Item model reference",
+          "x-completion-provider": "craftengine.itemId"
+        },
+        "custom-model-data": {
+          "type": "integer"
+        },
+        "scale": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "rotation": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "offset": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "placementConfig": {
+      "type": "object",
+      "properties": {
+        "surface-required": {
+          "type": "boolean",
+          "description": "Requires surface support"
+        },
+        "wall-mountable": {
+          "type": "boolean",
+          "description": "Can be mounted on walls"
+        },
+        "ceiling-mountable": {
+          "type": "boolean",
+          "description": "Can be mounted on ceiling"
+        },
+        "rotation-snap": {
+          "type": "number",
+          "description": "Rotation angle snap (degrees, 0 = no limit)"
+        },
+        "height-offset": {
+          "type": "number",
+          "description": "Height offset"
+        },
+        "collision-box": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "number" },
+            "height": { "type": "number" },
+            "depth": { "type": "number" }
+          }
+        },
+        "allowed-blocks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "blocked-blocks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "place-permission": {
+          "type": "string"
+        },
+        "break-permission": {
+          "type": "string"
+        },
+        "auto-rotate": {
+          "type": "boolean"
+        },
+        "placement-preview": {
+          "type": "boolean"
+        },
+        "ground": {
+          "$ref": "#/$defs/groundPlacementConfig"
+        }
+      }
+    },
+    "groundPlacementConfig": {
+      "type": "object",
+      "description": "Ground placement specific configuration",
+      "properties": {
+        "surface-detection": {
+          "type": "string",
+          "enum": ["strict", "loose", "any"],
+          "description": "Surface detection mode"
+        },
+        "height-tolerance": {
+          "type": "number",
+          "description": "Height tolerance (blocks)"
+        },
+        "slope-tolerance": {
+          "type": "number",
+          "description": "Slope tolerance (degrees)"
+        },
+        "auto-adjust-height": {
+          "type": "boolean"
+        },
+        "snap-to-ground": {
+          "type": "boolean"
+        },
+        "ground-offset": {
+          "type": "number"
+        },
+        "multi-block-support": {
+          "type": "boolean"
+        },
+        "support-points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "x": { "type": "number" },
+              "z": { "type": "number" },
+              "required": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "interactionConfig": {
+      "type": "object",
+      "properties": {
+        "right-click": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "permission": { "type": "string" },
+            "sound": { "type": "string" }
+          }
+        },
+        "sit": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "height": { "type": "number" }
+          }
+        },
+        "storage": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "size": { "type": "integer" },
+            "title": { "type": "string" }
+          }
+        }
+      }
+    },
+    "physicsConfig": {
+      "type": "object",
+      "properties": {
+        "gravity": { "type": "boolean" },
+        "collision": { "type": "boolean" },
+        "pushable": { "type": "boolean" },
+        "health": { "type": "number" }
+      }
+    },
+    "dropsConfig": {
+      "type": "object",
+      "properties": {
+        "self": { "type": "boolean" },
+        "items": {
+          "type": "array",
+          "items": { 
+            "type": "string",
+            "x-completion-provider": "craftengine.itemId"
+          }
+        },
+        "experience": { "type": "integer" }
+      }
+    },
+    "displayConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "$ref": "../common/base.schema.json#/$defs/miniMessageText"
+        },
+        "glow": { "type": "boolean" },
+        "visible": { "type": "boolean" },
+        "marker": { "type": "boolean" }
+      }
+    }
+  }
+}
+
+

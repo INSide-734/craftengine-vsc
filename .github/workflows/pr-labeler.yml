@@ -1,0 +1,72 @@
+name: PR Labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  label:
+    name: Auto Label PR
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Label by file paths
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              per_page: 100,
+            });
+
+            const paths = files.map(f => f.filename);
+            const labels = new Set();
+
+            const rules = [
+              { pattern: /^src\/core\//, label: 'core' },
+              { pattern: /^src\/domain\//, label: 'domain' },
+              { pattern: /^src\/application\//, label: 'application' },
+              { pattern: /^src\/infrastructure\//, label: 'infra' },
+              { pattern: /^src\/presentation\//, label: 'presentation' },
+              { pattern: /^src\/test\//, label: 'tests' },
+              { pattern: /^schemas\//, label: 'schema' },
+              { pattern: /^data\//, label: 'data' },
+              { pattern: /^\.github\//, label: 'ci' },
+              { pattern: /^scripts\//, label: 'tooling' },
+              { pattern: /renderer/, label: 'renderer' },
+              { pattern: /CHANGELOG|README/, label: 'docs' },
+            ];
+
+            for (const file of paths) {
+              for (const rule of rules) {
+                if (rule.pattern.test(file)) {
+                  labels.add(rule.label);
+                }
+              }
+            }
+
+            // 按变更文件数量标记 PR 大小
+            const totalChanges = files.reduce((sum, f) => sum + f.changes, 0);
+            if (totalChanges <= 10) labels.add('size/XS');
+            else if (totalChanges <= 50) labels.add('size/S');
+            else if (totalChanges <= 200) labels.add('size/M');
+            else if (totalChanges <= 500) labels.add('size/L');
+            else labels.add('size/XL');
+
+            if (labels.size > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: [...labels],
+              });
+            }

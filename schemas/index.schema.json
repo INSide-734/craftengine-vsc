@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/index.schema.json",
+  "title": "CraftEngine Configuration",
+  "description": "Main schema for CraftEngine YAML configurations",
+  "version": "1.0.0",
+  "type": "object",
+  "patternProperties": {
+    "^items(#.*)?$": {
+      "$ref": "sections/items.schema.json",
+      "description": "Items section - Item definitions"
+    },
+    "^templates(#.*)?$": {
+      "$ref": "sections/templates.schema.json",
+      "description": "Templates section - Reusable templates"
+    },
+    "^template(#.*)?$": {
+      "$ref": "sections/templates.schema.json",
+      "description": "Templates section (deprecated alias, use 'templates' instead)",
+      "deprecated": true
+    },
+    "^categories(#.*)?$": {
+      "$ref": "sections/categories.schema.json",
+      "description": "Categories section - Item categories"
+    },
+    "^category(#.*)?$": {
+      "$ref": "sections/categories.schema.json",
+      "description": "Categories section (deprecated alias, use 'categories' instead)",
+      "deprecated": true
+    },
+    "^events(#.*)?$": {
+      "$ref": "sections/events.schema.json",
+      "description": "Events section - Event definitions"
+    },
+    "^recipes(#.*)?$": {
+      "$ref": "sections/recipes.schema.json",
+      "description": "Recipes section - Crafting recipes"
+    },
+    "^recipe(#.*)?$": {
+      "$ref": "sections/recipes.schema.json",
+      "description": "Recipes section (deprecated alias, use 'recipes' instead)",
+      "deprecated": true
+    },
+    "^loot_tables(#.*)?$": {
+      "$ref": "sections/loot-tables.schema.json",
+      "description": "Loot tables section - Loot configurations"
+    },
+    "^furniture(#.*)?$": {
+      "$ref": "sections/furniture.schema.json",
+      "description": "Furniture section - Furniture definitions"
+    },
+    "^translations(#.*)?$": {
+      "$ref": "sections/translations.schema.json",
+      "description": "Translations section - i18n/l10n translations"
+    },
+    "^translation(#.*)?$": {
+      "$ref": "sections/translations.schema.json",
+      "description": "Translations section (deprecated alias, use 'translations' instead)",
+      "deprecated": true
+    },
+    "^i18n(#.*)?$": {
+      "$ref": "sections/translations.schema.json",
+      "description": "Translations section (deprecated alias, use 'translations' instead)",
+      "deprecated": true
+    },
+    "^internationalization(#.*)?$": {
+      "$ref": "sections/translations.schema.json",
+      "description": "Translations section (deprecated alias, use 'translations' instead)",
+      "deprecated": true
+    },
+    "^l10n(#.*)?$": {
+      "$ref": "sections/translations.schema.json",
+      "description": "Translations section (deprecated alias, use 'translations' instead)",
+      "deprecated": true
+    },
+    "^localization(#.*)?$": {
+      "$ref": "sections/translations.schema.json",
+      "description": "Translations section (deprecated alias, use 'translations' instead)",
+      "deprecated": true
+    },
+    "^equipments(#.*)?$": {
+      "type": "object",
+      "description": "Equipments section - Equipment definitions"
+    },
+    "^equipment(#.*)?$": {
+      "type": "object",
+      "description": "Equipments section (deprecated alias, use 'equipments' instead)",
+      "deprecated": true
+    },
+    "^blocks(#.*)?$": {
+      "type": "object",
+      "description": "Blocks section - Block definitions"
+    },
+    "^emojis(#.*)?$": {
+      "type": "object",
+      "description": "Emojis section - Custom emoji definitions"
+    },
+    "^emoji(#.*)?$": {
+      "type": "object",
+      "description": "Emojis section (deprecated alias, use 'emojis' instead)",
+      "deprecated": true
+    },
+    "^sounds(#.*)?$": {
+      "type": "object",
+      "description": "Sounds section - Custom sound definitions"
+    },
+    "^sound(#.*)?$": {
+      "type": "object",
+      "description": "Sounds section (deprecated alias, use 'sounds' instead)",
+      "deprecated": true
+    },
+    "^advancements(#.*)?$": {
+      "type": "object",
+      "description": "Advancements section - Achievement definitions"
+    },
+    "^advancement(#.*)?$": {
+      "type": "object",
+      "description": "Advancements section (deprecated alias, use 'advancements' instead)",
+      "deprecated": true
+    },
+    "^block-state-mappings(#.*)?$": {
+      "type": "object",
+      "description": "Block state mappings section - Block state configurations"
+    },
+    "^block-state-mapping(#.*)?$": {
+      "type": "object",
+      "description": "Block state mappings section (deprecated alias, use 'block-state-mappings' instead)",
+      "deprecated": true
+    },
+    "^global-variables(#.*)?$": {
+      "type": "object",
+      "description": "Global variables section - Reusable variable definitions"
+    },
+    "^global-variable(#.*)?$": {
+      "type": "object",
+      "description": "Global variables section (deprecated alias, use 'global-variables' instead)",
+      "deprecated": true
+    },
+    "^vanilla-loots(#.*)?$": {
+      "type": "object",
+      "description": "Vanilla loots section - Vanilla loot table modifications"
+    },
+    "^vanilla-loot(#.*)?$": {
+      "type": "object",
+      "description": "Vanilla loots section (deprecated alias, use 'vanilla-loots' instead)",
+      "deprecated": true
+    },
+    "^\\$\\$": {
+      "type": "object",
+      "description": "Version-conditional configuration"
+    }
+  },
+  "additionalProperties": false,
+  "$comment": "This is the main entry point for CraftEngine configuration validation and completion"
+}
+

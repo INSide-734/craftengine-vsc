@@ -1,0 +1,157 @@
+{
+  "$schema": "../../schemas/parameter-types.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-04",
+  "description": "Extended parameter types for CraftEngine templates",
+
+  "types": {
+    "condition": {
+      "name": "condition",
+      "description": "Selects a value based on a boolean condition evaluation",
+      "requiredProperties": ["type", "condition", "on-true", "on-false"],
+      "optionalProperties": [],
+      "propertyTypes": {
+        "type": "string",
+        "condition": "string",
+        "on-true": "any",
+        "on-false": "any"
+      },
+      "example": "type: condition\ncondition: \"${tintable:-false}\"\non-true: leaves\non-false: cube_all"
+    },
+    "when": {
+      "name": "when",
+      "description": "Maps source values to specific outputs with optional fallback",
+      "requiredProperties": ["type", "source", "when"],
+      "optionalProperties": ["fallback"],
+      "propertyTypes": {
+        "type": "string",
+        "source": "string",
+        "when": "object",
+        "fallback": "any"
+      },
+      "example": "type: when\nsource: \"${part}\"\nwhen:\n  helmet: head\n  chestplate: chest\nfallback: any"
+    },
+    "to_upper_case": {
+      "name": "to_upper_case",
+      "description": "Converts text to uppercase with optional locale",
+      "requiredProperties": ["type", "value"],
+      "optionalProperties": ["locale"],
+      "propertyTypes": {
+        "type": "string",
+        "value": "string",
+        "locale": "string"
+      },
+      "example": "type: to_upper_case\nvalue: \"${tier}\"\nlocale: en"
+    },
+    "to_lower_case": {
+      "name": "to_lower_case",
+      "description": "Converts text to lowercase with optional locale",
+      "requiredProperties": ["type", "value"],
+      "optionalProperties": ["locale"],
+      "propertyTypes": {
+        "type": "string",
+        "value": "string",
+        "locale": "string"
+      },
+      "example": "type: to_lower_case\nvalue: \"${tier}\"\nlocale: en"
+    },
+    "self_increase_int": {
+      "name": "self_increase_int",
+      "description": "Generates incrementing/decrementing integer values",
+      "requiredProperties": ["type", "from", "to"],
+      "optionalProperties": ["step", "step-interval"],
+      "propertyTypes": {
+        "type": "string",
+        "from": "integer",
+        "to": "integer",
+        "step": "integer",
+        "step-interval": "integer"
+      },
+      "example": "type: self_increase_int\nfrom: 0\nto: 20\nstep: 1"
+    },
+    "expression": {
+      "name": "expression",
+      "description": "Executes mathematical expressions and converts to numeric type",
+      "requiredProperties": ["type", "expression"],
+      "optionalProperties": ["value-type"],
+      "propertyTypes": {
+        "type": "string",
+        "expression": "string",
+        "value-type": "enum:int,double,short,long,float,boolean,byte"
+      },
+      "example": "type: expression\nexpression: \"${base_damage:-10d} * ${multiplier:-1d}\"\nvalue-type: double"
+    }
+  },
+
+  "propertyDefinitions": {
+    "condition": [
+      { "name": "type", "description": "Parameter type identifier", "type": "string" },
+      { "name": "condition", "description": "Boolean condition expression", "type": "string", "examples": ["${tintable:-false}", "${enabled:-true}"] },
+      { "name": "on-true", "description": "Value when condition is true", "type": "any" },
+      { "name": "on-false", "description": "Value when condition is false", "type": "any" }
+    ],
+    "when": [
+      { "name": "type", "description": "Parameter type identifier", "type": "string" },
+      { "name": "source", "description": "Source value to match against", "type": "string", "examples": ["${part}", "${tier}"] },
+      { "name": "when", "description": "Case mapping object", "type": "object" },
+      { "name": "fallback", "description": "Default value when no case matches", "type": "any" }
+    ],
+    "to_upper_case": [
+      { "name": "type", "description": "Parameter type identifier", "type": "string" },
+      { "name": "value", "description": "Value to convert to uppercase", "type": "string", "examples": ["${tier}", "${name}"] },
+      { "name": "locale", "description": "Locale for case conversion", "type": "string", "enumValues": ["en", "zh", "ja", "ko", "de", "fr"] }
+    ],
+    "to_lower_case": [
+      { "name": "type", "description": "Parameter type identifier", "type": "string" },
+      { "name": "value", "description": "Value to convert to lowercase", "type": "string", "examples": ["${tier}", "${name}"] },
+      { "name": "locale", "description": "Locale for case conversion", "type": "string", "enumValues": ["en", "zh", "ja", "ko", "de", "fr"] }
+    ],
+    "self_increase_int": [
+      { "name": "type", "description": "Parameter type identifier", "type": "string" },
+      { "name": "from", "description": "Starting value for the counter", "type": "integer", "examples": ["0", "1", "100"] },
+      { "name": "to", "description": "Ending value for the counter", "type": "integer", "examples": ["10", "20", "1000"] },
+      { "name": "step", "description": "Increment/decrement step value", "type": "integer", "examples": ["1", "2", "-1"] },
+      { "name": "step-interval", "description": "Interval between step increments", "type": "integer" }
+    ],
+    "expression": [
+      { "name": "type", "description": "Parameter type identifier", "type": "string" },
+      { "name": "expression", "description": "Mathematical expression to evaluate", "type": "string", "examples": ["${base:-10d} * ${mult:-1d}", "${a:-1} + ${b:-2}"] },
+      { "name": "value-type", "description": "Output numeric type", "type": "string", "enumValues": ["int", "double", "short", "long", "float", "boolean", "byte"] }
+    ]
+  },
+
+  "snippets": {
+    "condition": "type: condition\n  condition: \"\\${${1:param}:-false}\"\n  on-true: ${2:value_if_true}\n  on-false: ${3:value_if_false}",
+    "when": "type: when\n  source: \"\\${${1:param}}\"\n  when:\n    ${2:case1}: ${3:output1}\n  fallback: ${4:default}",
+    "to_upper_case": "type: to_upper_case\n  value: \"\\${${1:param}}\"\n  locale: ${2:en}",
+    "to_lower_case": "type: to_lower_case\n  value: \"\\${${1:param}}\"\n  locale: ${2:en}",
+    "self_increase_int": "type: self_increase_int\n  from: ${1:0}\n  to: ${2:20}\n  step: ${3:1}",
+    "expression": "type: expression\n  expression: \"\\${${1:base}:-10d} * \\${${2:multiplier}:-1d}\"\n  value-type: ${3:double}"
+  },
+
+  "valueTypes": {
+    "numeric": ["int", "double", "short", "long", "float", "byte"],
+    "boolean": ["boolean"],
+    "text": ["string"],
+    "complex": ["object", "array", "any"]
+  },
+
+  "locales": [
+    { "code": "en", "name": "English", "description": "English locale" },
+    { "code": "zh", "name": "Chinese", "description": "Chinese locale" },
+    { "code": "ja", "name": "Japanese", "description": "Japanese locale" },
+    { "code": "ko", "name": "Korean", "description": "Korean locale" },
+    { "code": "de", "name": "German", "description": "German locale" },
+    { "code": "fr", "name": "French", "description": "French locale" },
+    { "code": "es", "name": "Spanish", "description": "Spanish locale" },
+    { "code": "pt", "name": "Portuguese", "description": "Portuguese locale" },
+    { "code": "ru", "name": "Russian", "description": "Russian locale" },
+    { "code": "it", "name": "Italian", "description": "Italian locale" }
+  ],
+
+  "patterns": {
+    "parameterReference": "\\$\\{([a-zA-Z_][a-zA-Z0-9_]*)(?::-([^}]*))?\\}",
+    "typeIdentifier": "^[a-z_]+$",
+    "expressionOperators": "[+\\-*/()%]"
+  }
+}

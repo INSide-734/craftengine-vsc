@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/sections/templates.schema.json",
+  "title": "Templates Configuration",
+  "description": "Template definition section",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "#/$defs/templateGroup"
+    }
+  ],
+  "$defs": {
+    "templateGroup": {
+      "type": "object",
+      "description": "Template namespace group. Keys can be nested using # separators or direct template names.",
+      "patternProperties": {
+        "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$": {
+          "$ref": "#/$defs/templateConfig"
+        },
+        "^[a-z][a-z0-9_-]*(#[a-z0-9_-]+)+$": {
+          "description": "Nested template namespace group",
+          "$ref": "#/$defs/templateGroup"
+        }
+      },
+      "additionalProperties": false
+    },
+    "templateConfig": {
+      "description": "Template configuration with parameters",
+      "allOf": [
+        {
+          "$ref": "../common/universal-keys.schema.json#/$defs/templateSupport"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "patternProperties": {
+            "^\\$\\{[a-z][a-z0-9_-]*(:-.*)?\\}$": {
+              "description": "Template parameter placeholder"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+

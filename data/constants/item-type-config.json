@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-20",
+  "description": "Item type display configuration for completion",
+  "types": {
+    "block": { "icon": "🧱", "label": "Block" },
+    "furniture": { "icon": "🪑", "label": "Furniture" },
+    "item": { "icon": "📦", "label": "Item" }
+  }
+}

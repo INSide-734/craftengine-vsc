@@ -1,0 +1,86 @@
+{
+  "$schema": "../../schemas/minecraft-model-properties.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-04",
+  "description": "Minecraft model property type definitions for ItemModel system",
+
+  "modelTypes": {
+    "EMPTY": "minecraft:empty",
+    "MODEL": "minecraft:model",
+    "COMPOSITE": "minecraft:composite",
+    "CONDITION": "minecraft:condition",
+    "RANGE_DISPATCH": "minecraft:range_dispatch",
+    "SELECT": "minecraft:select",
+    "SPECIAL": "minecraft:special",
+    "BUNDLE_SELECTED_ITEM": "minecraft:bundle/selected_item"
+  },
+
+  "conditionProperties": [
+    { "key": "minecraft:broken", "name": "BROKEN", "description": "Item is broken" },
+    { "key": "minecraft:bundle/has_selected_item", "name": "BUNDLE_HAS_SELECTED_ITEM", "description": "Bundle has selected item" },
+    { "key": "minecraft:carried", "name": "CARRIED", "description": "Item is being carried" },
+    { "key": "minecraft:custom_model_data", "name": "CUSTOM_MODEL_DATA", "description": "Custom model data condition" },
+    { "key": "minecraft:damaged", "name": "DAMAGED", "description": "Item is damaged" },
+    { "key": "minecraft:extended_view", "name": "EXTENDED_VIEW", "description": "Extended view mode" },
+    { "key": "minecraft:fishing_rod/cast", "name": "FISHING_ROD_CAST", "description": "Fishing rod is cast" },
+    { "key": "minecraft:has_component", "name": "HAS_COMPONENT", "description": "Item has component" },
+    { "key": "minecraft:keybind_down", "name": "KEYBIND_DOWN", "description": "Keybind is pressed" },
+    { "key": "minecraft:component", "name": "COMPONENT", "description": "Component condition" },
+    { "key": "minecraft:selected", "name": "SELECTED", "description": "Item is selected" },
+    { "key": "minecraft:using_item", "name": "USING_ITEM", "description": "Item is being used" },
+    { "key": "minecraft:view_entity", "name": "VIEW_ENTITY", "description": "View entity condition" }
+  ],
+
+  "selectProperties": [
+    { "key": "minecraft:block_state", "name": "BLOCK_STATE", "description": "Block state selector" },
+    { "key": "minecraft:charge_type", "name": "CHARGE_TYPE", "description": "Charge type selector" },
+    { "key": "minecraft:context_dimension", "name": "CONTEXT_DIMENSION", "description": "Context dimension selector" },
+    { "key": "minecraft:context_entity_type", "name": "CONTEXT_ENTITY_TYPE", "description": "Context entity type selector" },
+    { "key": "minecraft:custom_model_data", "name": "CUSTOM_MODEL_DATA", "description": "Custom model data selector" },
+    { "key": "minecraft:display_context", "name": "DISPLAY_CONTEXT", "description": "Display context selector" },
+    { "key": "minecraft:local_time", "name": "LOCAL_TIME", "description": "Local time selector" },
+    { "key": "minecraft:main_hand", "name": "MAIN_HAND", "description": "Main hand selector" },
+    { "key": "minecraft:trim_material", "name": "TRIM_MATERIAL", "description": "Trim material selector" },
+    { "key": "minecraft:component", "name": "COMPONENT", "description": "Component selector" }
+  ],
+
+  "rangeDispatchProperties": [
+    { "key": "minecraft:bundle/fullness", "name": "BUNDLE_FULLNESS", "description": "Bundle fullness level" },
+    { "key": "minecraft:compass", "name": "COMPASS", "description": "Compass direction" },
+    { "key": "minecraft:cooldown", "name": "COOLDOWN", "description": "Item cooldown" },
+    { "key": "minecraft:count", "name": "COUNT", "description": "Item count" },
+    { "key": "minecraft:crossbow/pull", "name": "CROSSBOW_PULL", "description": "Crossbow pull amount" },
+    { "key": "minecraft:custom_model_data", "name": "CUSTOM_MODEL_DATA", "description": "Custom model data range" },
+    { "key": "minecraft:damage", "name": "DAMAGE", "description": "Item damage level" },
+    { "key": "minecraft:time", "name": "TIME", "description": "Time of day" },
+    { "key": "minecraft:use_cycle", "name": "USE_CYCLE", "description": "Use cycle progress" },
+    { "key": "minecraft:use_duration", "name": "USE_DURATION", "description": "Use duration progress" }
+  ],
+
+  "specialModelTypes": [
+    { "key": "minecraft:banner", "name": "BANNER", "description": "Banner special model" },
+    { "key": "minecraft:bed", "name": "BED", "description": "Bed special model" },
+    { "key": "minecraft:conduit", "name": "CONDUIT", "description": "Conduit special model" },
+    { "key": "minecraft:chest", "name": "CHEST", "description": "Chest special model" },
+    { "key": "minecraft:decorated_pot", "name": "DECORATED_POT", "description": "Decorated pot special model" },
+    { "key": "minecraft:hanging_sign", "name": "HANGING_SIGN", "description": "Hanging sign special model" },
+    { "key": "minecraft:head", "name": "HEAD", "description": "Head special model" },
+    { "key": "minecraft:shield", "name": "SHIELD", "description": "Shield special model" },
+    { "key": "minecraft:shulker_box", "name": "SHULKER_BOX", "description": "Shulker box special model" },
+    { "key": "minecraft:standing_sign", "name": "STANDING_SIGN", "description": "Standing sign special model" },
+    { "key": "minecraft:trident", "name": "TRIDENT", "description": "Trident special model" },
+    { "key": "minecraft:player_head", "name": "PLAYER_HEAD", "description": "Player head special model" },
+    { "key": "minecraft:copper_golem_statue", "name": "COPPER_GOLEM_STATUE", "description": "Copper golem statue special model" }
+  ],
+
+  "knownKeys": {
+    "condition": ["type", "property", "on-true", "on_true", "on-false", "on_false"],
+    "select": ["type", "property", "cases", "fallback"],
+    "rangeDispatch": ["type", "property", "scale", "entries", "fallback"]
+  },
+
+  "tintTypes": {
+    "specialFactories": ["constant", "custom_model_data", "grass"],
+    "simpleDefaultTypes": ["dye", "firework", "map_color", "potion", "team"]
+  }
+}

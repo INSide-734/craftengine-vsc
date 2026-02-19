@@ -1,0 +1,489 @@
+{
+  "$schema": "../../schemas/minimessage-constants.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-04",
+  "description": "MiniMessage constants for CraftEngine - colors, actions, keybinds, and tags",
+
+  "colors": [
+    "black", "dark_blue", "dark_green", "dark_aqua", "dark_red", "dark_purple",
+    "gold", "gray", "grey", "dark_gray", "dark_grey", "blue", "green", "aqua",
+    "red", "light_purple", "yellow", "white"
+  ],
+
+  "clickActions": [
+    { "name": "run_command", "description": "Runs a command as the player" },
+    { "name": "suggest_command", "description": "Suggests a command in chat" },
+    { "name": "open_url", "description": "Opens a URL in browser" },
+    { "name": "open_file", "description": "Opens a file (client-side)" },
+    { "name": "copy_to_clipboard", "description": "Copies text to clipboard" },
+    { "name": "change_page", "description": "Changes book page" }
+  ],
+
+  "hoverActions": [
+    { "name": "show_text", "description": "Shows text on hover" },
+    { "name": "show_item", "description": "Shows item tooltip on hover" },
+    { "name": "show_entity", "description": "Shows entity info on hover" },
+    { "name": "show_achievement", "description": "Shows achievement on hover" }
+  ],
+
+  "prideFlags": [
+    "pride", "progress", "trans", "bi", "pan", "nb", "lesbian", "ace",
+    "agender", "demisexual", "genderqueer", "genderfluid", "intersex", "aro",
+    "baker", "philly", "queer", "gay", "bigender", "demigender"
+  ],
+
+  "keybinds": [
+    { "key": "key.jump", "description": "Jump" },
+    { "key": "key.sneak", "description": "Sneak/Crouch" },
+    { "key": "key.sprint", "description": "Sprint" },
+    { "key": "key.left", "description": "Strafe Left" },
+    { "key": "key.right", "description": "Strafe Right" },
+    { "key": "key.back", "description": "Walk Backwards" },
+    { "key": "key.forward", "description": "Walk Forwards" },
+    { "key": "key.attack", "description": "Attack/Destroy" },
+    { "key": "key.pickItem", "description": "Pick Block" },
+    { "key": "key.use", "description": "Use Item/Place Block" },
+    { "key": "key.drop", "description": "Drop Item" },
+    { "key": "key.hotbar.1", "description": "Hotbar Slot 1" },
+    { "key": "key.hotbar.2", "description": "Hotbar Slot 2" },
+    { "key": "key.hotbar.3", "description": "Hotbar Slot 3" },
+    { "key": "key.hotbar.4", "description": "Hotbar Slot 4" },
+    { "key": "key.hotbar.5", "description": "Hotbar Slot 5" },
+    { "key": "key.hotbar.6", "description": "Hotbar Slot 6" },
+    { "key": "key.hotbar.7", "description": "Hotbar Slot 7" },
+    { "key": "key.hotbar.8", "description": "Hotbar Slot 8" },
+    { "key": "key.hotbar.9", "description": "Hotbar Slot 9" },
+    { "key": "key.inventory", "description": "Open Inventory" },
+    { "key": "key.swapOffhand", "description": "Swap Offhand" },
+    { "key": "key.loadToolbarActivator", "description": "Load Toolbar" },
+    { "key": "key.saveToolbarActivator", "description": "Save Toolbar" },
+    { "key": "key.playerlist", "description": "Player List" },
+    { "key": "key.chat", "description": "Open Chat" },
+    { "key": "key.command", "description": "Open Command" },
+    { "key": "key.socialInteractions", "description": "Social Interactions" },
+    { "key": "key.advancements", "description": "Advancements" },
+    { "key": "key.spectatorOutlines", "description": "Spectator Outlines" },
+    { "key": "key.screenshot", "description": "Take Screenshot" },
+    { "key": "key.smoothCamera", "description": "Toggle Cinematic Camera" },
+    { "key": "key.fullscreen", "description": "Toggle Fullscreen" },
+    { "key": "key.togglePerspective", "description": "Toggle Perspective" }
+  ],
+
+  "nbtSourceTypes": [
+    { "name": "block", "description": "NBT from block entity" },
+    { "name": "entity", "description": "NBT from entity" },
+    { "name": "storage", "description": "NBT from command storage" }
+  ],
+
+  "commonHexColors": [
+    { "hex": "FF5555", "name": "Red", "description": "Bright red color" },
+    { "hex": "55FF55", "name": "Green", "description": "Bright green color" },
+    { "hex": "5555FF", "name": "Blue", "description": "Bright blue color" },
+    { "hex": "FFFF55", "name": "Yellow", "description": "Bright yellow color" },
+    { "hex": "FF55FF", "name": "Magenta", "description": "Bright magenta color" },
+    { "hex": "55FFFF", "name": "Cyan", "description": "Bright cyan color" },
+    { "hex": "FFFFFF", "name": "White", "description": "Pure white color" },
+    { "hex": "000000", "name": "Black", "description": "Pure black color" },
+    { "hex": "AAAAAA", "name": "Gray", "description": "Medium gray color" },
+    { "hex": "FF9900", "name": "Orange", "description": "Bright orange color" },
+    { "hex": "FF69B4", "name": "Pink", "description": "Hot pink color" },
+    { "hex": "800080", "name": "Purple", "description": "Dark purple color" },
+    { "hex": "5E4FA2", "name": "Indigo", "description": "Indigo blue color" },
+    { "hex": "F79459", "name": "Coral", "description": "Coral orange color" },
+    { "hex": "2ECC71", "name": "Emerald", "description": "Emerald green color" },
+    { "hex": "E74C3C", "name": "Crimson", "description": "Crimson red color" }
+  ],
+
+  "formattingTags": [
+    { "name": "bold", "aliases": ["b"], "description": "Bold text", "selfClosing": false },
+    { "name": "italic", "aliases": ["em", "i"], "description": "Italic text", "selfClosing": false },
+    { "name": "underlined", "aliases": ["u"], "description": "Underlined text", "selfClosing": false },
+    { "name": "strikethrough", "aliases": ["st"], "description": "Strikethrough text", "selfClosing": false },
+    { "name": "obfuscated", "aliases": ["obf"], "description": "Obfuscated/magic text", "selfClosing": false },
+    { "name": "reset", "aliases": ["r"], "description": "Reset all formatting", "selfClosing": true },
+    { "name": "newline", "aliases": ["br"], "description": "Line break", "selfClosing": true }
+  ],
+
+  "colorTags": [
+    { "name": "color", "aliases": ["colour", "c"], "description": "Set text color", "hasArgument": true },
+    { "name": "shadow", "aliases": [], "description": "Set shadow color", "hasArgument": true },
+    { "name": "rainbow", "aliases": [], "description": "Rainbow gradient effect", "hasArgument": false },
+    { "name": "gradient", "aliases": [], "description": "Color gradient between colors", "hasArgument": true },
+    { "name": "transition", "aliases": [], "description": "Smooth color transition", "hasArgument": true }
+  ],
+
+  "interactionTags": [
+    { "name": "click", "aliases": [], "description": "Click event handler", "hasArgument": true },
+    { "name": "hover", "aliases": [], "description": "Hover event handler", "hasArgument": true },
+    { "name": "insertion", "aliases": [], "description": "Shift-click insertion text", "hasArgument": true }
+  ],
+
+  "contentTags": [
+    { "name": "keybind", "aliases": ["key"], "description": "Display keybind", "hasArgument": true },
+    { "name": "lang", "aliases": ["tr"], "description": "Translatable text", "hasArgument": true },
+    { "name": "lang_or", "aliases": ["tr_or"], "description": "Translatable with fallback", "hasArgument": true },
+    { "name": "selector", "aliases": ["sel"], "description": "Entity selector", "hasArgument": true },
+    { "name": "score", "aliases": [], "description": "Scoreboard score", "hasArgument": true },
+    { "name": "nbt", "aliases": [], "description": "NBT data display", "hasArgument": true }
+  ],
+
+  "specialTags": [
+    { "name": "font", "aliases": [], "description": "Change font", "hasArgument": true },
+    { "name": "pride", "aliases": [], "description": "Pride flag gradient", "hasArgument": true },
+    { "name": "sprite", "aliases": [], "description": "Display sprite/icon", "hasArgument": true },
+    { "name": "head", "aliases": [], "description": "Display player head", "hasArgument": true }
+  ],
+
+  "craftEngineTags": [
+    { "name": "i18n", "aliases": [], "description": "CraftEngine internationalization", "hasArgument": true },
+    { "name": "l10n", "aliases": [], "description": "CraftEngine localization", "hasArgument": true },
+    { "name": "arg", "aliases": [], "description": "CraftEngine template argument placeholder", "hasArgument": true }
+  ],
+
+  "tags": [
+    {
+      "name": "color",
+      "aliases": ["colour", "c"],
+      "syntax": "<color:colorNameOrHex>",
+      "description": "Verbose color definition with named color or hex value",
+      "arguments": [
+        { "name": "color", "type": "color", "required": true, "description": "Named color or hex code (#RRGGBB)" }
+      ],
+      "category": "color",
+      "example": "<color:#FF5555>Red text</color>",
+      "insertSnippet": "<color:${1:red}>${2:text}</color>"
+    },
+    {
+      "name": "shadow",
+      "syntax": "<shadow:colorNameOrHex[:alpha]>",
+      "description": "Apply shadow color to text",
+      "arguments": [
+        { "name": "color", "type": "color", "required": true, "description": "Shadow color" },
+        { "name": "alpha", "type": "number", "required": false, "description": "Alpha value (0-1)" }
+      ],
+      "category": "color",
+      "example": "<shadow:yellow>Shadowed text</shadow>",
+      "insertSnippet": "<shadow:${1:yellow}>${2:text}</shadow>"
+    },
+    {
+      "name": "bold",
+      "aliases": ["b"],
+      "syntax": "<bold>",
+      "description": "Make text bold",
+      "category": "decoration",
+      "example": "<bold>Bold text</bold>",
+      "insertSnippet": "<bold>${1:text}</bold>"
+    },
+    {
+      "name": "italic",
+      "aliases": ["em", "i"],
+      "syntax": "<italic>",
+      "description": "Make text italic",
+      "category": "decoration",
+      "example": "<italic>Italic text</italic>",
+      "insertSnippet": "<italic>${1:text}</italic>"
+    },
+    {
+      "name": "underlined",
+      "aliases": ["u"],
+      "syntax": "<underlined>",
+      "description": "Underline text",
+      "category": "decoration",
+      "example": "<underlined>Underlined text</underlined>",
+      "insertSnippet": "<underlined>${1:text}</underlined>"
+    },
+    {
+      "name": "strikethrough",
+      "aliases": ["st"],
+      "syntax": "<strikethrough>",
+      "description": "Strike through text",
+      "category": "decoration",
+      "example": "<strikethrough>Crossed out</strikethrough>",
+      "insertSnippet": "<strikethrough>${1:text}</strikethrough>"
+    },
+    {
+      "name": "obfuscated",
+      "aliases": ["obf"],
+      "syntax": "<obfuscated>",
+      "description": "Obfuscate text (random characters)",
+      "category": "decoration",
+      "example": "<obfuscated>Hidden</obfuscated>",
+      "insertSnippet": "<obfuscated>${1:text}</obfuscated>"
+    },
+    {
+      "name": "click",
+      "syntax": "<click:action:value>",
+      "description": "Add click event to text",
+      "arguments": [
+        { "name": "action", "type": "enum", "required": true, "description": "Click action type", "enumValues": ["run_command", "suggest_command", "open_url", "open_file", "copy_to_clipboard", "change_page"] },
+        { "name": "value", "type": "string", "required": true, "description": "Action value (command, URL, etc.)" }
+      ],
+      "category": "event",
+      "example": "<click:run_command:/help>Click me</click>",
+      "insertSnippet": "<click:${1|run_command,suggest_command,open_url,copy_to_clipboard|}:${2:value}>${3:text}</click>"
+    },
+    {
+      "name": "hover",
+      "syntax": "<hover:action:value>",
+      "description": "Add hover event to text",
+      "arguments": [
+        { "name": "action", "type": "enum", "required": true, "description": "Hover action type", "enumValues": ["show_text", "show_item", "show_entity", "show_achievement"] },
+        { "name": "value", "type": "string", "required": true, "description": "Hover content" }
+      ],
+      "category": "event",
+      "example": "<hover:show_text:\"<red>Tooltip\">Hover me</hover>",
+      "insertSnippet": "<hover:show_text:'${1:tooltip}'>${2:text}</hover>"
+    },
+    {
+      "name": "insertion",
+      "aliases": ["insert"],
+      "syntax": "<insert:text>",
+      "description": "Insert text into chat on shift-click",
+      "arguments": [
+        { "name": "text", "type": "string", "required": true, "description": "Text to insert" }
+      ],
+      "category": "event",
+      "example": "<insert:copied>Shift-click to copy</insert>",
+      "insertSnippet": "<insert:${1:text}>${2:Shift-click}</insert>"
+    },
+    {
+      "name": "rainbow",
+      "syntax": "<rainbow[:!][:phase]>",
+      "description": "Apply rainbow gradient to text",
+      "arguments": [
+        { "name": "reversed", "type": "boolean", "required": false, "description": "Reverse rainbow with !" },
+        { "name": "phase", "type": "number", "required": false, "description": "Phase offset (-1 to 1)" }
+      ],
+      "category": "format",
+      "example": "<rainbow>Rainbow text!</rainbow>",
+      "insertSnippet": "<rainbow>${1:text}</rainbow>"
+    },
+    {
+      "name": "gradient",
+      "syntax": "<gradient:color1:color2[:phase]>",
+      "description": "Apply color gradient to text",
+      "arguments": [
+        { "name": "colors", "type": "string", "required": true, "description": "Gradient colors (1 to n)" },
+        { "name": "phase", "type": "number", "required": false, "description": "Phase offset" }
+      ],
+      "category": "format",
+      "example": "<gradient:#5e4fa2:#f79459>Gradient</gradient>",
+      "insertSnippet": "<gradient:${1:#5e4fa2}:${2:#f79459}>${3:text}</gradient>"
+    },
+    {
+      "name": "transition",
+      "syntax": "<transition:color1:color2:phase>",
+      "description": "Transition between colors based on phase",
+      "arguments": [
+        { "name": "colors", "type": "string", "required": true, "description": "Transition colors" },
+        { "name": "phase", "type": "number", "required": true, "description": "Phase value (-1 to 1)" }
+      ],
+      "category": "format",
+      "example": "<transition:red:blue:0.5>Transition</transition>",
+      "insertSnippet": "<transition:${1:red}:${2:blue}:${3:0}>${4:text}</transition>"
+    },
+    {
+      "name": "font",
+      "syntax": "<font:key>",
+      "description": "Change text font",
+      "arguments": [
+        { "name": "key", "type": "string", "required": true, "description": "Font namespaced key" }
+      ],
+      "category": "format",
+      "example": "<font:minecraft:uniform>Uniform font</font>",
+      "insertSnippet": "<font:${1:minecraft:default}>${2:text}</font>"
+    },
+    {
+      "name": "pride",
+      "syntax": "<pride[:flag][:phase]>",
+      "description": "Apply pride flag gradient to text",
+      "arguments": [
+        { "name": "flag", "type": "enum", "required": false, "description": "Pride flag type", "enumValues": ["pride", "progress", "trans", "bi", "pan", "nb", "lesbian", "ace", "agender", "demisexual", "genderqueer", "genderfluid", "intersex", "aro", "baker", "philly", "queer", "gay", "bigender", "demigender"] },
+        { "name": "phase", "type": "number", "required": false, "description": "Phase offset" }
+      ],
+      "category": "format",
+      "example": "<pride:trans>Trans rights!</pride>",
+      "insertSnippet": "<pride:${1|pride,trans,bi,pan,nb,lesbian,ace|}>${2:text}</pride>"
+    },
+    {
+      "name": "reset",
+      "syntax": "<reset>",
+      "description": "Reset all styling (color, decorations)",
+      "selfClosing": true,
+      "category": "special",
+      "example": "<red>Red <reset>Normal",
+      "insertSnippet": "<reset>"
+    },
+    {
+      "name": "newline",
+      "aliases": ["br"],
+      "syntax": "<newline>",
+      "description": "Insert a line break",
+      "selfClosing": true,
+      "category": "special",
+      "example": "Line 1<newline>Line 2",
+      "insertSnippet": "<newline>"
+    },
+    {
+      "name": "keybind",
+      "aliases": ["key"],
+      "syntax": "<key:keybind>",
+      "description": "Display a keybind",
+      "arguments": [
+        { "name": "keybind", "type": "string", "required": true, "description": "Keybind identifier" }
+      ],
+      "category": "special",
+      "example": "<key:key.jump>",
+      "insertSnippet": "<key:${1:key.jump}>"
+    },
+    {
+      "name": "lang",
+      "aliases": ["translatable", "tr"],
+      "syntax": "<lang:key[:args...]>",
+      "description": "Minecraft translatable text",
+      "arguments": [
+        { "name": "key", "type": "string", "required": true, "description": "Translation key" },
+        { "name": "args", "type": "string", "required": false, "description": "Placeholder values" }
+      ],
+      "category": "special",
+      "example": "<lang:block.minecraft.diamond_block>",
+      "insertSnippet": "<lang:${1:translation.key}>"
+    },
+    {
+      "name": "lang_or",
+      "syntax": "<lang_or:key:fallback>",
+      "description": "Translatable text with fallback",
+      "arguments": [
+        { "name": "key", "type": "string", "required": true, "description": "Translation key" },
+        { "name": "fallback", "type": "string", "required": true, "description": "Fallback text" }
+      ],
+      "category": "special",
+      "example": "<lang_or:custom.key:'Fallback'>",
+      "insertSnippet": "<lang_or:${1:key}:'${2:fallback}'>"
+    },
+    {
+      "name": "selector",
+      "aliases": ["sel"],
+      "syntax": "<selector:pattern[:separator]>",
+      "description": "Entity selector component",
+      "arguments": [
+        { "name": "pattern", "type": "string", "required": true, "description": "Selector pattern (@a, @p, etc.)" },
+        { "name": "separator", "type": "string", "required": false, "description": "Separator between matches" }
+      ],
+      "category": "special",
+      "example": "<selector:@a[limit=5]>",
+      "insertSnippet": "<selector:${1:@a}>"
+    },
+    {
+      "name": "score",
+      "syntax": "<score:name:objective>",
+      "description": "Display scoreboard score",
+      "arguments": [
+        { "name": "name", "type": "string", "required": true, "description": "Score holder name or selector" },
+        { "name": "objective", "type": "string", "required": true, "description": "Scoreboard objective" }
+      ],
+      "category": "special",
+      "example": "<score:player_name:kills>",
+      "insertSnippet": "<score:${1:@s}:${2:objective}>"
+    },
+    {
+      "name": "nbt",
+      "aliases": ["data"],
+      "syntax": "<nbt:type:id:path[:separator][:interpret]>",
+      "description": "Display NBT data",
+      "arguments": [
+        { "name": "type", "type": "enum", "required": true, "description": "Data source type", "enumValues": ["block", "entity", "storage"] },
+        { "name": "id", "type": "string", "required": true, "description": "Source identifier" },
+        { "name": "path", "type": "string", "required": true, "description": "NBT path" }
+      ],
+      "category": "special",
+      "example": "<nbt:entity:@s:Health>",
+      "insertSnippet": "<nbt:${1|block,entity,storage|}:${2:id}:${3:path}>"
+    },
+    {
+      "name": "sprite",
+      "syntax": "<sprite[:atlas]:sprite>",
+      "description": "Display a sprite",
+      "arguments": [
+        { "name": "atlas", "type": "string", "required": false, "description": "Sprite atlas" },
+        { "name": "sprite", "type": "string", "required": true, "description": "Sprite path" }
+      ],
+      "category": "special",
+      "example": "<sprite:blocks:block/stone>",
+      "insertSnippet": "<sprite:${1:items}:${2:item/diamond}>"
+    },
+    {
+      "name": "head",
+      "syntax": "<head:identifier[:outer_layer]>",
+      "description": "Display a player head",
+      "arguments": [
+        { "name": "identifier", "type": "string", "required": true, "description": "Player name, UUID, or texture path" },
+        { "name": "outer_layer", "type": "boolean", "required": false, "description": "Show outer layer (default: true)" }
+      ],
+      "category": "special",
+      "example": "<head:Notch>",
+      "insertSnippet": "<head:${1:player_name}>"
+    },
+    {
+      "name": "i18n",
+      "syntax": "<i18n:key>",
+      "description": "CraftEngine server-side translation (resolved on server)",
+      "arguments": [
+        { "name": "key", "type": "string", "required": true, "description": "Translation key" }
+      ],
+      "selfClosing": true,
+      "category": "craftengine",
+      "example": "<i18n:item.my_sword>",
+      "insertSnippet": "<i18n:${1:translation.key}>"
+    },
+    {
+      "name": "l10n",
+      "syntax": "<l10n:key>",
+      "description": "CraftEngine client-side translation (resolved on client)",
+      "arguments": [
+        { "name": "key", "type": "string", "required": true, "description": "Translation key" }
+      ],
+      "selfClosing": true,
+      "category": "craftengine",
+      "example": "<l10n:item.my_sword>",
+      "insertSnippet": "<l10n:${1:translation.key}>"
+    },
+    {
+      "name": "arg",
+      "syntax": "<arg:name>",
+      "description": "CraftEngine template argument placeholder (replaced at runtime)",
+      "arguments": [
+        { "name": "name", "type": "string", "required": true, "description": "Argument name defined in template" }
+      ],
+      "selfClosing": true,
+      "category": "craftengine",
+      "example": "<arg:player_name>",
+      "insertSnippet": "<arg:${1:name}>"
+    }
+  ],
+
+  "patterns": {
+    "hexColor": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$",
+    "tagOpen": "<(!)?([a-z_#][a-z0-9_]*)(?::([^>]*))?(/)?>",
+    "tagClose": "</([a-z_#][a-z0-9_]*)>",
+    "completionTagStart": "<([a-z_]*)$",
+    "completionTagArgument": "<([a-z_]+):([^>]*)$",
+    "completionClosingTag": "<\\/([a-z_]*)$",
+    "completionHexColor": "<#([0-9a-f]*)$",
+    "completionTranslationTag": "<(i18n|l10n):([a-z0-9._-]*)$",
+    "pureTranslationKey": "^([a-z][a-z0-9._-]*)$"
+  },
+
+  "categoryConfig": {
+    "color": { "completionKind": 15, "sortPrefix": "1_" },
+    "decoration": { "completionKind": 13, "sortPrefix": "2_" },
+    "format": { "completionKind": 2, "sortPrefix": "3_" },
+    "event": { "completionKind": 22, "sortPrefix": "4_" },
+    "craftengine": { "completionKind": 17, "sortPrefix": "5_" },
+    "special": { "completionKind": 14, "sortPrefix": "6_" }
+  },
+
+  "negatableDecorations": ["bold", "italic", "underlined", "strikethrough", "obfuscated", "shadow"],
+
+  "commonLanguages": ["en", "zh_cn", "ja", "ko", "de", "fr", "es", "ru", "pt_br"]
+}

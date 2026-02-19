@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/types/data.schema.json",
+  "title": "Item Data Configuration",
+  "description": "Item data object definitions",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "../common/universal-keys.schema.json#/$defs/templateSupport"
+    },
+    {
+      "$ref": "#/$defs/dataProperties"
+    }
+  ],
+  "$defs": {
+    "dataProperties": {
+      "type": "object",
+      "properties": {
+        "item-name": {
+          "type": "string",
+          "$ref": "../common/base.schema.json#/$defs/miniMessageText",
+          "description": "Item display name (MiniMessage format)",
+          "x-completion-provider": "craftengine.richText"
+        },
+        "tooltip-style": {
+          "type": "string",
+          "description": "Tooltip style",
+          "examples": ["minecraft:diamond"]
+        },
+        "unbreakable": {
+          "type": "boolean",
+          "description": "Unbreakable flag"
+        },
+        "components": {
+          "$ref": "../types/components.schema.json#/$defs/minecraftComponents",
+          "description": "Minecraft 1.21+ component data"
+        },
+        "remove-components": {
+          "type": "array",
+          "description": "List of components to remove",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["attribute_modifiers"]]
+        },
+        "lore": {
+          "type": "array",
+          "description": "Item lore (MiniMessage format)",
+          "items": {
+            "$ref": "../common/base.schema.json#/$defs/miniMessageText",
+            "x-completion-provider": "craftengine.richText"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+

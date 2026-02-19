@@ -1,117 +1,115 @@
-// A launch configuration that compiles the extension and then opens it inside a new window
-// Use IntelliSense to learn about possible attributes.
-// Hover to view descriptions of existing attributes.
-// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "Run Extension",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "${defaultBuildTask}"
-		},
-		{
-			"name": "Run Extension Tests",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "npm: test:compile",
-			"env": {
-				"NODE_ENV": "test"
-			}
-		},
-		{
-			"name": "Debug Extension Tests",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "npm: test:compile",
-			"env": {
-				"NODE_ENV": "test"
-			},
-			"sourceMaps": true,
-			"smartStep": true,
-			"skipFiles": [
-				"<node_internals>/**"
-			]
-		},
-		{
-			"name": "Run Specific Test Suite",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "npm: test:compile",
-			"env": {
-				"NODE_ENV": "test",
-				"TEST_FILTER": "${input:testSuiteFilter}"
-			}
-		},
-		{
-			"name": "Run Tests (Verbose)",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "npm: test:compile",
-			"env": {
-				"NODE_ENV": "test",
-				"TEST_VERBOSE": "true"
-			}
-		},
-		{
-			"name": "Run Tests (Silent)",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js"
-			],
-			"preLaunchTask": "npm: test:compile",
-			"env": {
-				"NODE_ENV": "test",
-				"TEST_SILENT": "true"
-			}
-		}
-	],
-	"inputs": [
-		{
-			"id": "testSuiteFilter",
-			"description": "Enter test suite name to filter (e.g., 'CompletionProvider', 'HoverProvider')",
-			"default": "",
-			"type": "promptString"
-		}
-	]
+    // 调试环境变量说明：
+    // - CRAFTENGINE_LOG_LEVEL: 日志级别 (DEBUG, INFO, WARN, ERROR, FATAL)
+    // - CRAFTENGINE_DEBUG_MODE: 启用调试模式 (true/false)，启用后强制使用 DEBUG 级别
+    // - CRAFTENGINE_DEBUG_OUTPUT: 调试输出目标 (console, file, all)
+    //   - console: 仅输出到控制台（默认）
+    //   - file: 仅输出到文件（需配合 CRAFTENGINE_LOG_FILE 使用）
+    //   - all: 同时输出到控制台和文件
+    // - CRAFTENGINE_LOG_FILE: 日志文件路径
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "--disable-extensions"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "preLaunchTask": "compile",
+            "env": {
+                // 启用调试模式，强制使用 DEBUG 日志级别
+                "CRAFTENGINE_DEBUG_MODE": "true",
+                // 仅输出到控制台
+                "CRAFTENGINE_DEBUG_OUTPUT": "console"
+            }
+        },
+        {
+            "name": "Launch Extension (带日志文件)",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "--disable-extensions"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "preLaunchTask": "compile",
+            "env": {
+                // 启用调试模式，强制使用 DEBUG 日志级别
+                "CRAFTENGINE_DEBUG_MODE": "true",
+                // 同时输出到控制台和文件
+                "CRAFTENGINE_DEBUG_OUTPUT": "all",
+                // 日志文件路径
+                "CRAFTENGINE_LOG_FILE": "${workspaceFolder}/logs/craftengine-debug.log"
+            }
+        },
+        {
+            "name": "Extension E2E Tests",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "--extensionTestsPath=${workspaceFolder}/out/test/e2e",
+                "${workspaceFolder}/test-workspace",
+                "--disable-extensions",
+                "--disable-workspace-trust"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/out/test/**/*.js"
+            ],
+            "preLaunchTask": "compile",
+            "env": {
+                "NODE_ENV": "test",
+                "VSCODE_TEST_MODE": "true"
+            }
+        },
+        {
+            "name": "Debug Jest Tests",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/.bin/jest",
+            "args": [
+                "--runInBand",
+                "--no-cache",
+                "--watchAll=false"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "windows": {
+                "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+            }
+        },
+        {
+            "name": "Debug Current Jest Test",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/.bin/jest",
+            "args": [
+                "${fileBasenameNoExtension}",
+                "--runInBand",
+                "--no-cache",
+                "--watchAll=false"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "windows": {
+                "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+            }
+        },
+        {
+            "name": "Attach to Extension Host",
+            "type": "node",
+            "request": "attach",
+            "port": 5870,
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ]
+        }
+    ]
 }

@@ -7,13 +7,22 @@ vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map
-**/*.ts
 **/.vscode-test.*
 test-workspace/**
 docs/**
+logs/*.log
+coverage/**
+
+# 开发配置
+.github/**
+.cursorignore
+vitest.config.*
+esbuild.mjs
+pnpm-lock.yaml
+
+# 依赖已打包进 bundle，排除 node_modules
 node_modules/**
 
-
-!node_modules/yaml/**
-!node_modules/chokidar/**
-!node_modules/chokidar/**/*
+# 保留 sharp 原生模块（external 依赖）
+!node_modules/sharp/**
+!node_modules/@img/**

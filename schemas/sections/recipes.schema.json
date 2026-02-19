@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/sections/recipes.schema.json",
+  "title": "Recipes Configuration",
+  "description": "Recipe definition section",
+  "type": "object",
+  "patternProperties": {
+    "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$": {
+      "$ref": "#/$defs/recipeConfig"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "recipeConfig": {
+      "type": "object",
+      "description": "Recipe configuration",
+      "allOf": [
+        {
+          "$ref": "../common/universal-keys.schema.json#/$defs/templateSupport"
+        },
+        {
+          "$ref": "#/$defs/recipeProperties"
+        }
+      ],
+      "required": ["type", "result"]
+    },
+    "recipeProperties": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["shaped", "shapeless", "smithing_transform", "smelting", "blasting", "smoking"],
+          "description": "Recipe type"
+        },
+        "category": {
+          "type": "string",
+          "description": "Recipe category",
+          "examples": ["equipment", "building", "misc"]
+        },
+        "pattern": {
+          "type": "array",
+          "description": "Crafting pattern (for shaped recipes)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ingredients": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Ingredient mapping for shaped recipes",
+              "patternProperties": {
+                "^[A-Z]$": {
+                  "type": "string",
+                  "x-completion-provider": "craftengine.itemId"
+                }
+              }
+            },
+            {
+              "type": "array",
+              "description": "Ingredient list for shapeless recipes",
+              "items": {
+                "type": "string",
+                "x-completion-provider": "craftengine.itemId"
+              }
+            }
+          ]
+        },
+        "result": {
+          "$ref": "#/$defs/recipeResult"
+        },
+        "base": {
+          "type": "string",
+          "description": "Base item (for smithing)",
+          "x-completion-provider": "craftengine.itemId"
+        },
+        "addition": {
+          "type": "string",
+          "description": "Addition material (for smithing)",
+          "x-completion-provider": "craftengine.itemId"
+        },
+        "template-type": {
+          "type": "string",
+          "description": "Template type (for smithing)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "recipeResult": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "$ref": "../common/base.schema.json#/$defs/namespacedId",
+          "description": "Result item ID",
+          "x-completion-provider": "craftengine.itemId"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Result count"
+        }
+      }
+    }
+  }
+}
+

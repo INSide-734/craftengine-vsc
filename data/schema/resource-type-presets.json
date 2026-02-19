@@ -1,0 +1,142 @@
+{
+  "$schema": "../../schemas/resource-type-presets.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-04",
+  "description": "Resource type presets for file path completion in CraftEngine",
+
+  "resourceTypes": [
+    "model",
+    "texture",
+    "sound",
+    "loot_table",
+    "recipe",
+    "advancement",
+    "function",
+    "structure",
+    "custom"
+  ],
+
+  "presets": {
+    "model": {
+      "description": "Model files preset",
+      "basePath": "assets/{namespace}/models",
+      "fileExtensions": [".json"],
+      "includeNamespace": true,
+      "stripExtension": true,
+      "searchDepth": 5,
+      "pathSeparator": "/",
+      "includeSubdirectories": true
+    },
+    "texture": {
+      "description": "Texture files preset",
+      "basePath": "assets/{namespace}/textures",
+      "fileExtensions": [".png"],
+      "includeNamespace": true,
+      "stripExtension": true,
+      "searchDepth": 5,
+      "pathSeparator": "/",
+      "includeSubdirectories": true
+    },
+    "sound": {
+      "description": "Sound files preset",
+      "basePath": "assets/{namespace}/sounds",
+      "fileExtensions": [".ogg"],
+      "includeNamespace": true,
+      "stripExtension": true,
+      "searchDepth": 5,
+      "pathSeparator": "/",
+      "includeSubdirectories": true
+    },
+    "loot_table": {
+      "description": "Loot table files preset",
+      "basePath": "data/{namespace}/loot_tables",
+      "fileExtensions": [".json"],
+      "includeNamespace": true,
+      "stripExtension": true,
+      "searchDepth": 5,
+      "pathSeparator": "/",
+      "includeSubdirectories": true
+    },
+    "recipe": {
+      "description": "Recipe files preset",
+      "basePath": "data/{namespace}/recipes",
+      "fileExtensions": [".json"],
+      "includeNamespace": true,
+      "stripExtension": true,
+      "searchDepth": 5,
+      "pathSeparator": "/",
+      "includeSubdirectories": true
+    },
+    "advancement": {
+      "description": "Advancement files preset",
+      "basePath": "data/{namespace}/advancements",
+      "fileExtensions": [".json"],
+      "includeNamespace": true,
+      "stripExtension": true,
+      "searchDepth": 5,
+      "pathSeparator": "/",
+      "includeSubdirectories": true
+    },
+    "function": {
+      "description": "Function files preset",
+      "basePath": "data/{namespace}/functions",
+      "fileExtensions": [".mcfunction"],
+      "includeNamespace": true,
+      "stripExtension": true,
+      "searchDepth": 5,
+      "pathSeparator": "/",
+      "includeSubdirectories": true
+    },
+    "structure": {
+      "description": "Structure files preset",
+      "basePath": "data/{namespace}/structures",
+      "fileExtensions": [".nbt"],
+      "includeNamespace": true,
+      "stripExtension": true,
+      "searchDepth": 5,
+      "pathSeparator": "/",
+      "includeSubdirectories": true
+    },
+    "custom": {
+      "description": "Custom resource type (user-defined)",
+      "basePath": "",
+      "fileExtensions": [".json"],
+      "includeNamespace": false,
+      "stripExtension": true,
+      "searchDepth": 5,
+      "pathSeparator": "/",
+      "includeSubdirectories": true
+    }
+  },
+
+  "defaults": {
+    "defaultNamespace": "minecraft",
+    "searchDepth": 5,
+    "pathSeparator": "/",
+    "includeNamespace": true,
+    "stripExtension": true,
+    "includeSubdirectories": true,
+    "autoDetectWorkspace": true
+  },
+
+  "fileExtensionGroups": {
+    "json": [".json"],
+    "image": [".png", ".jpg", ".jpeg"],
+    "audio": [".ogg", ".mp3", ".wav"],
+    "binary": [".nbt", ".dat"],
+    "text": [".mcfunction", ".txt", ".mcmeta"]
+  },
+
+  "pathTemplates": {
+    "assets": "assets/{namespace}/{type}",
+    "data": "data/{namespace}/{type}",
+    "resourcePack": "assets/{namespace}",
+    "dataPack": "data/{namespace}"
+  },
+
+  "excludePatterns": {
+    "default": ["**/_*", "**/.*", "**/temp/**", "**/backup/**"],
+    "models": ["**/_*", "**/builtin/**"],
+    "textures": ["**/_*", "**/debug/**"]
+  }
+}

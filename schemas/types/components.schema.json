@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/types/components.schema.json",
+  "title": "Minecraft Components",
+  "description": "Minecraft 1.21+ component system definitions",
+  "$defs": {
+    "minecraftComponents": {
+      "type": "object",
+      "description": "Minecraft component data (1.21+)",
+      "properties": {
+        "minecraft:max_damage": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum durability"
+        },
+        "minecraft:attack_damage": {
+          "type": "number",
+          "description": "Attack damage value"
+        },
+        "minecraft:custom_name": {
+          "type": "string",
+          "description": "Custom name (JSON text component format)",
+          "x-completion-provider": "craftengine.richText"
+        },
+        "minecraft:lore": {
+          "type": "array",
+          "description": "Item lore lines",
+          "items": {
+            "type": "string",
+            "x-completion-provider": "craftengine.richText"
+          }
+        },
+        "minecraft:custom_model_data": {
+          "type": "integer",
+          "description": "Custom model data value"
+        },
+        "minecraft:enchantments": {
+          "type": "object",
+          "description": "Enchantments",
+          "patternProperties": {
+            "^minecraft:[a-z_]+$": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "minecraft:unbreakable": {
+          "type": "boolean",
+          "description": "Unbreakable flag"
+        },
+        "minecraft:hide_tooltip": {
+          "type": "boolean",
+          "description": "Hide tooltip flag"
+        },
+        "minecraft:rarity": {
+          "type": "string",
+          "enum": ["common", "uncommon", "rare", "epic"],
+          "description": "Item rarity"
+        },
+        "minecraft:fire_resistant": {
+          "type": "boolean",
+          "description": "Fire resistance flag"
+        },
+        "minecraft:enchantment_glint_override": {
+          "type": "boolean",
+          "description": "Override enchantment glint effect"
+        },
+        "minecraft:tooltip_style": {
+          "type": "string",
+          "description": "Tooltip style",
+          "examples": ["minecraft:diamond"]
+        },
+        "minecraft:consumable": {
+          "$ref": "#/$defs/consumableComponent"
+        },
+        "minecraft:food": {
+          "$ref": "#/$defs/foodComponent"
+        },
+        "minecraft:tool": {
+          "$ref": "#/$defs/toolComponent"
+        },
+        "minecraft:attribute_modifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/attributeModifier"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "consumableComponent": {
+      "type": "object",
+      "description": "Consumable item configuration (1.21.2+)",
+      "properties": {
+        "consume_seconds": {
+          "type": "number",
+          "description": "Consumption time in milliseconds"
+        },
+        "animation": {
+          "type": "string",
+          "enum": ["eat", "drink", "block", "bow", "spear", "crossbow", "spyglass", "toot_horn", "brush"],
+          "description": "Consumption animation"
+        }
+      }
+    },
+    "foodComponent": {
+      "type": "object",
+      "description": "Food properties",
+      "properties": {
+        "nutrition": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "saturation": {
+          "type": "number",
+          "minimum": 0
+        },
+        "can_always_eat": {
+          "type": "boolean"
+        }
+      }
+    },
+    "toolComponent": {
+      "type": "object",
+      "description": "Tool properties",
+      "properties": {
+        "rules": {
+          "type": "array"
+        },
+        "default_mining_speed": {
+          "type": "number"
+        },
+        "damage_per_block": {
+          "type": "integer"
+        }
+      }
+    },
+    "attributeModifier": {
+      "type": "object",
+      "description": "Attribute modifier",
+      "required": ["type", "amount", "operation"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Attribute type",
+          "examples": ["minecraft:generic.attack_damage", "minecraft:generic.armor"]
+        },
+        "amount": {
+          "type": "number",
+          "description": "Modifier amount"
+        },
+        "operation": {
+          "type": "string",
+          "enum": ["add_value", "add_multiplied_base", "add_multiplied_total"],
+          "description": "Modifier operation"
+        },
+        "slot": {
+          "type": "string",
+          "enum": ["mainhand", "offhand", "head", "chest", "legs", "feet"],
+          "description": "Equipment slot"
+        }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,167 @@
+name: Security Audit
+
+on:
+  # 每周一 UTC 9:00（北京时间 17:00）自动运行
+  schedule:
+    - cron: '0 9 * * 1'
+  # PR 时也检查
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit
+        id: audit
+        run: |
+          # 运行审计，捕获输出和退出码
+          set +e
+          AUDIT_OUTPUT=$(pnpm audit --json 2>&1)
+          AUDIT_EXIT=$?
+          set -e
+
+          echo "exit_code=${AUDIT_EXIT}" >> $GITHUB_OUTPUT
+
+          # 保存完整输出到文件
+          echo "${AUDIT_OUTPUT}" > audit-result.json
+
+          # 解析漏洞数量
+          CRITICAL=$(echo "${AUDIT_OUTPUT}" | node -p "try{const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));d.metadata?.vulnerabilities?.critical||0}catch{0}")
+          HIGH=$(echo "${AUDIT_OUTPUT}" | node -p "try{const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));d.metadata?.vulnerabilities?.high||0}catch{0}")
+          MODERATE=$(echo "${AUDIT_OUTPUT}" | node -p "try{const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));d.metadata?.vulnerabilities?.moderate||0}catch{0}")
+          LOW=$(echo "${AUDIT_OUTPUT}" | node -p "try{const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));d.metadata?.vulnerabilities?.low||0}catch{0}")
+
+          echo "critical=${CRITICAL}" >> $GITHUB_OUTPUT
+          echo "high=${HIGH}" >> $GITHUB_OUTPUT
+          echo "moderate=${MODERATE}" >> $GITHUB_OUTPUT
+          echo "low=${LOW}" >> $GITHUB_OUTPUT
+
+          TOTAL=$((CRITICAL + HIGH + MODERATE + LOW))
+          echo "total=${TOTAL}" >> $GITHUB_OUTPUT
+
+          # 生成可读报告
+          pnpm audit 2>&1 > audit-report.txt || true
+
+      - name: Post audit comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          AUDIT_TOTAL: ${{ steps.audit.outputs.total }}
+          AUDIT_CRITICAL: ${{ steps.audit.outputs.critical }}
+          AUDIT_HIGH: ${{ steps.audit.outputs.high }}
+          AUDIT_MODERATE: ${{ steps.audit.outputs.moderate }}
+          AUDIT_LOW: ${{ steps.audit.outputs.low }}
+        with:
+          script: |
+            const total = parseInt(process.env.AUDIT_TOTAL);
+            const critical = process.env.AUDIT_CRITICAL;
+            const high = process.env.AUDIT_HIGH;
+            const moderate = process.env.AUDIT_MODERATE;
+            const low = process.env.AUDIT_LOW;
+
+            if (total === 0) return; // 没有漏洞就不评论
+
+            const body = `## 🔒 Security Audit Report
+
+            | Severity | Count |
+            |----------|-------|
+            | 🔴 Critical | ${critical} |
+            | 🟠 High | ${high} |
+            | 🟡 Moderate | ${moderate} |
+            | 🟢 Low | ${low} |
+            | **Total** | **${total}** |
+
+            Run \`pnpm audit\` locally for details.
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body.split('\n').map(l => l.trim()).join('\n'),
+            });
+
+      - name: Create issue for scheduled audit
+        if: github.event_name == 'schedule' && steps.audit.outputs.total != '0'
+        uses: actions/github-script@v7
+        env:
+          AUDIT_CRITICAL: ${{ steps.audit.outputs.critical }}
+          AUDIT_HIGH: ${{ steps.audit.outputs.high }}
+          AUDIT_MODERATE: ${{ steps.audit.outputs.moderate }}
+          AUDIT_LOW: ${{ steps.audit.outputs.low }}
+          AUDIT_TOTAL: ${{ steps.audit.outputs.total }}
+        with:
+          script: |
+            const critical = process.env.AUDIT_CRITICAL;
+            const high = process.env.AUDIT_HIGH;
+            const moderate = process.env.AUDIT_MODERATE;
+            const low = process.env.AUDIT_LOW;
+            const total = process.env.AUDIT_TOTAL;
+
+            // 检查是否已有未关闭的审计 issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'security',
+              state: 'open',
+            });
+            const existing = issues.find(i => i.title.includes('Security Audit'));
+            if (existing) return; // 已有未关闭的 issue
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔒 Security Audit: ${total} vulnerabilities found`,
+              labels: ['security'],
+              body: `## Weekly Security Audit Report
+
+            **Date**: ${new Date().toISOString().split('T')[0]}
+
+            | Severity | Count |
+            |----------|-------|
+            | 🔴 Critical | ${critical} |
+            | 🟠 High | ${high} |
+            | 🟡 Moderate | ${moderate} |
+            | 🟢 Low | ${low} |
+
+            Run \`pnpm audit\` for full details and \`pnpm audit --fix\` to attempt auto-fix.
+            `.split('\n').map(l => l.trim()).join('\n'),
+            });
+
+      - name: Fail on critical or high vulnerabilities
+        if: steps.audit.outputs.critical != '0' || steps.audit.outputs.high != '0'
+        env:
+          AUDIT_CRITICAL: ${{ steps.audit.outputs.critical }}
+          AUDIT_HIGH: ${{ steps.audit.outputs.high }}
+        run: |
+          echo "::error::Found critical/high vulnerabilities: ${AUDIT_CRITICAL} critical, ${AUDIT_HIGH} high"
+          exit 1

@@ -162,6 +162,8 @@ items:
    ```bash
    npm test
    ```
+   
+   查看详细测试指南：[测试文档](docs/TESTING.md)
 
 5. **打包扩展**
    ```bash
@@ -200,15 +202,94 @@ items:
 
 ```
 src/
-├── core/           # 核心功能模块
-├── features/       # 功能提供者
-├── vscode/         # VS Code 集成
-├── utils/          # 工具函数
-└── types/          # 类型定义
+├── core/                  # 核心层 - 接口和类型定义
+│   ├── constants/        # 常量和服务令牌
+│   ├── errors/           # 错误类型定义
+│   ├── interfaces/       # 核心接口
+│   └── types/            # 类型定义
+├── domain/               # 领域层 - 业务逻辑
+│   ├── entities/        # 领域实体
+│   ├── repositories/    # 仓储实现
+│   └── services/        # 领域服务
+├── application/          # 应用层 - 用例编排
+│   └── services/        # 应用服务
+├── infrastructure/       # 基础设施层 - 技术实现
+│   ├── di/             # 依赖注入
+│   ├── events/         # 事件总线
+│   ├── config/         # 配置管理
+│   ├── logging/        # 日志系统
+│   └── completion/     # 补全管理
+├── presentation/         # 表现层 - VSCode 集成
+│   ├── providers/      # VSCode 提供者
+│   ├── strategies/     # 补全策略
+│   └── commands/       # 命令处理
+└── test/                # 测试目录
+    ├── unit/           # 单元测试
+    ├── integration/    # 集成测试
+    └── utils/          # 测试工具
 ```
+
+详细架构说明请查看：[新架构文档](docs/architecture/NEW_ARCHITECTURE.md)
+
+## 📋 待办事项 (TODO)
+
+### 🎨 MiniMessage 智能补全功能
+基于 `schemas/common/base.schema.json` 中的 `miniMessageText` 规格定义，实现完整的 MiniMessage 标签自动补全和验证功能。
+
+**功能需求：**
+- [ ] **标签名自动补全** - 输入 `<` 后提供所有可用的 MiniMessage 标签建议
+  - 支持颜色标签（命名颜色、十六进制颜色）
+  - 支持装饰标签（粗体、斜体、下划线等）
+  - 支持效果标签（渐变、彩虹）
+  - 支持交互标签（hover、click）
+  - 支持其他标签（字体、换行、选择器等）
+
+- [ ] **参数智能提示** - 基于标签类型提供参数补全
+  - `<hover:` 后提示 `show_text`, `show_item`, `show_entity`
+  - `<click:` 后提示 `open_url`, `run_command`, `suggest_command`, `copy_to_clipboard`, `change_page`
+  - `<color:` 后提示所有可用颜色名称
+
+- [ ] **闭合标签自动补全** - 智能处理标签闭合
+  - 自动插入必需的闭合标签（如 `<gradient>...</gradient>`）
+  - 可选闭合标签提供建议
+  - 输入 `</` 后自动匹配当前打开的标签
+
+- [ ] **实时语法验证** - 诊断 MiniMessage 格式错误
+  - 检查标签是否正确闭合
+  - 验证参数类型和格式
+  - 检测嵌套错误
+
+- [ ] **悬停文档提示** - 鼠标悬停显示标签说明
+  - 显示标签用途和参数说明
+  - 提供使用示例
+  - 链接到官方文档
+
+- [ ] **代码片段生成** - 常用 MiniMessage 模式的代码片段
+  - 渐变效果模板
+  - 点击链接模板
+  - 悬停提示模板
+  - 复杂嵌套模板
+
+**技术实现：**
+1. 创建 `MiniMessageCompletionStrategy` 继承 `ICompletionStrategy`
+2. 解析 `base.schema.json` 中的 `x-minimessage-spec` 规格定义
+3. 注册到 `UnifiedCompletionProvider`
+4. 设置合适的优先级（建议 75，高于通用补全）
+
+**参考资源：**
+- Schema 定义：`schemas/common/base.schema.json` → `miniMessageText` → `x-minimessage-spec`
+- 补全系统文档：`.cursor/rules/completion-system.md`
+- 官方文档：https://docs.papermc.io/adventure/minimessage/format
 
 ## 📚 相关资源
 
+### 内部文档
+- [架构文档](docs/architecture/NEW_ARCHITECTURE.md) - 新架构设计说明
+- [测试文档](docs/TESTING.md) - 完整的测试指南
+- [补全系统文档](docs/COMPLETION_SYSTEM.md) - 可扩展补全系统
+- [新架构使用指南](docs/NEW_ARCHITECTURE_USAGE.md) - 架构使用说明
+
+### 外部资源
 - [VS Code 扩展开发指南](https://code.visualstudio.com/api/references/extension-guidelines)
 - [VS Code 扩展 API](https://code.visualstudio.com/api)
 - [YAML 语言支持](https://code.visualstudio.com/docs/languages/yaml)

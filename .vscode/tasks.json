@@ -1,25 +1,36 @@
-// See https://go.microsoft.com/fwlink/?LinkId=733558
-// for the documentation about the tasks.json format
 {
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "watch",
-			"problemMatcher": "$tsc-watch",
+			"label": "watch",
+			"type": "shell",
+			"command": "node esbuild.mjs --watch",
 			"isBackground": true,
+			"problemMatcher": {
+				"owner": "esbuild",
+				"pattern": {
+					"regexp": "✘ \\[ERROR\\] (.+)",
+					"message": 1
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "\\[watch\\] build started",
+					"endsPattern": "\\[watch\\] build finished"
+				}
+			},
+			"group": "build",
 			"presentation": {
 				"reveal": "never"
-			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
 			}
 		},
 		{
-			"type": "npm",
-			"script": "compile",
-			"group": "build",
+			"label": "compile",
+			"type": "shell",
+			"command": "pnpm run compile",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
 			"presentation": {
 				"echo": true,
 				"reveal": "silent",
@@ -28,7 +39,7 @@
 				"showReuseMessage": true,
 				"clear": false
 			},
-			"problemMatcher": "$tsc"
+			"problemMatcher": []
 		},
 		{
 			"type": "npm",
@@ -41,19 +52,6 @@
 				"panel": "shared"
 			},
 			"problemMatcher": []
-		},
-		{
-			"label": "npm: test:compile",
-			"type": "npm",
-			"script": "compile",
-			"group": "build",
-			"presentation": {
-				"echo": true,
-				"reveal": "silent",
-				"focus": false,
-				"panel": "shared"
-			},
-			"problemMatcher": "$tsc"
 		},
 		{
 			"type": "npm",

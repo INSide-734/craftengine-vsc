@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/types/model.schema.json",
+  "title": "Model Configuration",
+  "description": "3D model and texture configuration (1.21.4+)",
+  "$defs": {
+    "modelConfig": {
+      "type": "object",
+      "description": "Model configuration (1.21.4+)",
+      "allOf": [
+        {
+          "$ref": "../common/universal-keys.schema.json#/$defs/templateSupport"
+        },
+        {
+          "$ref": "#/$defs/modelProperties"
+        }
+      ]
+    },
+    "modelProperties": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["minecraft:model", "minecraft:special", "minecraft:select", "minecraft:condition", "minecraft:player_head"],
+          "default": "minecraft:model",
+          "description": "Model type"
+        },
+        "path": {
+          "type": "string",
+          "description": "Model file path",
+          "examples": ["minecraft:item/custom/my_item"],
+          "x-completion-provider": "craftengine.filePath",
+          "x-completion-options": {
+            "resourceType": "model",
+            "basePath": "assets/{namespace}/models",
+            "fileExtensions": [".json"],
+            "includeNamespace": true,
+            "stripExtension": true
+          }
+        },
+        "generation": {
+          "$ref": "#/$defs/modelGeneration"
+        },
+        "tints": {
+          "type": "array",
+          "description": "Model tinting configuration"
+        },
+        "property": {
+          "type": "string",
+          "description": "Property for condition/select models",
+          "enum": ["minecraft:display_context", "minecraft:using_item", "minecraft:broken", "minecraft:damaged", "minecraft:custom_model_data"]
+        },
+        "cases": {
+          "type": "array",
+          "description": "Cases for select model",
+          "items": {
+            "$ref": "#/$defs/selectCase"
+          }
+        },
+        "fallback": {
+          "description": "Fallback model for select",
+          "$ref": "#/$defs/modelConfig"
+        },
+        "on-true": {
+          "description": "Model when condition is true",
+          "$ref": "#/$defs/modelConfig"
+        },
+        "on-false": {
+          "description": "Model when condition is false",
+          "$ref": "#/$defs/modelConfig"
+        }
+      },
+      "additionalProperties": false
+    },
+    "modelGeneration": {
+      "type": "object",
+      "description": "Automatic model generation configuration",
+      "properties": {
+        "parent": {
+          "type": "string",
+          "description": "Parent model",
+          "examples": ["minecraft:item/generated", "minecraft:item/handheld", "minecraft:block/cube_all"],
+          "x-completion-provider": "craftengine.filePath",
+          "x-completion-options": {
+            "resourceType": "model",
+            "basePath": "assets/{namespace}/models",
+            "fileExtensions": [".json"],
+            "includeNamespace": true,
+            "stripExtension": true
+          }
+        },
+        "gui-light": {
+          "type": "string",
+          "enum": ["front", "side"],
+          "description": "GUI lighting mode"
+        },
+        "display": {
+          "$ref": "#/$defs/displayTransforms"
+        },
+        "textures": {
+          "type": "object",
+          "description": "Texture mappings",
+          "patternProperties": {
+            "^(layer\\d+|all|particle|north|south|east|west|up|down|end|side)$": {
+              "type": "string",
+              "x-completion-provider": "craftengine.filePath",
+              "x-completion-options": {
+                "resourceType": "texture",
+                "basePath": "assets/{namespace}/textures",
+                "fileExtensions": [".png"],
+                "includeNamespace": true,
+                "stripExtension": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "displayTransforms": {
+      "type": "object",
+      "description": "Display transforms for different views",
+      "properties": {
+        "gui": { "$ref": "#/$defs/transform" },
+        "ground": { "$ref": "#/$defs/transform" },
+        "fixed": { "$ref": "#/$defs/transform" },
+        "thirdperson_righthand": { "$ref": "#/$defs/transform" },
+        "thirdperson_lefthand": { "$ref": "#/$defs/transform" },
+        "firstperson_righthand": { "$ref": "#/$defs/transform" },
+        "firstperson_lefthand": { "$ref": "#/$defs/transform" },
+        "head": { "$ref": "#/$defs/transform" }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "properties": {
+        "translation": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "rotation": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "scale": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "selectCase": {
+      "type": "object",
+      "required": ["when", "model"],
+      "properties": {
+        "when": {
+          "type": "array",
+          "description": "Matching conditions",
+          "items": { "type": "string" }
+        },
+        "model": {
+          "$ref": "#/$defs/modelConfig"
+        }
+      }
+    },
+    "legacyModel": {
+      "type": "object",
+      "description": "Legacy model configuration (1.21.3 and earlier)",
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Base model path",
+          "x-completion-provider": "craftengine.filePath",
+          "x-completion-options": {
+            "resourceType": "model",
+            "basePath": "assets/{namespace}/models",
+            "fileExtensions": [".json"],
+            "includeNamespace": true,
+            "stripExtension": true
+          }
+        },
+        "overrides": {
+          "type": "array",
+          "description": "Model overrides based on predicates",
+          "items": {
+            "$ref": "#/$defs/modelOverride"
+          }
+        }
+      }
+    },
+    "modelOverride": {
+      "type": "object",
+      "required": ["path", "predicate"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Override model path",
+          "x-completion-provider": "craftengine.filePath",
+          "x-completion-options": {
+            "resourceType": "model",
+            "basePath": "assets/{namespace}/models",
+            "fileExtensions": [".json"],
+            "includeNamespace": true,
+            "stripExtension": true
+          }
+        },
+        "predicate": {
+          "type": "object",
+          "description": "Predicate conditions",
+          "properties": {
+            "pulling": { "type": "number" },
+            "pull": { "type": "number" },
+            "charged": { "type": "number" },
+            "firework": { "type": "number" },
+            "throwing": { "type": "number" },
+            "damage": { "type": "number" },
+            "broken": { "type": "number" },
+            "cast": { "type": "number" },
+            "custom_model_data": { "type": "number" }
+          }
+        }
+      }
+    }
+  }
+}
+
