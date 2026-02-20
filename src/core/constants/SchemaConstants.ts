@@ -6,7 +6,7 @@
  * 必须在使用前调用 initializeSchemaConfig() 初始化。
  */
 
-import { ISchemaConfig } from '../types/ConfigTypes';
+import { type ISchemaConfig } from '../types/ConfigTypes';
 
 /**
  * Schema 元数据属性名常量
@@ -25,7 +25,7 @@ export const SCHEMA_METADATA = {
     /** 加载时间戳 */
     LOADED_AT: '__loadedAt__',
     /** Schema 来源 */
-    SCHEMA_SOURCE: '__schemaSource__'
+    SCHEMA_SOURCE: '__schemaSource__',
 } as const;
 
 // ============================================================================
@@ -54,6 +54,8 @@ function ensureInitialized(): ISchemaConfig {
  */
 export function initializeSchemaConfig(config: ISchemaConfig): void {
     loadedConfig = config;
+    // 重置缓存的正则，下次访问时重新编译
+    cachedVersionPattern = null;
 }
 
 // ============================================================================
@@ -69,7 +71,7 @@ export const SCHEMA_RESOLUTION = {
     },
     get DEPTH_WARNING_THRESHOLD(): number {
         return ensureInitialized().resolution.depthWarningThreshold;
-    }
+    },
 } as const;
 
 /**
@@ -90,8 +92,11 @@ export const SCHEMA_CACHE = {
     },
     get VALIDATE_CACHE_SIZE(): number {
         return ensureInitialized().cache.validateCacheSize;
-    }
+    },
 } as const;
+
+/** 缓存的版本条件正则 */
+let cachedVersionPattern: RegExp | null = null;
 
 /**
  * 版本条件相关常量
@@ -101,6 +106,9 @@ export const VERSION_CONDITION = {
         return ensureInitialized().versionCondition.prefix;
     },
     get PATTERN(): RegExp {
-        return new RegExp(ensureInitialized().versionCondition.pattern);
-    }
+        if (!cachedVersionPattern) {
+            cachedVersionPattern = new RegExp(ensureInitialized().versionCondition.pattern);
+        }
+        return cachedVersionPattern;
+    },
 } as const;

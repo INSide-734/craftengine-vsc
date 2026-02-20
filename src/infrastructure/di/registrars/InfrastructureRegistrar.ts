@@ -1,16 +1,18 @@
 import { window, workspace } from 'vscode';
 import type { ExtensionContext } from 'vscode';
-import { IDependencyContainer, ServiceLifetime } from '../../../core/interfaces/IDependencyContainer';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../core/interfaces/IConfiguration';
-import { IEventBus } from '../../../core/interfaces/IEventBus';
-import { IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
-import { IYamlParser } from '../../../core/interfaces/IYamlParser';
-import { IYamlScanner } from '../../../core/interfaces/IYamlScanner';
-import { ISchemaParser } from '../../../core/interfaces/ISchemaParser';
-import { IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
-import { ITemplateExpander } from '../../../core/interfaces/ITemplateExpander';
+import { type IDependencyContainer, ServiceLifetime } from '../../../core/interfaces/IDependencyContainer';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../core/interfaces/IConfiguration';
+import { type IEventBus } from '../../../core/interfaces/IEventBus';
+import { type IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
+import { type IYamlParser } from '../../../core/interfaces/IYamlParser';
+import { type IYamlScanner } from '../../../core/interfaces/IYamlScanner';
+import { type ISchemaParser } from '../../../core/interfaces/ISchemaParser';
+import { type IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
+import { type ITemplateExpander } from '../../../core/interfaces/ITemplateExpander';
+import { type ISchemaFileLoader } from '../../../core/interfaces/ISchemaFileLoader';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
+import { SCHEMA_CACHE } from '../../../core/constants/SchemaConstants';
 import {
     LoggerManager,
     LogLevel,
@@ -18,13 +20,16 @@ import {
     ConfigurationManager,
     VSCodeConfigurationProvider,
     EventBus,
-    PerformanceMonitor
+    PerformanceMonitor,
 } from '../../index';
 import { VSCodeFileWatcher } from '../../filesystem/FileWatcher';
 import { VscodeFileReader } from '../../filesystem/VscodeFileReader';
 import { VscodeWorkspaceService } from '../../workspace/VscodeWorkspaceService';
+import { VscodeFileWatcherFactory } from '../../filesystem/VscodeFileWatcherFactory';
+import { VscodeExtensionRegistry } from '../../extensions/VscodeExtensionRegistry';
 import { WorkspaceScanCache } from '../../filesystem/WorkspaceScanCache';
-import { SchemaLoader, SchemaValidator } from '../../schema';
+import { SchemaLoader, SchemaValidator, SchemaFileLoader } from '../../schema';
+import { NotificationService } from '../../notification';
 import { NamespaceDiscoveryService } from '../../filesystem/NamespaceDiscoveryService';
 import { YamlPathParser } from '../../yaml/YamlPathParser';
 import { YamlParser } from '../../yaml/YamlParser';
@@ -63,16 +68,13 @@ function getConfiguredLogLevel(): LogLevel {
  * @param container - 依赖注入容器
  * @param context - VSCode 扩展上下文（可选，用于创建 OutputChannel）
  */
-export function registerLoggingServices(
-    container: IDependencyContainer,
-    context: ExtensionContext | null
-): void {
+export function registerLoggingServices(container: IDependencyContainer, context: ExtensionContext | null): void {
     const loggerManager = LoggerManager.getInstance();
     const logLevel = getConfiguredLogLevel();
 
     loggerManager.initialize({
         level: logLevel,
-        enableHotReload: true
+        enableHotReload: true,
     });
 
     if (context) {
@@ -113,15 +115,14 @@ function setupFileLogging(loggerManager: LoggerManager, context: ExtensionContex
             logFilePath = customPath;
         } else {
             // 优先使用 logUri，回退到 globalStorageUri
-            const logDir = context.logUri?.fsPath
-                ?? context.globalStorageUri?.fsPath
-                ?? path.join(context.extensionPath, 'logs');
+            const logDir =
+                context.logUri?.fsPath ?? context.globalStorageUri?.fsPath ?? path.join(context.extensionPath, 'logs');
             logFilePath = path.join(logDir, 'craftengine.log');
         }
 
         loggerManager.enableFileLoggingFromConfig(logFilePath, {
             maxFileSize,
-            maxBackupCount
+            maxBackupCount,
         });
     } catch (error) {
         console.warn('[CraftEngine] Failed to setup file logging:', error);
@@ -137,7 +138,7 @@ export function registerConfigurationServices(container: IDependencyContainer): 
     container.registerFactory(
         SERVICE_TOKENS.Configuration,
         () => new ConfigurationManager(configProvider),
-        ServiceLifetime.Singleton
+        ServiceLifetime.Singleton,
     );
 
     container.resolve<ILogger>(SERVICE_TOKENS.Logger).info('Configuration services registered');
@@ -150,7 +151,7 @@ export function registerEventServices(container: IDependencyContainer): void {
     container.registerFactory(
         SERVICE_TOKENS.EventBus,
         (c) => new EventBus(c.resolve<ILogger>(SERVICE_TOKENS.Logger)),
-        ServiceLifetime.Singleton
+        ServiceLifetime.Singleton,
     );
 
     container.resolve<ILogger>(SERVICE_TOKENS.Logger).info('Event services registered');
@@ -165,7 +166,7 @@ export function registerPerformanceServices(container: IDependencyContainer): vo
         (c) => {
             const monitor = new PerformanceMonitor(
                 c.resolve<ILogger>(SERVICE_TOKENS.Logger),
-                c.resolve<IEventBus>(SERVICE_TOKENS.EventBus)
+                c.resolve<IEventBus>(SERVICE_TOKENS.EventBus),
             );
 
             // 延迟注入配置服务，避免循环依赖
@@ -176,7 +177,7 @@ export function registerPerformanceServices(container: IDependencyContainer): vo
 
             return monitor;
         },
-        ServiceLifetime.Singleton
+        ServiceLifetime.Singleton,
     );
 
     container.resolve<ILogger>(SERVICE_TOKENS.Logger).info('Performance services registered');
@@ -192,28 +193,29 @@ export function registerInfrastructureServices(container: IDependencyContainer):
     registerServices(container, [
         {
             token: SERVICE_TOKENS.FileWatcher,
-            factory: (c) => new VSCodeFileWatcher(
-                c.resolve<ILogger>(SERVICE_TOKENS.Logger),
-                c.resolve<IEventBus>(SERVICE_TOKENS.EventBus)
-            )
+            factory: (c) =>
+                new VSCodeFileWatcher(
+                    c.resolve<ILogger>(SERVICE_TOKENS.Logger),
+                    c.resolve<IEventBus>(SERVICE_TOKENS.EventBus),
+                ),
         },
         {
             token: SERVICE_TOKENS.FileReader,
-            factory: () => new VscodeFileReader()
+            factory: () => new VscodeFileReader(),
         },
         {
             token: SERVICE_TOKENS.WorkspaceService,
-            factory: () => new VscodeWorkspaceService()
+            factory: () => new VscodeWorkspaceService(),
         },
         {
             token: SERVICE_TOKENS.NamespaceDiscoveryService,
             factory: (c) => {
                 return new NamespaceDiscoveryService(
                     c.resolve<ILogger>(SERVICE_TOKENS.Logger),
-                    c.tryResolve<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader)
+                    c.tryResolve<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader),
                 );
-            }
-        }
+            },
+        },
     ]);
 
     // YAML 处理服务
@@ -222,48 +224,79 @@ export function registerInfrastructureServices(container: IDependencyContainer):
             token: SERVICE_TOKENS.YamlPathParser,
             factory: (c) => {
                 return new YamlPathParser(c.resolve<ILogger>(SERVICE_TOKENS.Logger));
-            }
+            },
         },
         {
             token: SERVICE_TOKENS.YamlParser,
             factory: (c) => {
                 return new YamlParser(c.resolve<ILogger>(SERVICE_TOKENS.Logger));
-            }
+            },
         },
         {
             token: SERVICE_TOKENS.YamlScanner,
             factory: (c) => {
                 return new YamlScanner(
                     c.resolve<IYamlParser>(SERVICE_TOKENS.YamlParser),
-                    c.resolve<ILogger>(SERVICE_TOKENS.Logger)
+                    c.resolve<ILogger>(SERVICE_TOKENS.Logger),
                 );
-            }
+            },
         },
         {
             token: SERVICE_TOKENS.WorkspaceScanCache,
-            factory: (c) => new WorkspaceScanCache(
-                c.resolve<IYamlScanner>(SERVICE_TOKENS.YamlScanner),
-                c.resolve<ILogger>(SERVICE_TOKENS.Logger).createChild('WorkspaceScanCache')
-            )
+            factory: (c) =>
+                new WorkspaceScanCache(
+                    c.resolve<IYamlScanner>(SERVICE_TOKENS.YamlScanner),
+                    c.resolve<ILogger>(SERVICE_TOKENS.Logger).createChild('WorkspaceScanCache'),
+                ),
         },
         {
             token: SERVICE_TOKENS.DocumentParseCache,
             factory: (c) => {
                 return new DocumentParseCache(
                     c.resolve<ILogger>(SERVICE_TOKENS.Logger).createChild('DocumentParseCache'),
-                    c.resolve<IPerformanceMonitor>(SERVICE_TOKENS.PerformanceMonitor)
+                    c.resolve<IPerformanceMonitor>(SERVICE_TOKENS.PerformanceMonitor),
                 );
-            }
-        }
+            },
+        },
+    ]);
+
+    // 通知服务
+    registerServices(container, [
+        {
+            token: SERVICE_TOKENS.NotificationService,
+            factory: () => new NotificationService(),
+        },
+        {
+            token: SERVICE_TOKENS.FileWatcherFactory,
+            factory: () => new VscodeFileWatcherFactory(),
+        },
+        {
+            token: SERVICE_TOKENS.ExtensionRegistry,
+            factory: () => new VscodeExtensionRegistry(),
+        },
     ]);
 
     // Schema 处理服务
     registerServices(container, [
         {
+            token: SERVICE_TOKENS.SchemaFileLoader,
+            factory: (c) => {
+                // esbuild 打包后 __dirname = <root>/out/，schemas 在 <root>/schemas/
+                const schemasDir = path.join(__dirname, '../schemas');
+                return new SchemaFileLoader(
+                    schemasDir,
+                    c.resolve<ILogger>(SERVICE_TOKENS.Logger),
+                    SCHEMA_CACHE.FILE_CACHE_SIZE,
+                );
+            },
+        },
+        {
             token: SERVICE_TOKENS.SchemaParser,
-            factory: (c) => new SchemaLoader(
-                c.resolve<ILogger>(SERVICE_TOKENS.Logger)
-            )
+            factory: (c) =>
+                new SchemaLoader(
+                    c.resolve<ILogger>(SERVICE_TOKENS.Logger),
+                    c.resolve<ISchemaFileLoader>(SERVICE_TOKENS.SchemaFileLoader),
+                ),
         },
         {
             token: SERVICE_TOKENS.SchemaValidator,
@@ -274,10 +307,10 @@ export function registerInfrastructureServices(container: IDependencyContainer):
                     c.resolve<ISchemaParser>(SERVICE_TOKENS.SchemaParser),
                     c.resolve<IConfiguration>(SERVICE_TOKENS.Configuration),
                     c.resolve<ILogger>(SERVICE_TOKENS.Logger),
-                    templateExpander
+                    templateExpander,
                 );
-            }
-        }
+            },
+        },
     ]);
 
     // 渲染器适配器
@@ -285,11 +318,9 @@ export function registerInfrastructureServices(container: IDependencyContainer):
         {
             token: SERVICE_TOKENS.RendererAdapter,
             factory: (c) => {
-                return new MinecraftRendererAdapter(
-                    c.resolve<ILogger>(SERVICE_TOKENS.Logger)
-                );
-            }
-        }
+                return new MinecraftRendererAdapter(c.resolve<ILogger>(SERVICE_TOKENS.Logger));
+            },
+        },
     ]);
 
     container.resolve<ILogger>(SERVICE_TOKENS.Logger).info('Infrastructure services registered');
@@ -305,32 +336,30 @@ export function registerDataServices(container: IDependencyContainer): void {
         {
             token: SERVICE_TOKENS.DataConfigLoader,
             factory: (c) => {
-                return new DataConfigLoader(
-                    c.resolve<ILogger>(SERVICE_TOKENS.Logger)
-                );
-            }
+                return new DataConfigLoader(c.resolve<ILogger>(SERVICE_TOKENS.Logger));
+            },
         },
         {
             token: SERVICE_TOKENS.MinecraftVersionService,
             factory: () => {
                 return new MinecraftVersionService();
-            }
+            },
         },
         {
             token: SERVICE_TOKENS.MinecraftDataService,
             factory: (c) => {
                 return new MinecraftDataService(
                     c.resolve<ILogger>(SERVICE_TOKENS.Logger),
-                    c.resolve<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader)
+                    c.resolve<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader),
                 );
-            }
+            },
         },
         {
             token: SERVICE_TOKENS.BuiltinItemLoader,
             factory: () => {
                 return new MinecraftBuiltinItemLoader();
-            }
-        }
+            },
+        },
     ]);
 
     container.resolve<ILogger>(SERVICE_TOKENS.Logger).info('Data services registered');

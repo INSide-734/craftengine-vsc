@@ -1,0 +1,1 @@
+export { VscodeExtensionRegistry } from './VscodeExtensionRegistry';

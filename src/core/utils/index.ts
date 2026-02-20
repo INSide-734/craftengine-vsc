@@ -20,16 +20,16 @@ export {
     calculateMatchScore,
     filterAndSort,
     escapeRegExp,
-    safeRegExp
+    safeRegExp,
 } from './StringSimilarityUtils';
 
-export type {
-    FindSimilarOptions,
-    SimilarityResult
-} from './StringSimilarityUtils';
+export type { FindSimilarOptions, SimilarityResult } from './StringSimilarityUtils';
 
 // LRU 缓存
 export { LRUCache } from './LRUCache';
 
 // 防抖工具
 export { Debouncer } from './Debouncer';
+
+// 安全正则编译
+export { safeCompileRegex, clearSafeRegexCache } from './SafeRegex';

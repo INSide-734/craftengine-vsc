@@ -10,13 +10,11 @@ export * from './SchemaConstants';
 // 基础组件
 export * from './SchemaCache';
 export * from './SchemaUtils';
-export * from './SchemaFileLoader';
 export * from './SchemaReferenceResolver';
 export * from './SchemaPathNavigator';
 export * from './SchemaDynamicGenerator';
 
-// 部署和监控
-export * from './SchemaDeploymentService';
+// 监控
 export * from './SchemaFileWatcherManager';
 
 // YAML 扩展集成
@@ -29,4 +27,3 @@ export * from './SchemaQueryService';
 
 // 模板展开器
 export * from './TemplateExpander';
-

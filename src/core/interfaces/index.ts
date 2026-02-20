@@ -59,7 +59,7 @@ export {
     ITemplateSearchResult,
     IAdvancedTemplateSearchOptions,
     ITemplateSuggestionContext,
-    ITemplateSuggestion
+    ITemplateSuggestion,
 } from './ITemplateSearchResult';
 
 /** 文档解析 */
@@ -87,6 +87,9 @@ export * from './IProviders';
 
 /** Schema 解析器 */
 export * from './ISchemaParser';
+
+/** Schema 文件加载器 */
+export * from './ISchemaFileLoader';
 
 /** Schema 服务 */
 export * from './ISchemaService';
