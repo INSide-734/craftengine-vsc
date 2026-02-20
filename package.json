@@ -302,8 +302,8 @@
     "test:e2e": "pnpm run compile && cross-env NODE_ENV=test vscode-test",
     "test:all": "pnpm run test && pnpm run test:e2e",
     "test:bench": "vitest bench",
-    "package": "pnpm run clean && node esbuild.mjs --production && vsce package",
-    "package:pre-release": "pnpm run clean && node esbuild.mjs --production && vsce package --pre-release",
+    "package": "pnpm run clean && node esbuild.mjs --production && pnpm exec vsce package",
+    "package:pre-release": "pnpm run clean && node esbuild.mjs --production && pnpm exec vsce package --pre-release",
     "release:notes": "node scripts/generate-release-notes.js",
     "dev": "pnpm run clean && node esbuild.mjs --watch"
   },
@@ -318,6 +318,7 @@
     "@vitest/coverage-v8": "^4.0.16",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.7.1",
     "cross-env": "^10.0.0",
     "esbuild": "^0.27.3",
     "eslint": "^9.32.0",
