@@ -1,6 +1,6 @@
 import type { ExtensionContext } from 'vscode';
-import { IDependencyContainer } from '../core/interfaces/IDependencyContainer';
-import { ILogger } from '../core/interfaces/ILogger';
+import { type IDependencyContainer } from '../core/interfaces/IDependencyContainer';
+import { type ILogger } from '../core/interfaces/ILogger';
 import { SERVICE_TOKENS } from '../core/constants/ServiceTokens';
 import { ServiceNotInitializedError } from '../core/errors/ExtensionErrors';
 import { DependencyContainer } from './index';
@@ -14,7 +14,7 @@ import {
     registerDomainServices,
     registerCompletionServices,
     registerApplicationServices,
-    initializeServices
+    initializeServices,
 } from './di/registrars';
 
 // ============================================
@@ -97,7 +97,6 @@ export class ServiceContainer {
             const logger = ServiceContainer.instance.resolve<ILogger>(SERVICE_TOKENS.Logger);
             logger.info('Service container initialized successfully');
             return ServiceContainer.instance;
-
         } catch (error) {
             // Logger 可能尚未注册，使用 console
             console.error('Failed to initialize service container:', error);

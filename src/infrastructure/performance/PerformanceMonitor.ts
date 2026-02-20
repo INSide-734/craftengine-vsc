@@ -1,6 +1,6 @@
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IEventBus } from '../../core/interfaces/IEventBus';
-import { IConfiguration, IConfigurationChangeEvent } from '../../core/interfaces/IConfiguration';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IEventBus } from '../../core/interfaces/IEventBus';
+import { type IConfiguration, type IConfigurationChangeEvent } from '../../core/interfaces/IConfiguration';
 import { EVENT_TYPES } from '../../core/constants/ServiceTokens';
 
 /**
@@ -35,22 +35,22 @@ export interface IPerformanceMonitor {
      * 开始计时
      */
     startTimer(operationName: string): IPerformanceTimer;
-    
+
     /**
      * 记录指标
      */
     recordMetric(metric: IPerformanceMetric): void;
-    
+
     /**
      * 获取统计信息
      */
     getStatistics(): IPerformanceStatistics;
-    
+
     /**
      * 清除历史数据
      */
     clearHistory(): void;
-    
+
     /**
      * 开启/关闭监控
      */
@@ -65,7 +65,7 @@ export interface IPerformanceTimer {
      * 停止计时并记录
      */
     stop(tags?: Record<string, string>): number;
-    
+
     /**
      * 获取经过的时间（毫秒）
      */
@@ -77,28 +77,28 @@ export interface IPerformanceTimer {
  */
 class PerformanceTimer implements IPerformanceTimer {
     private readonly startTime: number;
-    
+
     constructor(
         private readonly operationName: string,
-        private readonly monitor: PerformanceMonitor
+        private readonly monitor: PerformanceMonitor,
     ) {
         this.startTime = performance.now();
     }
-    
+
     stop(tags?: Record<string, string>): number {
         const elapsed = this.getElapsed();
-        
+
         this.monitor.recordMetric({
             name: this.operationName,
             value: elapsed,
             unit: 'ms',
             timestamp: new Date(),
-            tags
+            tags,
         });
-        
+
         return elapsed;
     }
-    
+
     getElapsed(): number {
         return performance.now() - this.startTime;
     }
@@ -112,14 +112,17 @@ export class PerformanceMonitor implements IPerformanceMonitor {
     private metrics: IPerformanceMetric[];
     private metricsHead = 0;
     private metricsSize = 0;
-    private readonly operationStats = new Map<string, {
-        count: number;
-        totalTime: number;
-        minTime: number;
-        maxTime: number;
-        errors: number;
-    }>();
-    
+    private readonly operationStats = new Map<
+        string,
+        {
+            count: number;
+            totalTime: number;
+            minTime: number;
+            maxTime: number;
+            errors: number;
+        }
+    >();
+
     private enabled = true;
     private maxHistorySize = 1000;
     private startTime = Date.now();
@@ -128,12 +131,12 @@ export class PerformanceMonitor implements IPerformanceMonitor {
         'template.parse': 100, // 100ms
         'template.completion': 50, // 50ms
         'cache.rebuild': 5000, // 5s
-        'file.scan': 200 // 200ms
+        'file.scan': 200, // 200ms
     };
 
     constructor(
         private readonly logger?: ILogger,
-        private readonly eventBus?: IEventBus
+        private readonly eventBus?: IEventBus,
     ) {
         this.metrics = new Array(this.maxHistorySize);
     }
@@ -160,16 +163,16 @@ export class PerformanceMonitor implements IPerformanceMonitor {
             }
         });
     }
-    
+
     startTimer(operationName: string): IPerformanceTimer {
         return new PerformanceTimer(operationName, this);
     }
-    
+
     recordMetric(metric: IPerformanceMetric): void {
         if (!this.enabled) {
             return;
         }
-        
+
         // 添加到环形缓冲区（O(1)）
         const index = (this.metricsHead + this.metricsSize) % this.maxHistorySize;
         this.metrics[index] = metric;
@@ -178,35 +181,35 @@ export class PerformanceMonitor implements IPerformanceMonitor {
         } else {
             this.metricsHead = (this.metricsHead + 1) % this.maxHistorySize;
         }
-        
+
         // 更新操作统计
         this.updateOperationStats(metric);
-        
+
         // 记录日志
         this.logger?.debug('Performance metric recorded', {
             metric: metric.name,
             value: metric.value,
             unit: metric.unit,
-            tags: metric.tags
+            tags: metric.tags,
         });
-        
+
         // 发布事件
         this.eventBus?.publish(EVENT_TYPES.PerformanceMetric, metric);
-        
+
         // 检查性能阈值
         this.checkPerformanceThresholds(metric);
     }
-    
+
     getStatistics(): IPerformanceStatistics {
         const now = Date.now();
         const uptime = now - this.startTime;
-        
+
         let totalOperations = 0;
         let totalTime = 0;
         let minTime = Infinity;
         let maxTime = 0;
         let totalErrors = 0;
-        
+
         for (const stats of this.operationStats.values()) {
             totalOperations += stats.count;
             totalTime += stats.totalTime;
@@ -214,11 +217,11 @@ export class PerformanceMonitor implements IPerformanceMonitor {
             maxTime = Math.max(maxTime, stats.maxTime);
             totalErrors += stats.errors;
         }
-        
+
         const averageResponseTime = totalOperations > 0 ? totalTime / totalOperations : 0;
         const errorRate = totalOperations > 0 ? totalErrors / totalOperations : 0;
         const memoryUsage = this.getMemoryUsage();
-        
+
         return {
             totalOperations,
             averageResponseTime,
@@ -226,20 +229,20 @@ export class PerformanceMonitor implements IPerformanceMonitor {
             maxResponseTime: maxTime,
             errorRate,
             memoryUsage,
-            uptime
+            uptime,
         };
     }
-    
+
     clearHistory(): void {
         this.metrics = new Array(this.maxHistorySize);
         this.metricsHead = 0;
         this.metricsSize = 0;
         this.operationStats.clear();
         this.startTime = Date.now();
-        
+
         this.logger?.info('Performance history cleared');
     }
-    
+
     setEnabled(enabled: boolean): void {
         this.enabled = enabled;
         this.logger?.info('Performance monitoring', { enabled });
@@ -251,7 +254,7 @@ export class PerformanceMonitor implements IPerformanceMonitor {
     setPerformanceThresholds(thresholds: Record<string, number>): void {
         this.performanceThresholds = thresholds;
     }
-    
+
     /**
      * 设置最大历史记录大小
      */
@@ -273,11 +276,13 @@ export class PerformanceMonitor implements IPerformanceMonitor {
             this.metrics[i] = kept[i];
         }
     }
-    
+
     /**
      * 获取指定操作的统计信息
      */
-    getOperationStatistics(operationName: string): { count: number; totalTime: number; minTime: number; maxTime: number; errors: number } | undefined {
+    getOperationStatistics(
+        operationName: string,
+    ): { count: number; totalTime: number; minTime: number; maxTime: number; errors: number } | undefined {
         const stats = this.operationStats.get(operationName);
         return stats ? { ...stats } : undefined;
     }
@@ -285,14 +290,20 @@ export class PerformanceMonitor implements IPerformanceMonitor {
     /**
      * 获取所有操作的统计信息
      */
-    getAllOperationStatistics(): Record<string, { count: number; totalTime: number; minTime: number; maxTime: number; errors: number }> {
-        const result: Record<string, { count: number; totalTime: number; minTime: number; maxTime: number; errors: number }> = {};
+    getAllOperationStatistics(): Record<
+        string,
+        { count: number; totalTime: number; minTime: number; maxTime: number; errors: number }
+    > {
+        const result: Record<
+            string,
+            { count: number; totalTime: number; minTime: number; maxTime: number; errors: number }
+        > = {};
         for (const [name, stats] of this.operationStats) {
             result[name] = { ...stats };
         }
         return result;
     }
-    
+
     /**
      * 更新操作统计
      */
@@ -303,22 +314,22 @@ export class PerformanceMonitor implements IPerformanceMonitor {
                 totalTime: 0,
                 minTime: Infinity,
                 maxTime: 0,
-                errors: 0
+                errors: 0,
             });
         }
-        
+
         const stats = this.operationStats.get(metric.name)!;
         stats.count++;
         stats.totalTime += metric.value;
         stats.minTime = Math.min(stats.minTime, metric.value);
         stats.maxTime = Math.max(stats.maxTime, metric.value);
-        
+
         // 检查是否是错误指标
         if (metric.tags?.error === 'true') {
             stats.errors++;
         }
     }
-    
+
     /**
      * 检查性能阈值
      */
@@ -329,11 +340,11 @@ export class PerformanceMonitor implements IPerformanceMonitor {
                 operation: metric.name,
                 value: metric.value,
                 threshold,
-                unit: metric.unit
+                unit: metric.unit,
             });
         }
     }
-    
+
     /**
      * 获取内存使用情况
      */
@@ -341,15 +352,15 @@ export class PerformanceMonitor implements IPerformanceMonitor {
         if (typeof process !== 'undefined' && process.memoryUsage) {
             return process.memoryUsage().heapUsed;
         }
-        
+
         // 浏览器环境的近似值
         if (typeof performance !== 'undefined' && 'memory' in performance) {
-            const perfWithMemory = performance as Performance & {
+            const perfWithMemory = performance as typeof globalThis.performance & {
                 memory?: { usedJSHeapSize: number };
             };
             return perfWithMemory.memory?.usedJSHeapSize ?? 0;
         }
-        
+
         return 0;
     }
 }

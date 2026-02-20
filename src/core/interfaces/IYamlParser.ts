@@ -1,5 +1,5 @@
-import { EditorUri, EditorTextDocument } from '../types/EditorTypes';
-import { IYamlDocument, IYamlParseResult, IYamlParseError } from './IYamlDocument';
+import { type EditorUri, type EditorTextDocument } from '../types/EditorTypes';
+import { type IYamlDocument, type IYamlParseResult, type IYamlParseError } from './IYamlDocument';
 
 /**
  * YAML 解析选项
@@ -7,16 +7,16 @@ import { IYamlDocument, IYamlParseResult, IYamlParseError } from './IYamlDocumen
 export interface IYamlParseOptions {
     /** 是否严格模式（遇到错误时抛出异常） */
     strict?: boolean;
-    
+
     /** 是否保留注释 */
     keepComments?: boolean;
-    
+
     /** 是否保留位置信息 */
     keepPosition?: boolean;
-    
+
     /** 最大解析深度 */
     maxDepth?: number;
-    
+
     /** 自定义错误处理 */
     onError?: (error: IYamlParseError) => void;
 }
@@ -52,52 +52,41 @@ export interface IIncrementalParseContext {
 export interface IStreamParseOptions extends IYamlParseOptions {
     /** 块大小（每次处理的字符数） */
     chunkSize?: number;
-    
+
     /** 进度回调 */
-    onProgress?: (progress: {
-        processed: number;
-        total: number;
-        percentage: number;
-    }) => void;
+    onProgress?: (progress: { processed: number; total: number; percentage: number }) => void;
 }
 
 /**
  * YAML 解析器接口
- * 
+ *
  * 提供 YAML 文档的解析功能，支持流式和增量解析
  */
 export interface IYamlParser {
     /**
      * 解析文本内容
-     * 
+     *
      * @param text YAML 文本内容
      * @param sourceFile 源文件 URI
      * @param options 解析选项
      * @returns 解析结果
      */
-    parseText(
-        text: string,
-        sourceFile: EditorUri,
-        options?: IYamlParseOptions
-    ): Promise<IYamlParseResult>;
-    
+    parseText(text: string, sourceFile: EditorUri, options?: IYamlParseOptions): Promise<IYamlParseResult>;
+
     /**
      * 解析 VSCode 文档
-     * 
+     *
      * @param document VSCode 文档对象
      * @param options 解析选项
      * @returns 解析结果
      */
-    parseDocument(
-        document: EditorTextDocument,
-        options?: IYamlParseOptions
-    ): Promise<IYamlParseResult>;
-    
+    parseDocument(document: EditorTextDocument, options?: IYamlParseOptions): Promise<IYamlParseResult>;
+
     /**
      * 流式解析文本内容
-     * 
+     *
      * 适用于大文件的逐步解析
-     * 
+     *
      * @param text YAML 文本内容
      * @param sourceFile 源文件 URI
      * @param options 流式解析选项
@@ -106,14 +95,14 @@ export interface IYamlParser {
     parseStream(
         text: string,
         sourceFile: EditorUri,
-        options?: IStreamParseOptions
+        options?: IStreamParseOptions,
     ): AsyncIterableIterator<IYamlParseResult>;
-    
+
     /**
      * 增量解析文档
-     * 
+     *
      * 基于上次解析结果和变更范围，只解析变更部分
-     * 
+     *
      * @param document VSCode 文档对象
      * @param context 增量解析上下文
      * @param options 解析选项
@@ -122,19 +111,15 @@ export interface IYamlParser {
     parseIncremental(
         document: EditorTextDocument,
         context: IIncrementalParseContext,
-        options?: IYamlParseOptions
+        options?: IYamlParseOptions,
     ): Promise<IYamlParseResult>;
-    
+
     /**
      * 创建 YAML 文档对象
-     * 
+     *
      * @param parseResult 解析结果
      * @param content 文档内容
      * @returns YAML 文档对象
      */
-    createDocument(
-        parseResult: IYamlParseResult,
-        content: string
-    ): IYamlDocument;
+    createDocument(parseResult: IYamlParseResult, content: string): IYamlDocument;
 }
-

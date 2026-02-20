@@ -1,6 +1,6 @@
 import { MarkdownString, SnippetString } from 'vscode';
-import { IConfiguration } from '../../../core/interfaces/IConfiguration';
-import { IJsonSchema } from '../../../core/interfaces/ISchemaService';
+import { type IConfiguration } from '../../../core/interfaces/IConfiguration';
+import { type IJsonSchema } from '../../../core/interfaces/ISchemaService';
 
 /**
  * 正则模式分析结果
@@ -38,17 +38,20 @@ export class SchemaKeyDocumentationBuilder {
         const completionKey = schema?.['x-completion-key'] as string | undefined;
 
         const fieldMatch = pattern.match(/^\^([a-z][a-z0-9_-]*)/i);
-        const concreteFieldName = fieldMatch && !pattern.substring(fieldMatch[0].length).includes('[')
-            ? fieldMatch[1]
-            : undefined;
+        const concreteFieldName =
+            fieldMatch && !pattern.substring(fieldMatch[0].length).includes('[') ? fieldMatch[1] : undefined;
 
-        const isNamespace = !isVersionCondition && !pattern.includes(':-') && !pattern.includes('\\:') && (
-            pattern.includes('namespace') || this.hasNamespaceStructure(pattern)
-        );
+        const isNamespace =
+            !isVersionCondition &&
+            !pattern.includes(':-') &&
+            !pattern.includes('\\:') &&
+            (pattern.includes('namespace') || this.hasNamespaceStructure(pattern));
 
-        const isSimpleIdentifier = !isVersionCondition && !isNamespace &&
+        const isSimpleIdentifier =
+            !isVersionCondition &&
+            !isNamespace &&
             !(pattern.includes(':') && !pattern.includes(':-') && !pattern.includes('\\:')) &&
-            /\[[^\]]*\]/.test(pattern);
+            /\[[^\]]*]/.test(pattern);
 
         return { concreteFieldName, isNamespace, isSimpleIdentifier, isVersionCondition, completionKey };
     }
@@ -63,7 +66,7 @@ export class SchemaKeyDocumentationBuilder {
         }
         const beforeColon = pattern.substring(0, colonIndex);
         const afterColon = pattern.substring(colonIndex + 1);
-        return /\[[^\]]*\]/.test(beforeColon) && /\[[^\]]*\]/.test(afterColon);
+        return /\[[^\]]*]/.test(beforeColon) && /\[[^\]]*]/.test(afterColon);
     }
 
     /**
@@ -124,7 +127,10 @@ export class SchemaKeyDocumentationBuilder {
         md.supportHtml = true;
 
         let hasContent = false;
-        const append = (content: string) => { md.appendMarkdown(content); hasContent = true; };
+        const append = (content: string) => {
+            md.appendMarkdown(content);
+            hasContent = true;
+        };
 
         if (schema.description) {
             append(`${schema.description}\n\n`);
@@ -171,7 +177,7 @@ export class SchemaKeyDocumentationBuilder {
                 md.appendMarkdown(`- \`${JSON.stringify(v)}\`\n`);
             }
         } else {
-            md.appendCodeblock(toDisplay.map(v => JSON.stringify(v)).join(', '), 'text');
+            md.appendCodeblock(toDisplay.map((v) => JSON.stringify(v)).join(', '), 'text');
         }
 
         if (enumValues.length > maxDisplay) {
@@ -189,7 +195,7 @@ export class SchemaKeyDocumentationBuilder {
         }
 
         const maxEnums = this.config.get<number>('completion.schemaKeys.maxEnumInSnippet', 10);
-        const escapedValues = enumValues.slice(0, maxEnums).map(value => {
+        const escapedValues = enumValues.slice(0, maxEnums).map((value) => {
             const strValue = typeof value === 'string' ? value : String(value);
             return strValue.replace(/[|,\\$}]/g, '\\$&');
         });

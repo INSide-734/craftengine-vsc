@@ -1,4 +1,4 @@
-import { Diagnostic } from 'vscode';
+import { type Diagnostic } from 'vscode';
 
 /**
  * 诊断代码辅助函数

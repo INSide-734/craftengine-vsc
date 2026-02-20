@@ -1,17 +1,11 @@
-import {
-    TextDocument,
-    Diagnostic,
-    DiagnosticSeverity,
-    Range,
-    Uri
-} from 'vscode';
+import { type TextDocument, Diagnostic, DiagnosticSeverity, Range, type Uri } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { ITemplateService } from '../../core/interfaces/ITemplateService';
-import { IEventBus } from '../../core/interfaces/IEventBus';
-import { ISchemaService } from '../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
+import { type ITemplateService } from '../../core/interfaces/ITemplateService';
+import { type IEventBus } from '../../core/interfaces/IEventBus';
+import { type ISchemaService } from '../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
-import { IExtendedTypeService } from '../../core/interfaces/IExtendedParameterType';
+import { type IExtendedTypeService } from '../../core/interfaces/IExtendedParameterType';
 import { ErrorNotificationManager } from '../ErrorNotificationManager';
 import { generateEventId } from '../../infrastructure/utils';
 import { DiagnosticCache } from '../../infrastructure/cache/DiagnosticCache';
@@ -52,39 +46,42 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
     private pendingEventPublish: NodeJS.Timeout | null = null;
 
     constructor() {
-        super(
-            'craftengine-template',
-            'CraftEngine Template',
-            'diagnostics.update',
-            'TemplateDiagnosticProvider'
-        );
+        super('craftengine-template', 'CraftEngine Template', 'diagnostics.update', 'TemplateDiagnosticProvider');
 
         this.templateService = ServiceContainer.getService<ITemplateService>(SERVICE_TOKENS.TemplateService);
         this.eventBus = ServiceContainer.getService<IEventBus>(SERVICE_TOKENS.EventBus);
-        this.errorNotificationManager = ServiceContainer.tryGetService<ErrorNotificationManager>(SERVICE_TOKENS.ErrorNotificationManager)
-            ?? new ErrorNotificationManager();
+        this.errorNotificationManager =
+            ServiceContainer.tryGetService<ErrorNotificationManager>(SERVICE_TOKENS.ErrorNotificationManager) ??
+            new ErrorNotificationManager();
 
         const schemaService = ServiceContainer.getService<ISchemaService>(SERVICE_TOKENS.SchemaService);
         const yamlPathParser = ServiceContainer.getService<IYamlPathParser>(SERVICE_TOKENS.YamlPathParser);
-        const extendedTypeService = ServiceContainer.getService<IExtendedTypeService>(SERVICE_TOKENS.ExtendedTypeService);
+        const extendedTypeService = ServiceContainer.getService<IExtendedTypeService>(
+            SERVICE_TOKENS.ExtendedTypeService,
+        );
 
         // 初始化诊断缓存
         this.diagnosticCache = new DiagnosticCache<Diagnostic[]>(
             {
                 capacity: TemplateDiagnosticProvider.DEFAULT_CACHE_CAPACITY,
                 ttl: TemplateDiagnosticProvider.DEFAULT_CACHE_TTL,
-                name: 'TemplateDiagnosticCache'
+                name: 'TemplateDiagnosticCache',
             },
-            this.logger
+            this.logger,
         );
 
         // 初始化委托模块
         this.extendedTypeValidator = new ExtendedTypeValidator(this.logger, extendedTypeService);
         this.templateReferenceFinder = new TemplateReferenceFinder(
-            this.logger, this.templateService, schemaService, yamlPathParser
+            this.logger,
+            this.templateService,
+            schemaService,
+            yamlPathParser,
         );
         this.templateParameterValidator = new TemplateParameterValidator(
-            this.logger, this.templateService, this.templateReferenceFinder
+            this.logger,
+            this.templateService,
+            this.templateReferenceFinder,
         );
 
         this.setupEventListeners();
@@ -117,7 +114,7 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
             if (cached) {
                 this.logger.debug('Using cached diagnostics', {
                     file: document.fileName,
-                    diagnosticCount: cached.length
+                    diagnosticCount: cached.length,
                 });
                 this.diagnosticCollection.set(document.uri, cached);
                 timer.stop({ success: 'true', fromCache: 'true' });
@@ -131,7 +128,7 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
                 this.logger.debug('Document changed during diagnostics, discarding results', {
                     file: document.fileName,
                     startVersion,
-                    currentVersion: document.version
+                    currentVersion: document.version,
                 });
                 timer.stop({ success: 'true', discarded: 'true' });
                 return;
@@ -142,28 +139,24 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
             this.diagnosticCache.set(cacheKey, diagnostics, document.version);
 
             // 通知错误管理器
-            await this.errorNotificationManager.handleDiagnosticsUpdate(
-                document.uri,
-                diagnostics
-            );
+            await this.errorNotificationManager.handleDiagnosticsUpdate(document.uri, diagnostics);
 
             this.logger.debug('Diagnostics updated', {
                 file: document.fileName,
                 diagnosticCount: diagnostics.length,
-                errorCount: diagnostics.filter(d => d.severity === DiagnosticSeverity.Error).length,
-                warningCount: diagnostics.filter(d => d.severity === DiagnosticSeverity.Warning).length
+                errorCount: diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error).length,
+                warningCount: diagnostics.filter((d) => d.severity === DiagnosticSeverity.Warning).length,
             });
 
             // 发布诊断更新事件（节流处理，避免事件风暴）
             this.publishDiagnosticsEventThrottled(document.uri, diagnostics.length);
-
         } catch (error) {
             this.logger.error('Error updating diagnostics', error as Error, {
-                file: document.fileName
+                file: document.fileName,
             });
         } finally {
             timer.stop({
-                document: document.fileName
+                document: document.fileName,
             });
         }
     }
@@ -174,7 +167,7 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
     protected async doUpdateDiagnostics(document: TextDocument): Promise<Diagnostic[]> {
         this.logger.debug('Updating diagnostics', {
             file: document.fileName,
-            languageId: document.languageId
+            languageId: document.languageId,
         });
 
         const diagnostics: Diagnostic[] = [];
@@ -187,7 +180,7 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
             const diagnostic = new Diagnostic(
                 error.range || new Range(0, 0, 0, 0),
                 error.message,
-                this.mapSeverity(error.severity)
+                this.mapSeverity(error.severity),
             );
             diagnostic.source = TemplateDiagnosticProvider.DIAGNOSTIC_SOURCE;
             diagnostics.push(diagnostic);
@@ -213,7 +206,7 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
      * 增强诊断信息（不可变，返回新数组）
      */
     private enhanceDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
-        return diagnostics.map(diagnostic => {
+        return diagnostics.map((diagnostic) => {
             let message = diagnostic.message;
 
             // 添加更友好的消息
@@ -264,27 +257,31 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
      */
     private setupEventListeners(): void {
         // 监听模板变更事件，清除缓存
-        this.subscriptions.push(this.eventBus.subscribe('template.*', () => {
-            this.diagnosticCache.clear();
-        }));
+        this.subscriptions.push(
+            this.eventBus.subscribe('template.*', () => {
+                this.diagnosticCache.clear();
+            }),
+        );
 
         // 监听配置变更
-        this.subscriptions.push(this.eventBus.subscribe<{ key: string; newValue: unknown }>('extension.configuration.changed', (event) => {
-            if (event.key.startsWith('diagnostics.')) {
-                this.logger.info('Diagnostics configuration changed', {
-                    key: event.key,
-                    newValue: event.newValue
-                });
-                this.diagnosticCache.clear();
-            }
-        }));
+        this.subscriptions.push(
+            this.eventBus.subscribe<{ key: string; newValue: unknown }>('extension.configuration.changed', (event) => {
+                if (event.key.startsWith('diagnostics.')) {
+                    this.logger.info('Diagnostics configuration changed', {
+                        key: event.key,
+                        newValue: event.newValue,
+                    });
+                    this.diagnosticCache.clear();
+                }
+            }),
+        );
     }
 
     override clearDiagnostics(uri: Uri): void {
         super.clearDiagnostics(uri);
         this.diagnosticCache.delete(uri.toString());
         this.logger.debug('Diagnostics cleared', {
-            file: uri.fsPath
+            file: uri.fsPath,
         });
     }
 
@@ -319,18 +316,20 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
         // 延迟发布事件
         this.pendingEventPublish = setTimeout(() => {
             this.pendingEventPublish = null;
-            this.eventBus.publish('diagnostics.updated', {
-                id: generateEventId('diag'),
-                type: 'diagnostics.updated',
-                timestamp: new Date(),
-                source: 'DiagnosticProvider',
-                uri,
-                diagnosticCount
-            }).catch(error => {
-                this.logger.debug('Failed to publish diagnostics event', {
-                    error: (error as Error).message
+            this.eventBus
+                .publish('diagnostics.updated', {
+                    id: generateEventId('diag'),
+                    type: 'diagnostics.updated',
+                    timestamp: new Date(),
+                    source: 'DiagnosticProvider',
+                    uri,
+                    diagnosticCount,
+                })
+                .catch((error) => {
+                    this.logger.debug('Failed to publish diagnostics event', {
+                        error: (error as Error).message,
+                    });
                 });
-            });
         }, TemplateDiagnosticProvider.DEFAULT_EVENT_THROTTLE_DELAY);
     }
 

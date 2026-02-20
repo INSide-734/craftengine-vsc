@@ -4,15 +4,8 @@
  * 为 "required" 错误提供添加缺失字段的快速修复
  */
 
-import {
-    CodeAction,
-    CodeActionKind,
-    Diagnostic,
-    Position,
-    TextDocument,
-    WorkspaceEdit
-} from 'vscode';
-import { IQuickFixProvider } from './IQuickFixProvider';
+import { CodeAction, CodeActionKind, type Diagnostic, Position, type TextDocument, WorkspaceEdit } from 'vscode';
+import { type IQuickFixProvider } from './IQuickFixProvider';
 import { QUICK_FIX_MESSAGES } from '../../../core/constants/DiagnosticMessages';
 
 /**
@@ -82,7 +75,7 @@ export class RequiredFieldFix implements IQuickFixProvider {
     private createAddFieldFix(
         diagnostic: Diagnostic,
         document: TextDocument,
-        fieldName: string
+        fieldName: string,
     ): CodeAction | undefined {
         // 计算插入位置（在诊断范围的下一行）
         const insertPosition = this.calculateInsertPosition(diagnostic, document);
@@ -97,10 +90,7 @@ export class RequiredFieldFix implements IQuickFixProvider {
         const fieldSnippet = this.generateFieldSnippet(fieldName, indent);
 
         // 创建修复操作
-        const fix = new CodeAction(
-            QUICK_FIX_MESSAGES.addMissingField(fieldName),
-            CodeActionKind.QuickFix
-        );
+        const fix = new CodeAction(QUICK_FIX_MESSAGES.addMissingField(fieldName), CodeActionKind.QuickFix);
 
         fix.edit = new WorkspaceEdit();
         fix.edit.insert(document.uri, insertPosition, fieldSnippet);
@@ -178,28 +168,41 @@ export class RequiredFieldFix implements IQuickFixProvider {
         const lowerName = fieldName.toLowerCase();
 
         // 布尔类型
-        if (lowerName.startsWith('is_') || lowerName.startsWith('has_') ||
-            lowerName.startsWith('enable') || lowerName.startsWith('disable') ||
-            lowerName === 'enabled' || lowerName === 'disabled') {
+        if (
+            lowerName.startsWith('is_') ||
+            lowerName.startsWith('has_') ||
+            lowerName.startsWith('enable') ||
+            lowerName.startsWith('disable') ||
+            lowerName === 'enabled' ||
+            lowerName === 'disabled'
+        ) {
             return 'true';
         }
 
         // 数字类型
-        if (lowerName.includes('count') || lowerName.includes('amount') ||
-            lowerName.includes('size') || lowerName.includes('limit') ||
-            lowerName.includes('max') || lowerName.includes('min')) {
+        if (
+            lowerName.includes('count') ||
+            lowerName.includes('amount') ||
+            lowerName.includes('size') ||
+            lowerName.includes('limit') ||
+            lowerName.includes('max') ||
+            lowerName.includes('min')
+        ) {
             return '1';
         }
 
         // 列表类型
-        if (lowerName.endsWith('s') || lowerName.includes('list') ||
-            lowerName.includes('items') || lowerName.includes('array')) {
+        if (
+            lowerName.endsWith('s') ||
+            lowerName.includes('list') ||
+            lowerName.includes('items') ||
+            lowerName.includes('array')
+        ) {
             return '[]';
         }
 
         // 对象类型
-        if (lowerName.includes('config') || lowerName.includes('settings') ||
-            lowerName.includes('options')) {
+        if (lowerName.includes('config') || lowerName.includes('settings') || lowerName.includes('options')) {
             return '{}';
         }
 

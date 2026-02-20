@@ -1,12 +1,6 @@
-import {
-    TextDocument,
-    CodeAction,
-    CodeActionKind,
-    WorkspaceEdit,
-    Diagnostic
-} from 'vscode';
+import { type TextDocument, CodeAction, CodeActionKind, WorkspaceEdit, type Diagnostic } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
+import { type IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { VersionConditionDiagnosticProvider } from './VersionConditionDiagnosticProvider';
 import { BaseCodeActionProvider } from './BaseCodeActionProvider';
@@ -14,7 +8,7 @@ import {
     VERSION_NOT_FOUND,
     INVALID_VERSION_CONDITION,
     VERSION_TOO_OLD,
-    INVALID_VERSION_RANGE
+    INVALID_VERSION_RANGE,
 } from '../../core/constants/DiagnosticCodes';
 import { extractDiagnosticCode } from './helpers';
 
@@ -27,26 +21,21 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
     private readonly versionService: IMinecraftVersionService;
 
     /** 提供的 CodeAction 类型 */
-    static readonly providedCodeActionKinds = [
-        CodeActionKind.QuickFix
-    ];
+    static readonly providedCodeActionKinds = [CodeActionKind.QuickFix];
 
     protected readonly diagnosticSource = VersionConditionDiagnosticProvider.DIAGNOSTIC_SOURCE;
 
     constructor() {
         super('VersionConditionCodeActionProvider');
         this.versionService = ServiceContainer.getService<IMinecraftVersionService>(
-            SERVICE_TOKENS.MinecraftVersionService
+            SERVICE_TOKENS.MinecraftVersionService,
         );
     }
 
     /**
      * 为诊断创建修复操作
      */
-    protected async createFixActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    protected async createFixActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
 
         // 提取诊断代码值
@@ -54,19 +43,19 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
 
         switch (codeValue) {
             case VERSION_NOT_FOUND.code:
-                actions.push(...await this.createUnknownVersionActions(document, diagnostic));
+                actions.push(...(await this.createUnknownVersionActions(document, diagnostic)));
                 break;
 
             case INVALID_VERSION_CONDITION.code:
-                actions.push(...await this.createInvalidFormatActions(document, diagnostic));
+                actions.push(...(await this.createInvalidFormatActions(document, diagnostic)));
                 break;
 
             case VERSION_TOO_OLD.code:
-                actions.push(...await this.createVersionTooOldActions(document, diagnostic));
+                actions.push(...(await this.createVersionTooOldActions(document, diagnostic)));
                 break;
 
             case INVALID_VERSION_RANGE.code:
-                actions.push(...await this.createInvalidRangeActions(document, diagnostic));
+                actions.push(...(await this.createInvalidRangeActions(document, diagnostic)));
                 break;
 
             default:
@@ -79,13 +68,10 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
     /**
      * 创建未知版本的修复操作
      */
-    private async createUnknownVersionActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    private async createUnknownVersionActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
         const conditionText = document.getText(diagnostic.range);
-        
+
         // 解析版本条件
         const parsed = this.parseVersionCondition(conditionText);
         if (!parsed) {
@@ -97,16 +83,9 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
 
         // 为每个建议版本创建替换操作
         for (const [index, version] of suggestedVersions.slice(0, 5).entries()) {
-            const newCondition = this.buildVersionCondition(
-                parsed.operator, 
-                version, 
-                parsed.endVersion
-            );
-            
-            const action = new CodeAction(
-                `Replace with '${newCondition}'`,
-                CodeActionKind.QuickFix
-            );
+            const newCondition = this.buildVersionCondition(parsed.operator, version, parsed.endVersion);
+
+            const action = new CodeAction(`Replace with '${newCondition}'`, CodeActionKind.QuickFix);
 
             action.diagnostics = [diagnostic];
             action.isPreferred = index === 0;
@@ -120,23 +99,16 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
 
         // 使用最新版本
         const latestVersion = await this.versionService.getLatestRelease();
-        const latestCondition = this.buildVersionCondition(
-            parsed.operator, 
-            latestVersion, 
-            parsed.endVersion
-        );
-        
+        const latestCondition = this.buildVersionCondition(parsed.operator, latestVersion, parsed.endVersion);
+
         if (!suggestedVersions.includes(latestVersion)) {
-            const latestAction = new CodeAction(
-                `Use latest version '${latestCondition}'`,
-                CodeActionKind.QuickFix
-            );
+            const latestAction = new CodeAction(`Use latest version '${latestCondition}'`, CodeActionKind.QuickFix);
             latestAction.diagnostics = [diagnostic];
-            
+
             const edit = new WorkspaceEdit();
             edit.replace(document.uri, diagnostic.range, latestCondition);
             latestAction.edit = edit;
-            
+
             actions.push(latestAction);
         }
 
@@ -146,10 +118,7 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
     /**
      * 创建格式错误的修复操作
      */
-    private async createInvalidFormatActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    private async createInvalidFormatActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
 
         // 获取最新版本列表
@@ -166,10 +135,7 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
         for (const template of templates) {
             for (const ver of topVersions.slice(0, 2)) {
                 const condition = `${template.label}${ver.version}`;
-                const action = new CodeAction(
-                    `Replace with '${condition}'`,
-                    CodeActionKind.QuickFix
-                );
+                const action = new CodeAction(`Replace with '${condition}'`, CodeActionKind.QuickFix);
                 action.diagnostics = [diagnostic];
 
                 const edit = new WorkspaceEdit();
@@ -186,13 +152,10 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
     /**
      * 创建版本过低的修复操作
      */
-    private async createVersionTooOldActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    private async createVersionTooOldActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
         const conditionText = document.getText(diagnostic.range);
-        
+
         const parsed = this.parseVersionCondition(conditionText);
         if (!parsed) {
             return actions;
@@ -201,10 +164,10 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
         // 建议使用 1.20.1（最低支持版本）
         const minVersion = '1.20.1';
         const minCondition = this.buildVersionCondition(parsed.operator, minVersion, parsed.endVersion);
-        
+
         const minAction = new CodeAction(
             `Replace with minimum supported version '${minCondition}'`,
-            CodeActionKind.QuickFix
+            CodeActionKind.QuickFix,
         );
         minAction.diagnostics = [diagnostic];
         minAction.isPreferred = true;
@@ -218,10 +181,10 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
         // 建议使用最新版本
         const latestVersion = await this.versionService.getLatestRelease();
         const latestCondition = this.buildVersionCondition(parsed.operator, latestVersion, parsed.endVersion);
-        
+
         const latestAction = new CodeAction(
             `Replace with latest version '${latestCondition}'`,
-            CodeActionKind.QuickFix
+            CodeActionKind.QuickFix,
         );
         latestAction.diagnostics = [diagnostic];
 
@@ -237,13 +200,10 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
     /**
      * 创建版本范围错误的修复操作
      */
-    private async createInvalidRangeActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    private async createInvalidRangeActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
         const conditionText = document.getText(diagnostic.range);
-        
+
         const parsed = this.parseVersionCondition(conditionText);
         if (!parsed || !parsed.endVersion) {
             return actions;
@@ -251,11 +211,8 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
 
         // 交换起始和结束版本
         const swappedCondition = `$$${parsed.endVersion}~${parsed.version}`;
-        
-        const swapAction = new CodeAction(
-            `Swap versions: '${swappedCondition}'`,
-            CodeActionKind.QuickFix
-        );
+
+        const swapAction = new CodeAction(`Swap versions: '${swappedCondition}'`, CodeActionKind.QuickFix);
         swapAction.diagnostics = [diagnostic];
         swapAction.isPreferred = true;
 
@@ -267,11 +224,8 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
 
         // 转换为单版本条件
         const singleCondition = `$$>=${parsed.version}`;
-        
-        const singleAction = new CodeAction(
-            `Convert to single version: '${singleCondition}'`,
-            CodeActionKind.QuickFix
-        );
+
+        const singleAction = new CodeAction(`Convert to single version: '${singleCondition}'`, CodeActionKind.QuickFix);
         singleAction.diagnostics = [diagnostic];
 
         const singleEdit = new WorkspaceEdit();
@@ -299,7 +253,7 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
         return {
             operator: match[1] || '',
             version: match[2],
-            endVersion: match[4]
+            endVersion: match[4],
         };
     }
 
@@ -313,6 +267,3 @@ export class VersionConditionCodeActionProvider extends BaseCodeActionProvider {
         return `$$${operator}${version}`;
     }
 }
-
-
-

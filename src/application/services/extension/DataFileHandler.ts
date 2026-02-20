@@ -1,7 +1,7 @@
-import { Uri } from 'vscode';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../core/interfaces/IEventBus';
-import { IDataStoreService } from '../../../core/interfaces/IDataStoreService';
+import { type Uri } from 'vscode';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../core/interfaces/IEventBus';
+import { type IDataStoreService } from '../../../core/interfaces/IDataStoreService';
 
 /**
  * 数据文件处理器
@@ -16,7 +16,7 @@ export class DataFileHandler {
         private readonly logger: ILogger,
         private readonly eventBus: IEventBus,
         private readonly dataStoreService: IDataStoreService,
-        private readonly generateEventId: () => string
+        private readonly generateEventId: () => string,
     ) {}
 
     /**
@@ -25,7 +25,9 @@ export class DataFileHandler {
      * @param uri 文件 URI
      */
     async handleFileModified(uri: Uri): Promise<void> {
-        if (this.disposed) {return;}
+        if (this.disposed) {
+            return;
+        }
 
         this.logger.debug('Handling file modification', { file: uri.fsPath });
 
@@ -45,16 +47,15 @@ export class DataFileHandler {
                 uri: uri.fsPath,
                 action: 'modified',
                 templateCount: stats.templateCount,
-                translationKeyCount: stats.translationKeyCount
+                translationKeyCount: stats.translationKeyCount,
             });
 
             this.logger.info('File modification handled successfully', {
-                file: uri.fsPath
+                file: uri.fsPath,
             });
-
         } catch (error) {
             this.logger.error('Failed to handle file modification', error as Error, {
-                file: uri.fsPath
+                file: uri.fsPath,
             });
         }
     }
@@ -65,7 +66,9 @@ export class DataFileHandler {
      * @param uri 文件 URI
      */
     async handleFileDeleted(uri: Uri): Promise<void> {
-        if (this.disposed) {return;}
+        if (this.disposed) {
+            return;
+        }
 
         try {
             // 使用 DataStoreService 统一处理文件删除（模板 + 翻译）
@@ -82,12 +85,11 @@ export class DataFileHandler {
                 uri: uri.fsPath,
                 action: 'deleted',
                 templateCount: 0,
-                translationKeyCount: 0
+                translationKeyCount: 0,
             });
-
         } catch (error) {
             this.logger.error('Failed to handle file deletion', error as Error, {
-                file: uri.fsPath
+                file: uri.fsPath,
             });
         }
     }
@@ -100,5 +102,3 @@ export class DataFileHandler {
         this.logger.debug('Data file handler disposed');
     }
 }
-
-

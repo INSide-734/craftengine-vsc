@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { IDiagnosticIgnoreParser } from '../../core/interfaces/IDiagnosticProvider';
+import { type IDiagnosticIgnoreParser } from '../../core/interfaces/IDiagnosticProvider';
 
 /**
  * 忽略文件名称列表（按优先级排序，靠前的优先级更高）
@@ -65,8 +65,7 @@ export class DiagnosticIgnoreParser implements IDiagnosticIgnoreParser {
         }
 
         // 计算相对于工作区根目录的路径，统一使用正斜杠
-        const relativePath = path.relative(workspaceFolder.uri.fsPath, uri.fsPath)
-            .replace(/\\/g, '/');
+        const relativePath = path.relative(workspaceFolder.uri.fsPath, uri.fsPath).replace(/\\/g, '/');
 
         return this.matchRules(relativePath, rules);
     }

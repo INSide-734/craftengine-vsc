@@ -9,9 +9,9 @@
  * - 重新加载
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SchemaFileLoader } from '../../../../../application/services/schema/SchemaFileLoader';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { SCHEMA_METADATA } from '../../../../../application/services/schema/SchemaConstants';
+import { SchemaFileLoader } from '../../../../../infrastructure/schema/SchemaFileLoader';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { SCHEMA_METADATA } from '../../../../../core/constants/SchemaConstants';
 
 const defaultSchemaJson = JSON.stringify({
     title: 'Test Schema',
@@ -99,7 +99,7 @@ describe('SchemaFileLoader', () => {
                 expect.objectContaining({
                     filename: 'test.schema.json',
                     source: 'extension',
-                })
+                }),
             );
         });
     });
@@ -127,6 +127,16 @@ describe('SchemaFileLoader', () => {
             // 应该再次读取文件
             expect(fs.readFile).toHaveBeenCalled();
         });
+
+        it('should return independent copy from cache (mutation isolation)', async () => {
+            const first = await loader.loadSchema('test.schema.json');
+            first.title = 'MUTATED';
+            (first as Record<string, unknown>).injectedProp = true;
+
+            const second = await loader.loadSchema('test.schema.json');
+            expect(second.title).toBe('Test Schema');
+            expect((second as Record<string, unknown>).injectedProp).toBeUndefined();
+        });
     });
 
     // ========================================
@@ -141,7 +151,7 @@ describe('SchemaFileLoader', () => {
             expect(mockLogger.error).toHaveBeenCalledWith(
                 'Failed to load schema file',
                 expect.any(Error),
-                expect.objectContaining({ filename: 'nonexistent.json' })
+                expect.objectContaining({ filename: 'nonexistent.json' }),
             );
         });
 
@@ -192,7 +202,7 @@ describe('SchemaFileLoader', () => {
             await loader.reloadSchema('test.schema.json');
             expect(mockLogger.info).toHaveBeenCalledWith(
                 'Reloading schema file',
-                expect.objectContaining({ filename: 'test.schema.json' })
+                expect.objectContaining({ filename: 'test.schema.json' }),
             );
         });
     });
@@ -204,12 +214,7 @@ describe('SchemaFileLoader', () => {
     describe('workspace schema directory', () => {
         it('should prioritize workspace schema directory', async () => {
             const workspaceDir = '/workspace/.craftengine/schemas';
-            const loaderWithWorkspace = new SchemaFileLoader(
-                schemasDir,
-                mockLogger,
-                10,
-                workspaceDir
-            );
+            const loaderWithWorkspace = new SchemaFileLoader(schemasDir, mockLogger, 10, workspaceDir);
 
             // 模拟：工作区路径和扩展路径都存在
             vi.mocked(fs.access).mockResolvedValue(undefined);
@@ -221,17 +226,12 @@ describe('SchemaFileLoader', () => {
 
         it('should fall back to extension directory when workspace file not found', async () => {
             const workspaceDir = '/workspace/.craftengine/schemas';
-            const loaderWithWorkspace = new SchemaFileLoader(
-                schemasDir,
-                mockLogger,
-                10,
-                workspaceDir
-            );
+            const loaderWithWorkspace = new SchemaFileLoader(schemasDir, mockLogger, 10, workspaceDir);
 
             // 工作区文件不存在（第一次 access 调用），扩展目录文件存在（后续调用）
             vi.mocked(fs.access)
-                .mockRejectedValueOnce(new Error('ENOENT'))  // resolveSchemaPath: workspace path
-                .mockResolvedValue(undefined);  // loadSchema: extension path
+                .mockRejectedValueOnce(new Error('ENOENT')) // resolveSchemaPath: workspace path
+                .mockResolvedValue(undefined); // loadSchema: extension path
 
             const schema = await loaderWithWorkspace.loadSchema('test.schema.json');
             expect(schema[SCHEMA_METADATA.SCHEMA_SOURCE]).toBe('extension');

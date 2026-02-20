@@ -10,8 +10,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SchemaPathNavigator } from '../../../../../application/services/schema/SchemaPathNavigator';
-import { SchemaReferenceResolver } from '../../../../../application/services/schema/SchemaReferenceResolver';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
+import { type SchemaReferenceResolver } from '../../../../../application/services/schema/SchemaReferenceResolver';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
 import { SCHEMA_METADATA } from '../../../../../application/services/schema/SchemaConstants';
 
 describe('SchemaPathNavigator', () => {
@@ -32,7 +32,7 @@ describe('SchemaPathNavigator', () => {
         } as unknown as ILogger;
 
         mockResolver = {
-            resolveReferences: vi.fn((schema) => Promise.resolve(schema))
+            resolveReferences: vi.fn((schema) => Promise.resolve(schema)),
         } as unknown as SchemaReferenceResolver;
 
         navigator = new SchemaPathNavigator(mockResolver, mockLogger);
@@ -108,10 +108,10 @@ describe('SchemaPathNavigator', () => {
                     items: {
                         type: 'object',
                         properties: {
-                            name: { type: 'string' }
-                        }
-                    }
-                }
+                            name: { type: 'string' },
+                        },
+                    },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['items', 'name']);
@@ -123,8 +123,8 @@ describe('SchemaPathNavigator', () => {
             const rootSchema = {
                 type: 'object',
                 properties: {
-                    items: { type: 'object' }
-                }
+                    items: { type: 'object' },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['nonexistent']);
@@ -132,7 +132,7 @@ describe('SchemaPathNavigator', () => {
             expect(result).toBeUndefined();
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Schema path segment not found',
-                expect.objectContaining({ segment: 'nonexistent' })
+                expect.objectContaining({ segment: 'nonexistent' }),
             );
         });
     });
@@ -145,8 +145,8 @@ describe('SchemaPathNavigator', () => {
         it('should match exact property name', async () => {
             const rootSchema = {
                 properties: {
-                    template: { type: 'string', description: 'Template name' }
-                }
+                    template: { type: 'string', description: 'Template name' },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['template']);
@@ -164,12 +164,12 @@ describe('SchemaPathNavigator', () => {
                             level2: {
                                 type: 'object',
                                 properties: {
-                                    level3: { type: 'boolean' }
-                                }
-                            }
-                        }
-                    }
-                }
+                                    level3: { type: 'boolean' },
+                                },
+                            },
+                        },
+                    },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['level1', 'level2', 'level3']);
@@ -186,8 +186,8 @@ describe('SchemaPathNavigator', () => {
         it('should match pattern property', async () => {
             const rootSchema = {
                 patternProperties: {
-                    '^[a-z]+:[a-z]+$': { type: 'object', description: 'Namespaced item' }
-                }
+                    '^[a-z]+:[a-z]+$': { type: 'object', description: 'Namespaced item' },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['mypack:myitem']);
@@ -199,8 +199,8 @@ describe('SchemaPathNavigator', () => {
         it('should match numeric pattern', async () => {
             const rootSchema = {
                 patternProperties: {
-                    '^[0-9]+$': { type: 'object', description: 'Array index' }
-                }
+                    '^[0-9]+$': { type: 'object', description: 'Array index' },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['123']);
@@ -211,11 +211,11 @@ describe('SchemaPathNavigator', () => {
         it('should prefer properties over patternProperties', async () => {
             const rootSchema = {
                 properties: {
-                    special: { type: 'string', description: 'Exact match' }
+                    special: { type: 'string', description: 'Exact match' },
                 },
                 patternProperties: {
-                    '^.*$': { type: 'object', description: 'Pattern match' }
-                }
+                    '^.*$': { type: 'object', description: 'Pattern match' },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['special']);
@@ -226,8 +226,8 @@ describe('SchemaPathNavigator', () => {
         it('should handle invalid regex gracefully', async () => {
             const rootSchema = {
                 patternProperties: {
-                    '[invalid': { type: 'string' }  // 无效正则
-                }
+                    '[invalid': { type: 'string' }, // 无效正则
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['test']);
@@ -243,7 +243,7 @@ describe('SchemaPathNavigator', () => {
     describe('getSchemaForPath - additionalProperties matching', () => {
         it('should match additionalProperties object', async () => {
             const rootSchema = {
-                additionalProperties: { type: 'number', description: 'Any numeric value' }
+                additionalProperties: { type: 'number', description: 'Any numeric value' },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['anyKey']);
@@ -254,7 +254,7 @@ describe('SchemaPathNavigator', () => {
 
         it('should not match additionalProperties when true', async () => {
             const rootSchema = {
-                additionalProperties: true
+                additionalProperties: true,
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['anyKey']);
@@ -266,9 +266,9 @@ describe('SchemaPathNavigator', () => {
         it('should prefer patternProperties over additionalProperties', async () => {
             const rootSchema = {
                 patternProperties: {
-                    '^item_.*$': { type: 'string', description: 'Item pattern' }
+                    '^item_.*$': { type: 'string', description: 'Item pattern' },
                 },
-                additionalProperties: { type: 'number', description: 'Additional' }
+                additionalProperties: { type: 'number', description: 'Additional' },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['item_123']);
@@ -279,9 +279,9 @@ describe('SchemaPathNavigator', () => {
         it('should fall back to additionalProperties when no pattern matches', async () => {
             const rootSchema = {
                 patternProperties: {
-                    '^item_.*$': { type: 'string', description: 'Item pattern' }
+                    '^item_.*$': { type: 'string', description: 'Item pattern' },
                 },
-                additionalProperties: { type: 'number', description: 'Additional' }
+                additionalProperties: { type: 'number', description: 'Additional' },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['other_key']);
@@ -298,7 +298,7 @@ describe('SchemaPathNavigator', () => {
         it('should match array items', async () => {
             const rootSchema = {
                 type: 'array',
-                items: { type: 'string', description: 'Array element' }
+                items: { type: 'string', description: 'Array element' },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['0']);
@@ -313,9 +313,9 @@ describe('SchemaPathNavigator', () => {
                 items: {
                     type: 'object',
                     properties: {
-                        name: { type: 'string' }
-                    }
-                }
+                        name: { type: 'string' },
+                    },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['0', 'name']);
@@ -335,10 +335,10 @@ describe('SchemaPathNavigator', () => {
                     items: {
                         type: 'object',
                         properties: {
-                            name: { type: 'string' }
-                        }
-                    }
-                }
+                            name: { type: 'string' },
+                        },
+                    },
+                },
             };
 
             // 版本条件键应该被跳过
@@ -353,16 +353,13 @@ describe('SchemaPathNavigator', () => {
                     config: {
                         type: 'object',
                         properties: {
-                            value: { type: 'number' }
-                        }
-                    }
-                }
+                            value: { type: 'number' },
+                        },
+                    },
+                },
             };
 
-            const result = await navigator.getSchemaForPath(
-                rootSchema,
-                ['config', '$$>=1.20.0', '$$<1.22.0', 'value']
-            );
+            const result = await navigator.getSchemaForPath(rootSchema, ['config', '$$>=1.20.0', '$$<1.22.0', 'value']);
 
             expect(result!.type).toBe('number');
         });
@@ -380,21 +377,21 @@ describe('SchemaPathNavigator', () => {
             const resolvedRootSchema = {
                 type: 'object',
                 properties: {
-                    name: { type: 'string' }
-                }
+                    name: { type: 'string' },
+                },
             };
 
             const nameSchema = { type: 'string' };
 
             vi.mocked(mockResolver.resolveReferences)
-                .mockResolvedValueOnce(resolvedRootSchema)  // 第一次解析 root
-                .mockResolvedValueOnce(nameSchema);         // 第二次解析 name
+                .mockResolvedValueOnce(resolvedRootSchema) // 第一次解析 root
+                .mockResolvedValueOnce(nameSchema); // 第二次解析 name
 
             const rootSchema = {
                 $ref: '#/$defs/ItemType',
                 $defs: {
-                    ItemType: resolvedRootSchema
-                }
+                    ItemType: resolvedRootSchema,
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['name']);
@@ -407,8 +404,8 @@ describe('SchemaPathNavigator', () => {
             const resolvedSchema = {
                 type: 'object',
                 properties: {
-                    name: { type: 'string' }
-                }
+                    name: { type: 'string' },
+                },
             };
 
             vi.mocked(mockResolver.resolveReferences).mockResolvedValue(resolvedSchema);
@@ -416,8 +413,8 @@ describe('SchemaPathNavigator', () => {
             const rootSchema = {
                 $ref: '#/$defs/ItemType',
                 $defs: {
-                    ItemType: resolvedSchema
-                }
+                    ItemType: resolvedSchema,
+                },
             };
 
             // 空路径应该返回解析后的 schema
@@ -430,17 +427,19 @@ describe('SchemaPathNavigator', () => {
             const externalSchema = {
                 type: 'object',
                 properties: {
-                    external: { type: 'boolean' }
+                    external: { type: 'boolean' },
                 },
-                [SCHEMA_METADATA.CONTEXT_SCHEMA]: { /* external context */ }
+                [SCHEMA_METADATA.CONTEXT_SCHEMA]: {
+                    /* external context */
+                },
             };
 
             vi.mocked(mockResolver.resolveReferences).mockResolvedValue(externalSchema);
 
             const rootSchema = {
                 properties: {
-                    ref: { $ref: './external.schema.json' }
-                }
+                    ref: { $ref: './external.schema.json' },
+                },
             };
 
             await navigator.getSchemaForPath(rootSchema, ['ref', 'external']);
@@ -455,12 +454,12 @@ describe('SchemaPathNavigator', () => {
                     items: {
                         type: 'object',
                         properties: {
-                            nested: { type: 'string' }
-                        }
-                    }
+                            nested: { type: 'string' },
+                        },
+                    },
                 },
                 [SCHEMA_METADATA.SCHEMA_FILE]: 'root.schema.json',
-                [SCHEMA_METADATA.SCHEMA_DIR]: 'schemas'
+                [SCHEMA_METADATA.SCHEMA_DIR]: 'schemas',
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['items', 'nested']);
@@ -487,22 +486,19 @@ describe('SchemaPathNavigator', () => {
                                         properties: {
                                             d: {
                                                 properties: {
-                                                    e: { type: 'string' }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                                                    e: { type: 'string' },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             };
 
-            const result = await navigator.getSchemaForPath(
-                rootSchema,
-                ['a', 'b', 'c', 'd', 'e']
-            );
+            const result = await navigator.getSchemaForPath(rootSchema, ['a', 'b', 'c', 'd', 'e']);
 
             expect(result!.type).toBe('string');
         });
@@ -511,8 +507,8 @@ describe('SchemaPathNavigator', () => {
             const rootSchema = {
                 $id: 'https://example.com/schema',
                 properties: {
-                    name: { type: 'string' }
-                }
+                    name: { type: 'string' },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['name']);
@@ -523,11 +519,11 @@ describe('SchemaPathNavigator', () => {
         it('should handle schema with $defs', async () => {
             const rootSchema = {
                 properties: {
-                    item: { type: 'object' }
+                    item: { type: 'object' },
                 },
                 $defs: {
-                    CommonType: { type: 'string' }
-                }
+                    CommonType: { type: 'string' },
+                },
             };
 
             // 解析器应该更新上下文
@@ -545,7 +541,7 @@ describe('SchemaPathNavigator', () => {
 
         it('should handle empty properties object', async () => {
             const rootSchema = {
-                properties: {}
+                properties: {},
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['anyKey']);
@@ -556,15 +552,15 @@ describe('SchemaPathNavigator', () => {
         it('should handle mixed matching strategies', async () => {
             const rootSchema = {
                 properties: {
-                    exact: { type: 'string', description: 'Exact' }
+                    exact: { type: 'string', description: 'Exact' },
                 },
                 patternProperties: {
-                    '^pat_.*$': { type: 'number', description: 'Pattern' }
+                    '^pat_.*$': { type: 'number', description: 'Pattern' },
                 },
                 additionalProperties: {
                     type: 'boolean',
-                    description: 'Additional'
-                }
+                    description: 'Additional',
+                },
             };
 
             const exactResult = await navigator.getSchemaForPath(rootSchema, ['exact']);
@@ -579,8 +575,8 @@ describe('SchemaPathNavigator', () => {
         it('should handle path with special characters', async () => {
             const rootSchema = {
                 patternProperties: {
-                    '^.*$': { type: 'object' }
-                }
+                    '^.*$': { type: 'object' },
+                },
             };
 
             const result = await navigator.getSchemaForPath(rootSchema, ['key-with-dashes']);
@@ -592,12 +588,12 @@ describe('SchemaPathNavigator', () => {
             const rootSchema = {
                 properties: {
                     item: {
-                        $ref: '#/$defs/ItemType'
-                    }
+                        $ref: '#/$defs/ItemType',
+                    },
                 },
                 $defs: {
-                    ItemType: { type: 'object', properties: { name: { type: 'string' } } }
-                }
+                    ItemType: { type: 'object', properties: { name: { type: 'string' } } },
+                },
             };
 
             vi.mocked(mockResolver.resolveReferences).mockImplementation(async (schema) => {

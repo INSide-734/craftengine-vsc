@@ -4,15 +4,8 @@
  * 为 "type" 错误提供类型转换的快速修复
  */
 
-import {
-    CodeAction,
-    CodeActionKind,
-    Diagnostic,
-    Range,
-    TextDocument,
-    WorkspaceEdit
-} from 'vscode';
-import { IQuickFixProvider } from './IQuickFixProvider';
+import { CodeAction, CodeActionKind, type Diagnostic, Range, type TextDocument, WorkspaceEdit } from 'vscode';
+import { type IQuickFixProvider } from './IQuickFixProvider';
 import { QUICK_FIX_MESSAGES } from '../../../core/constants/DiagnosticMessages';
 
 /**
@@ -85,13 +78,13 @@ export class TypeMismatchFix implements IQuickFixProvider {
      */
     private normalizeTypeName(displayName: string): string {
         const mapping: Record<string, string> = {
-            'text': 'string',
-            'number': 'number',
-            'integer': 'integer',
+            text: 'string',
+            number: 'number',
+            integer: 'integer',
             'true/false': 'boolean',
-            'object': 'object',
-            'list': 'array',
-            'null': 'null'
+            object: 'object',
+            list: 'array',
+            null: 'null',
         };
 
         return mapping[displayName.toLowerCase()] || displayName.toLowerCase();
@@ -119,12 +112,7 @@ export class TypeMismatchFix implements IQuickFixProvider {
             return undefined;
         }
 
-        return new Range(
-            diagnostic.range.start.line,
-            valueStart,
-            diagnostic.range.start.line,
-            valueEnd
-        );
+        return new Range(diagnostic.range.start.line, valueStart, diagnostic.range.start.line, valueEnd);
     }
 
     /**
@@ -135,7 +123,7 @@ export class TypeMismatchFix implements IQuickFixProvider {
         document: TextDocument,
         valueRange: Range,
         currentValue: string,
-        expectedType: string
+        expectedType: string,
     ): CodeAction | undefined {
         // 尝试转换值
         const convertedValue = this.convertValue(currentValue, expectedType);
@@ -143,10 +131,7 @@ export class TypeMismatchFix implements IQuickFixProvider {
             return undefined;
         }
 
-        const fix = new CodeAction(
-            QUICK_FIX_MESSAGES.fixType(expectedType),
-            CodeActionKind.QuickFix
-        );
+        const fix = new CodeAction(QUICK_FIX_MESSAGES.fixType(expectedType), CodeActionKind.QuickFix);
 
         fix.edit = new WorkspaceEdit();
         fix.edit.replace(document.uri, valueRange, convertedValue);

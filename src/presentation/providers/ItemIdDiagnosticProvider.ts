@@ -1,13 +1,8 @@
-import {
-    TextDocument,
-    Diagnostic,
-    Range,
-    Position
-} from 'vscode';
+import { type TextDocument, type Diagnostic, Range, Position } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { IDataStoreService } from '../../core/interfaces/IDataStoreService';
-import { ISchemaService } from '../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
+import { type IDataStoreService } from '../../core/interfaces/IDataStoreService';
+import { type ISchemaService } from '../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { YamlHelper } from '../../infrastructure/yaml/YamlHelper';
 import { ITEM_NOT_FOUND } from '../../core/constants/DiagnosticCodes';
@@ -38,12 +33,7 @@ export class ItemIdDiagnosticProvider extends BaseDiagnosticProvider {
     private static readonly ITEM_ID_PROVIDER = 'craftengine.itemId';
 
     constructor() {
-        super(
-            'craftengine-itemid',
-            'CraftEngine ItemId',
-            'itemId.diagnostics.update',
-            'ItemIdDiagnosticProvider'
-        );
+        super('craftengine-itemid', 'CraftEngine ItemId', 'itemId.diagnostics.update', 'ItemIdDiagnosticProvider');
         this.dataStoreService = ServiceContainer.getService<IDataStoreService>(SERVICE_TOKENS.DataStoreService);
         const schemaService = ServiceContainer.getService<ISchemaService>(SERVICE_TOKENS.SchemaService);
         const yamlPathParser = ServiceContainer.getService<IYamlPathParser>(SERVICE_TOKENS.YamlPathParser);
@@ -60,9 +50,7 @@ export class ItemIdDiagnosticProvider extends BaseDiagnosticProvider {
         }
 
         // 并行验证所有引用
-        const results = await Promise.all(
-            references.map(ref => this.validateReference(ref, document))
-        );
+        const results = await Promise.all(references.map((ref) => this.validateReference(ref, document)));
         return results.filter((d): d is Diagnostic => d !== null);
     }
 
@@ -86,11 +74,17 @@ export class ItemIdDiagnosticProvider extends BaseDiagnosticProvider {
                 }
 
                 const position = new Position(lineNum, match.index);
-                if (await this.fieldIdentifier.isFieldOfType(document, position, ItemIdDiagnosticProvider.ITEM_ID_PROVIDER)) {
+                if (
+                    await this.fieldIdentifier.isFieldOfType(
+                        document,
+                        position,
+                        ItemIdDiagnosticProvider.ITEM_ID_PROVIDER,
+                    )
+                ) {
                     references.push({
                         id: match[0],
                         range: new Range(lineNum, match.index, lineNum, match.index + match[0].length),
-                        line: lineNum
+                        line: lineNum,
                     });
                 }
             }
@@ -111,11 +105,7 @@ export class ItemIdDiagnosticProvider extends BaseDiagnosticProvider {
                 return null;
             }
 
-            return this.createDiagnostic(
-                ref.range,
-                TYPE_VALIDATION_MESSAGES.itemNotFound(ref.id),
-                ITEM_NOT_FOUND
-            );
+            return this.createDiagnostic(ref.range, TYPE_VALIDATION_MESSAGES.itemNotFound(ref.id), ITEM_NOT_FOUND);
         } catch (error) {
             this.logger.debug('Error validating item ID', { itemId: ref.id, error: (error as Error).message });
             return null;

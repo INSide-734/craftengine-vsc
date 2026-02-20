@@ -1,13 +1,13 @@
 /**
  * YAML 路径解析器性能测试
- * 
+ *
  * 测试 YamlPathParser 在不同场景下的性能表现，包括：
  * - AST 精确解析
  * - 基于缩进的回退解析
  * - 不同深度的路径解析
  * - 包含数组索引的路径解析
  * - 大文档中的路径解析
- * 
+ *
  * 性能基准目标:
  * | 操作 | 目标时间 |
  * |------|----------|
@@ -16,7 +16,7 @@
  * | 大型文档路径解析（1000行） | < 10ms |
  */
 import { describe, bench } from 'vitest';
-import { Position, TextDocument } from 'vscode';
+import { Position, type TextDocument } from 'vscode';
 import { YamlPathParser } from '../../infrastructure/yaml/YamlPathParser';
 import { defaultBenchOptions, fastBenchOptions, slowBenchOptions } from './bench-options';
 
@@ -33,7 +33,7 @@ function createMockDocument(content: string): TextDocument {
     const lines = content.split('\n');
     const lineData: MockLine[] = lines.map((text, index) => ({
         text,
-        lineNumber: index
+        lineNumber: index,
     }));
 
     // 计算每行的起始偏移量
@@ -49,14 +49,14 @@ function createMockDocument(content: string): TextDocument {
             lineNumber: line,
             range: {
                 start: { line, character: 0 },
-                end: { line, character: lineData[line]?.text.length ?? 0 }
+                end: { line, character: lineData[line]?.text.length ?? 0 },
             },
             rangeIncludingLineBreak: {
                 start: { line, character: 0 },
-                end: { line: line + 1, character: 0 }
+                end: { line: line + 1, character: 0 },
             },
             firstNonWhitespaceCharacterIndex: lineData[line]?.text.search(/\S/) ?? 0,
-            isEmptyOrWhitespace: !lineData[line]?.text.trim()
+            isEmptyOrWhitespace: !lineData[line]?.text.trim(),
         }),
         lineCount: lines.length,
         offsetAt: (position: Position) => {
@@ -110,14 +110,14 @@ function generateNestedYaml(depth: number, breadth: number): string {
         if (currentDepth >= depth) {
             return `${indent}value: leaf`;
         }
-        
+
         const children = Array.from({ length: breadth }, (_, i) => {
             return `${indent}child${i}:\n${generateLevel(currentDepth + 1, indent + '  ')}`;
         });
-        
+
         return children.join('\n');
     }
-    
+
     return `root:\n${generateLevel(0, '  ')}`;
 }
 
@@ -127,29 +127,29 @@ function generateNestedYaml(depth: number, breadth: number): string {
 function generateArrayYaml(arrayDepth: number, itemsPerArray: number): string {
     let yaml = 'root:\n';
     let indent = '  ';
-    
+
     for (let d = 0; d < arrayDepth; d++) {
         yaml += `${indent}level${d}:\n`;
         indent += '  ';
-        
+
         for (let i = 0; i < itemsPerArray; i++) {
             yaml += `${indent}- name: item${d}_${i}\n`;
             yaml += `${indent}  value: ${d * 100 + i}\n`;
         }
     }
-    
+
     return yaml;
 }
 
 /**
  * 生成 CraftEngine 模板风格的 YAML
- * 
+ *
  * 模板使用 ${param} 格式的参数占位符，定义可复用的配置
  */
 function generateTemplateYaml(templateCount: number): string {
     const templates: string[] = [];
     const templateNames = ['model/generated', 'model/handheld', 'model/layered', 'settings/ore', 'sound/wood'];
-    
+
     for (let i = 0; i < templateCount; i++) {
         const templateName = templateNames[i % templateNames.length];
         const suffix = i >= templateNames.length ? `_${Math.floor(i / templateNames.length)}` : '';
@@ -162,20 +162,20 @@ function generateTemplateYaml(templateCount: number): string {
       textures:
         layer0: \${texture}`);
     }
-    
+
     return `templates#models#2d:${templates.join('')}`;
 }
 
 /**
  * 生成 items 配置风格的 YAML
- * 
+ *
  * 物品使用 template + arguments 模式，或完整的 material/data 配置
  */
 function generateItemsYaml(itemCount: number): string {
     const items: string[] = [];
     const itemNames = ['ruby', 'sapphire', 'emerald', 'topaz', 'jade_sword', 'phoenix_staff', 'dragon_blade'];
     const templates = ['default:model/generated', 'default:model/handheld', 'default:model/layered'];
-    
+
     for (let i = 0; i < itemCount; i++) {
         const itemName = itemNames[i % itemNames.length];
         const suffix = i >= itemNames.length ? `_${Math.floor(i / itemNames.length)}` : '';
@@ -187,7 +187,7 @@ function generateItemsYaml(itemCount: number): string {
       model: minecraft:item/${itemName}${suffix}
       texture: minecraft:item/${itemName}${suffix}`);
     }
-    
+
     return `items:${items.join('')}`;
 }
 
@@ -245,21 +245,37 @@ describe('YamlPathParser Performance', () => {
     // ========================================
 
     describe('Small Documents (<50 lines)', () => {
-        bench('parse path in simple YAML (20 lines) - middle', () => {
-            parser.parsePath(smallSimpleDoc, new Position(10, 5));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in simple YAML (20 lines) - middle',
+            () => {
+                parser.parsePath(smallSimpleDoc, new Position(10, 5));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse path in simple YAML (20 lines) - start', () => {
-            parser.parsePath(smallSimpleDoc, new Position(0, 5));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in simple YAML (20 lines) - start',
+            () => {
+                parser.parsePath(smallSimpleDoc, new Position(0, 5));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse path in simple YAML (20 lines) - end', () => {
-            parser.parsePath(smallSimpleDoc, new Position(19, 5));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in simple YAML (20 lines) - end',
+            () => {
+                parser.parsePath(smallSimpleDoc, new Position(19, 5));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse path in nested YAML (depth 3) - deep position', () => {
-            parser.parsePath(smallNestedDoc, new Position(5, 10));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in nested YAML (depth 3) - deep position',
+            () => {
+                parser.parsePath(smallNestedDoc, new Position(5, 10));
+            },
+            defaultBenchOptions,
+        );
     });
 
     // ========================================
@@ -267,33 +283,61 @@ describe('YamlPathParser Performance', () => {
     // ========================================
 
     describe('Medium Documents (100-500 lines)', () => {
-        bench('parse path in simple YAML (100 lines)', () => {
-            parser.parsePath(mediumSimpleDoc, new Position(50, 5));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in simple YAML (100 lines)',
+            () => {
+                parser.parsePath(mediumSimpleDoc, new Position(50, 5));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse path in nested YAML (depth 5) - shallow', () => {
-            parser.parsePath(mediumNestedDoc, new Position(2, 5));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in nested YAML (depth 5) - shallow',
+            () => {
+                parser.parsePath(mediumNestedDoc, new Position(2, 5));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse path in nested YAML (depth 5) - deep', () => {
-            parser.parsePath(mediumNestedDoc, new Position(20, 15));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in nested YAML (depth 5) - deep',
+            () => {
+                parser.parsePath(mediumNestedDoc, new Position(20, 15));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse path in array YAML - first item', () => {
-            parser.parsePath(mediumArrayDoc, new Position(3, 10));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in array YAML - first item',
+            () => {
+                parser.parsePath(mediumArrayDoc, new Position(3, 10));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse path in array YAML - nested item', () => {
-            parser.parsePath(mediumArrayDoc, new Position(15, 15));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in array YAML - nested item',
+            () => {
+                parser.parsePath(mediumArrayDoc, new Position(15, 15));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse path in templates YAML (10 templates)', () => {
-            parser.parsePath(mediumTemplatesDoc, new Position(25, 10));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in templates YAML (10 templates)',
+            () => {
+                parser.parsePath(mediumTemplatesDoc, new Position(25, 10));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse path in items YAML (20 items)', () => {
-            parser.parsePath(mediumItemsDoc, new Position(40, 10));
-        }, defaultBenchOptions);
+        bench(
+            'parse path in items YAML (20 items)',
+            () => {
+                parser.parsePath(mediumItemsDoc, new Position(40, 10));
+            },
+            defaultBenchOptions,
+        );
     });
 
     // ========================================
@@ -301,33 +345,61 @@ describe('YamlPathParser Performance', () => {
     // ========================================
 
     describe('Large Documents (500+ lines)', () => {
-        bench('parse path in simple YAML (500 lines) - start', () => {
-            parser.parsePath(largeSimpleDoc, new Position(10, 5));
-        }, fastBenchOptions);
+        bench(
+            'parse path in simple YAML (500 lines) - start',
+            () => {
+                parser.parsePath(largeSimpleDoc, new Position(10, 5));
+            },
+            fastBenchOptions,
+        );
 
-        bench('parse path in simple YAML (500 lines) - middle', () => {
-            parser.parsePath(largeSimpleDoc, new Position(250, 5));
-        }, fastBenchOptions);
+        bench(
+            'parse path in simple YAML (500 lines) - middle',
+            () => {
+                parser.parsePath(largeSimpleDoc, new Position(250, 5));
+            },
+            fastBenchOptions,
+        );
 
-        bench('parse path in simple YAML (500 lines) - end', () => {
-            parser.parsePath(largeSimpleDoc, new Position(490, 5));
-        }, fastBenchOptions);
+        bench(
+            'parse path in simple YAML (500 lines) - end',
+            () => {
+                parser.parsePath(largeSimpleDoc, new Position(490, 5));
+            },
+            fastBenchOptions,
+        );
 
-        bench('parse path in nested YAML (depth 8)', () => {
-            parser.parsePath(largeNestedDoc, new Position(30, 20));
-        }, fastBenchOptions);
+        bench(
+            'parse path in nested YAML (depth 8)',
+            () => {
+                parser.parsePath(largeNestedDoc, new Position(30, 20));
+            },
+            fastBenchOptions,
+        );
 
-        bench('parse path in large array YAML (5 levels, 20 items)', () => {
-            parser.parsePath(largeArrayDoc, new Position(80, 15));
-        }, fastBenchOptions);
+        bench(
+            'parse path in large array YAML (5 levels, 20 items)',
+            () => {
+                parser.parsePath(largeArrayDoc, new Position(80, 15));
+            },
+            fastBenchOptions,
+        );
 
-        bench('parse path in templates YAML (30 templates)', () => {
-            parser.parsePath(largeTemplatesDoc, new Position(100, 15));
-        }, fastBenchOptions);
+        bench(
+            'parse path in templates YAML (30 templates)',
+            () => {
+                parser.parsePath(largeTemplatesDoc, new Position(100, 15));
+            },
+            fastBenchOptions,
+        );
 
-        bench('parse path in items YAML (50 items)', () => {
-            parser.parsePath(largeItemsDoc, new Position(150, 15));
-        }, fastBenchOptions);
+        bench(
+            'parse path in items YAML (50 items)',
+            () => {
+                parser.parsePath(largeItemsDoc, new Position(150, 15));
+            },
+            fastBenchOptions,
+        );
     });
 
     // ========================================
@@ -335,21 +407,37 @@ describe('YamlPathParser Performance', () => {
     // ========================================
 
     describe('Very Large Documents (1000+ lines)', () => {
-        bench('parse path in simple YAML (1000 lines) - start', () => {
-            parser.parsePath(veryLargeSimpleDoc, new Position(10, 5));
-        }, slowBenchOptions);
+        bench(
+            'parse path in simple YAML (1000 lines) - start',
+            () => {
+                parser.parsePath(veryLargeSimpleDoc, new Position(10, 5));
+            },
+            slowBenchOptions,
+        );
 
-        bench('parse path in simple YAML (1000 lines) - middle', () => {
-            parser.parsePath(veryLargeSimpleDoc, new Position(500, 5));
-        }, slowBenchOptions);
+        bench(
+            'parse path in simple YAML (1000 lines) - middle',
+            () => {
+                parser.parsePath(veryLargeSimpleDoc, new Position(500, 5));
+            },
+            slowBenchOptions,
+        );
 
-        bench('parse path in simple YAML (1000 lines) - end', () => {
-            parser.parsePath(veryLargeSimpleDoc, new Position(990, 5));
-        }, slowBenchOptions);
+        bench(
+            'parse path in simple YAML (1000 lines) - end',
+            () => {
+                parser.parsePath(veryLargeSimpleDoc, new Position(990, 5));
+            },
+            slowBenchOptions,
+        );
 
-        bench('parse path in items YAML (100 items) - deep', () => {
-            parser.parsePath(veryLargeItemsDoc, new Position(400, 15));
-        }, slowBenchOptions);
+        bench(
+            'parse path in items YAML (100 items) - deep',
+            () => {
+                parser.parsePath(veryLargeItemsDoc, new Position(400, 15));
+            },
+            slowBenchOptions,
+        );
     });
 
     // ========================================
@@ -360,21 +448,37 @@ describe('YamlPathParser Performance', () => {
         const deepNestedYaml = generateNestedYaml(10, 2);
         const deepNestedDoc = createMockDocument(deepNestedYaml);
 
-        bench('parse depth 1 path', () => {
-            parser.parsePath(deepNestedDoc, new Position(1, 3));
-        }, defaultBenchOptions);
+        bench(
+            'parse depth 1 path',
+            () => {
+                parser.parsePath(deepNestedDoc, new Position(1, 3));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse depth 3 path', () => {
-            parser.parsePath(deepNestedDoc, new Position(5, 7));
-        }, defaultBenchOptions);
+        bench(
+            'parse depth 3 path',
+            () => {
+                parser.parsePath(deepNestedDoc, new Position(5, 7));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse depth 5 path', () => {
-            parser.parsePath(deepNestedDoc, new Position(15, 11));
-        }, defaultBenchOptions);
+        bench(
+            'parse depth 5 path',
+            () => {
+                parser.parsePath(deepNestedDoc, new Position(15, 11));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('parse depth 8 path', () => {
-            parser.parsePath(deepNestedDoc, new Position(30, 17));
-        }, defaultBenchOptions);
+        bench(
+            'parse depth 8 path',
+            () => {
+                parser.parsePath(deepNestedDoc, new Position(30, 17));
+            },
+            defaultBenchOptions,
+        );
     });
 
     // ========================================
@@ -390,17 +494,25 @@ describe('YamlPathParser Performance', () => {
             '        deep-key: value',
         ];
 
-        bench('getIndentLevel', () => {
-            for (const line of testLines) {
-                parser.getIndentLevel(line);
-            }
-        }, defaultBenchOptions);
+        bench(
+            'getIndentLevel',
+            () => {
+                for (const line of testLines) {
+                    parser.getIndentLevel(line);
+                }
+            },
+            defaultBenchOptions,
+        );
 
-        bench('extractKeyName', () => {
-            for (const line of testLines) {
-                parser.extractKeyName(line);
-            }
-        }, defaultBenchOptions);
+        bench(
+            'extractKeyName',
+            () => {
+                for (const line of testLines) {
+                    parser.extractKeyName(line);
+                }
+            },
+            defaultBenchOptions,
+        );
     });
 
     // ========================================
@@ -408,22 +520,34 @@ describe('YamlPathParser Performance', () => {
     // ========================================
 
     describe('Typical Usage Patterns', () => {
-        bench('autocomplete scenario - parse then re-parse on edit', () => {
-            // 模拟用户编辑时的多次解析
-            parser.parsePath(mediumItemsDoc, new Position(20, 10));
-            parser.parsePath(mediumItemsDoc, new Position(20, 11));
-            parser.parsePath(mediumItemsDoc, new Position(20, 12));
-        }, defaultBenchOptions);
+        bench(
+            'autocomplete scenario - parse then re-parse on edit',
+            () => {
+                // 模拟用户编辑时的多次解析
+                parser.parsePath(mediumItemsDoc, new Position(20, 10));
+                parser.parsePath(mediumItemsDoc, new Position(20, 11));
+                parser.parsePath(mediumItemsDoc, new Position(20, 12));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('hover scenario - single position parse', () => {
-            parser.parsePath(mediumTemplatesDoc, new Position(15, 8));
-        }, defaultBenchOptions);
+        bench(
+            'hover scenario - single position parse',
+            () => {
+                parser.parsePath(mediumTemplatesDoc, new Position(15, 8));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('diagnostic scenario - multiple positions in sequence', () => {
-            for (let i = 0; i < 10; i++) {
-                parser.parsePath(mediumItemsDoc, new Position(i * 4, 5));
-            }
-        }, fastBenchOptions);
+        bench(
+            'diagnostic scenario - multiple positions in sequence',
+            () => {
+                for (let i = 0; i < 10; i++) {
+                    parser.parsePath(mediumItemsDoc, new Position(i * 4, 5));
+                }
+            },
+            fastBenchOptions,
+        );
     });
 
     // ========================================
@@ -435,25 +559,44 @@ describe('YamlPathParser Performance', () => {
         const commentDoc = createMockDocument('# Just a comment\n# Another comment');
         const singleLineDoc = createMockDocument('key: value');
 
-        bench('empty document', () => {
-            parser.parsePath(emptyDoc, new Position(0, 0));
-        }, defaultBenchOptions);
+        bench(
+            'empty document',
+            () => {
+                parser.parsePath(emptyDoc, new Position(0, 0));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('comment-only document', () => {
-            parser.parsePath(commentDoc, new Position(0, 5));
-        }, defaultBenchOptions);
+        bench(
+            'comment-only document',
+            () => {
+                parser.parsePath(commentDoc, new Position(0, 5));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('single line document', () => {
-            parser.parsePath(singleLineDoc, new Position(0, 3));
-        }, defaultBenchOptions);
+        bench(
+            'single line document',
+            () => {
+                parser.parsePath(singleLineDoc, new Position(0, 3));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('position at column 0', () => {
-            parser.parsePath(mediumItemsDoc, new Position(20, 0));
-        }, defaultBenchOptions);
+        bench(
+            'position at column 0',
+            () => {
+                parser.parsePath(mediumItemsDoc, new Position(20, 0));
+            },
+            defaultBenchOptions,
+        );
 
-        bench('position past line end', () => {
-            parser.parsePath(mediumItemsDoc, new Position(20, 100));
-        }, defaultBenchOptions);
+        bench(
+            'position past line end',
+            () => {
+                parser.parsePath(mediumItemsDoc, new Position(20, 100));
+            },
+            defaultBenchOptions,
+        );
     });
 });
-

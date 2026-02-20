@@ -1,6 +1,6 @@
-import { IMinecraftVersion, IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
+import { type IMinecraftVersion, type IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { ServiceContainer } from '../ServiceContainer';
 import { HttpUtils } from '../utils/HttpUtils';
@@ -74,11 +74,10 @@ export class MinecraftVersionService implements IMinecraftVersionService {
     private readonly configLoader: IDataConfigLoader;
 
     constructor() {
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild('MinecraftVersionService');
-        this.configLoader = ServiceContainer.getService<IDataConfigLoader>(
-            SERVICE_TOKENS.DataConfigLoader
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(
+            'MinecraftVersionService',
         );
+        this.configLoader = ServiceContainer.getService<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
 
         // 从预加载的配置中获取值
         const timingConfig = this.configLoader.getTimingConfigSync();
@@ -103,10 +102,10 @@ export class MinecraftVersionService implements IMinecraftVersionService {
         this.logger.debug('MinecraftVersionService initialized', {
             cacheTTL: this.cacheTTL,
             requestTimeout: this.requestTimeout,
-            minSupportedVersion: this.minSupportedVersion
+            minSupportedVersion: this.minSupportedVersion,
         });
     }
-    
+
     /**
      * 获取所有可用版本
      *
@@ -116,10 +115,10 @@ export class MinecraftVersionService implements IMinecraftVersionService {
         const now = Date.now();
 
         // 缓存有效，直接返回
-        if (this.cachedVersions && (now - this.lastFetchTime) < this.cacheTTL) {
+        if (this.cachedVersions && now - this.lastFetchTime < this.cacheTTL) {
             this.logger.debug('Using cached Minecraft versions', {
                 count: this.cachedVersions.length,
-                cacheAge: now - this.lastFetchTime
+                cacheAge: now - this.lastFetchTime,
             });
             return this.cachedVersions;
         }
@@ -142,16 +141,16 @@ export class MinecraftVersionService implements IMinecraftVersionService {
             this.fetchPromise = null;
         }
     }
-    
+
     /**
      * 获取最新正式版
      */
     async getLatestRelease(): Promise<string> {
         const versions = await this.getVersions();
-        const latest = versions.find(v => v.isLatest);
+        const latest = versions.find((v) => v.isLatest);
         return latest?.version || (versions.length > 0 ? versions[0].version : '1.21.4');
     }
-    
+
     /**
      * 刷新缓存
      */
@@ -160,7 +159,7 @@ export class MinecraftVersionService implements IMinecraftVersionService {
         this.lastFetchTime = 0;
         await this.getVersions();
     }
-    
+
     /**
      * 检查版本是否有效
      */
@@ -169,27 +168,27 @@ export class MinecraftVersionService implements IMinecraftVersionService {
         if (!this.isValidVersionFormat(version)) {
             return false;
         }
-        
+
         const versions = await this.getVersions();
-        return versions.some(v => v.version === version);
+        return versions.some((v) => v.version === version);
     }
-    
+
     /**
      * 检查版本格式是否有效
      */
     isValidVersionFormat(version: string): boolean {
         return /^\d+\.\d+(\.\d+)?$/.test(version);
     }
-    
+
     /**
      * 比较两个版本号
-     * 
+     *
      * @returns 正数表示 a > b，负数表示 a < b，0 表示相等
      */
     compareVersions(a: string, b: string): number {
         const partsA = a.split('.').map(Number);
         const partsB = b.split('.').map(Number);
-        
+
         for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
             const partA = partsA[i] || 0;
             const partB = partsB[i] || 0;
@@ -199,46 +198,46 @@ export class MinecraftVersionService implements IMinecraftVersionService {
         }
         return 0;
     }
-    
+
     /**
      * 获取最接近的有效版本
-     * 
+     *
      * @param invalidVersion 无效的版本号
      * @returns 最接近的有效版本列表
      */
     async getSuggestedVersions(invalidVersion: string): Promise<string[]> {
         const versions = await this.getVersions();
-        
+
         // 如果格式无效，返回最新的几个版本
         if (!this.isValidVersionFormat(invalidVersion)) {
-            return versions.slice(0, 5).map(v => v.version);
+            return versions.slice(0, 5).map((v) => v.version);
         }
-        
+
         // 解析无效版本
         const parts = invalidVersion.split('.').map(Number);
         const major = parts[0] || 1;
         const minor = parts[1] || 0;
-        
+
         // 查找同主版本的版本
-        const sameMinor = versions.filter(v => {
+        const sameMinor = versions.filter((v) => {
             const vParts = v.version.split('.').map(Number);
             return vParts[0] === major && vParts[1] === minor;
         });
-        
+
         if (sameMinor.length > 0) {
-            return sameMinor.slice(0, 3).map(v => v.version);
+            return sameMinor.slice(0, 3).map((v) => v.version);
         }
-        
+
         // 返回最接近的版本
         const sorted = [...versions].sort((a, b) => {
             const diffA = Math.abs(this.compareVersions(a.version, invalidVersion));
             const diffB = Math.abs(this.compareVersions(b.version, invalidVersion));
             return diffA - diffB;
         });
-        
-        return sorted.slice(0, 5).map(v => v.version);
+
+        return sorted.slice(0, 5).map((v) => v.version);
     }
-    
+
     /**
      * 从 Mojang API 获取版本列表，失败时尝试镜像站
      */
@@ -249,7 +248,7 @@ export class MinecraftVersionService implements IMinecraftVersionService {
             return await this.fetchVersionsFromUrl(this.primaryUrl);
         } catch (primaryError) {
             this.logger.warn('Failed to fetch from Mojang API, trying mirror', {
-                error: (primaryError as Error).message
+                error: (primaryError as Error).message,
             });
         }
 
@@ -275,23 +274,20 @@ export class MinecraftVersionService implements IMinecraftVersionService {
      * 从指定 URL 获取版本列表
      */
     private async fetchVersionsFromUrl(url: string): Promise<IMinecraftVersion[]> {
-        const data = await HttpUtils.fetchJson<VersionManifestResponse>(
-            url,
-            this.requestTimeout
-        );
+        const data = await HttpUtils.fetchJson<VersionManifestResponse>(url, this.requestTimeout);
 
         // 只保留正式版，过滤掉 snapshot、old_beta、old_alpha
         const releaseVersions = data.versions
-            .filter(v => v.type === 'release')
-            .map(v => ({
+            .filter((v) => v.type === 'release')
+            .map((v) => ({
                 version: v.id,
                 releaseTime: new Date(v.releaseTime),
-                isLatest: v.id === data.latest.release
+                isLatest: v.id === data.latest.release,
             }));
 
         // 只保留配置的最低支持版本及以上版本
-        const supportedVersions = releaseVersions.filter(v =>
-            this.compareVersions(v.version, this.minSupportedVersion) >= 0
+        const supportedVersions = releaseVersions.filter(
+            (v) => this.compareVersions(v.version, this.minSupportedVersion) >= 0,
         );
 
         this.logger.info('Minecraft versions fetched successfully', {
@@ -299,7 +295,7 @@ export class MinecraftVersionService implements IMinecraftVersionService {
             total: data.versions.length,
             releases: releaseVersions.length,
             supported: supportedVersions.length,
-            latest: data.latest.release
+            latest: data.latest.release,
         });
 
         return supportedVersions;

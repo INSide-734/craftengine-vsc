@@ -27,9 +27,7 @@ describe('DiagnosticIgnoreParser', () => {
 
     beforeEach(() => {
         parser = new DiagnosticIgnoreParser();
-        vi.mocked(workspace.getWorkspaceFolder).mockReturnValue(
-            mockWorkspaceFolder as any
-        );
+        vi.mocked(workspace.getWorkspaceFolder).mockReturnValue(mockWorkspaceFolder as any);
     });
 
     afterEach(() => {

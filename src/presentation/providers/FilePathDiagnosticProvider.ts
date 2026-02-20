@@ -1,32 +1,32 @@
 import {
-    TextDocument,
-    DiagnosticCollection,
+    type TextDocument,
+    type DiagnosticCollection,
     Diagnostic,
     Range,
     Position,
     languages,
-    Disposable,
-    Uri
+    type Disposable,
+    Uri,
 } from 'vscode';
 import * as path from 'path';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IConfiguration } from '../../core/interfaces/IConfiguration';
-import { IEventBus } from '../../core/interfaces/IEventBus';
-import { ISchemaService, IJsonSchema } from '../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
-import { IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
-import { IFileReader, FileType } from '../../core/interfaces/IFileReader';
-import { IWorkspaceService } from '../../core/interfaces/IWorkspaceService';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../core/interfaces/IConfiguration';
+import { type IEventBus } from '../../core/interfaces/IEventBus';
+import { type ISchemaService, type IJsonSchema } from '../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
+import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
+import { type IFileReader, FileType } from '../../core/interfaces/IFileReader';
+import { type IWorkspaceService } from '../../core/interfaces/IWorkspaceService';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
-import { PerformanceMonitor } from '../../infrastructure/performance/PerformanceMonitor';
+import { type PerformanceMonitor } from '../../infrastructure/performance/PerformanceMonitor';
 import { calculateSimilarity } from '../../infrastructure/utils';
 import { DiagnosticCache } from '../../infrastructure/cache/DiagnosticCache';
 import {
     FILE_NOT_FOUND,
     INVALID_FILE_PATH,
     INVALID_NAMESPACE,
-    INVALID_PATH
+    INVALID_PATH,
 } from '../../core/constants/DiagnosticCodes';
 import { TYPE_VALIDATION_MESSAGES } from '../../core/constants/DiagnosticMessages';
 import { DiagnosticSeverityConfig } from '../../infrastructure/config/DiagnosticSeverityConfig';
@@ -56,13 +56,13 @@ export interface IFilePathDiagnosticData {
 
 /**
  * 文件路径诊断提供者
- * 
+ *
  * 提供基于 Schema 配置的文件路径验证功能：
  * - 检测文件是否存在
  * - 验证命名空间是否有效
  * - 验证路径格式是否正确
  * - 提供相似路径建议
- * 
+ *
  * @example
  * ```typescript
  * const provider = new FilePathDiagnosticProvider();
@@ -112,8 +112,9 @@ export class FilePathDiagnosticProvider implements Disposable {
 
     constructor() {
         this.diagnosticCollection = languages.createDiagnosticCollection('craftengine-filepath');
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild('FilePathDiagnosticProvider');
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(
+            'FilePathDiagnosticProvider',
+        );
         this.configuration = ServiceContainer.getService<IConfiguration>(SERVICE_TOKENS.Configuration);
         this.eventBus = ServiceContainer.getService<IEventBus>(SERVICE_TOKENS.EventBus);
         this.schemaService = ServiceContainer.getService<ISchemaService>(SERVICE_TOKENS.SchemaService);
@@ -129,9 +130,9 @@ export class FilePathDiagnosticProvider implements Disposable {
             {
                 capacity: FilePathDiagnosticProvider.DEFAULT_CACHE_CAPACITY,
                 ttl: FilePathDiagnosticProvider.DEFAULT_CACHE_TTL,
-                name: 'FilePathDiagnosticCache'
+                name: 'FilePathDiagnosticCache',
             },
-            this.logger
+            this.logger,
         );
 
         this.setupEventListeners();
@@ -155,25 +156,29 @@ export class FilePathDiagnosticProvider implements Disposable {
             this.logger.warn('Failed to load config, using defaults', { error });
         }
     }
-    
+
     /**
      * 设置事件监听器
      */
     private setupEventListeners(): void {
         // 监听文件系统变更，清除缓存
-        this.subscriptions.push(this.eventBus.subscribe('file.modified', () => {
-            this.fileExistsCache.clear();
-            this.diagnosticCache.clear();
-        }));
+        this.subscriptions.push(
+            this.eventBus.subscribe('file.modified', () => {
+                this.fileExistsCache.clear();
+                this.diagnosticCache.clear();
+            }),
+        );
 
         // 监听配置变更
-        this.disposeFns.push(this.configuration.onChange(event => {
-            if (event.key.startsWith('craftengine.diagnostics')) {
-                this.diagnosticCache.clear();
-            }
-        }));
+        this.disposeFns.push(
+            this.configuration.onChange((event) => {
+                if (event.key.startsWith('craftengine.diagnostics')) {
+                    this.diagnosticCache.clear();
+                }
+            }),
+        );
     }
-    
+
     /**
      * 更新文档的诊断信息
      *
@@ -184,19 +189,19 @@ export class FilePathDiagnosticProvider implements Disposable {
         // 确保配置已加载
         await this.ensureConfigLoaded();
         const timer = this.performanceMonitor.startTimer('filepath-diagnostics.update');
-        
+
         try {
             // 检查功能是否启用
             if (!this.configuration.get('craftengine.diagnostics.filePathValidation', true)) {
                 this.logger.debug('File path validation is disabled');
                 return;
             }
-            
+
             // 只处理 YAML 文件
             if (document.languageId !== 'yaml') {
                 return;
             }
-            
+
             // 检查缓存
             const cacheKey = document.uri.toString();
             const cached = this.diagnosticCache.get(cacheKey, document.version);
@@ -206,124 +211,130 @@ export class FilePathDiagnosticProvider implements Disposable {
                 timer.stop({ success: 'true', fromCache: 'true' });
                 return;
             }
-            
+
             this.logger.debug('Updating file path diagnostics', {
                 file: document.fileName,
-                version: document.version
+                version: document.version,
             });
-            
+
             const diagnostics: Diagnostic[] = [];
-            
+
             // 扫描文档中的所有文件路径引用
             const pathReferences = await this.findFilePathReferences(document);
-            
+
             // 验证每个路径
             for (const ref of pathReferences) {
                 const pathDiagnostics = await this.validateFilePath(ref, document);
                 diagnostics.push(...pathDiagnostics);
             }
-            
+
             // 设置诊断
             this.diagnosticCollection.set(document.uri, diagnostics);
 
             // 缓存结果
             this.diagnosticCache.set(cacheKey, diagnostics, document.version);
-            
-            timer.stop({ 
-                success: 'true', 
+
+            timer.stop({
+                success: 'true',
                 diagnosticsCount: diagnostics.length.toString(),
-                pathsChecked: pathReferences.length.toString()
+                pathsChecked: pathReferences.length.toString(),
             });
-            
         } catch (error) {
             this.logger.error('Failed to update file path diagnostics', error as Error);
             timer.stop({ success: 'false', error: (error as Error).message });
         }
     }
-    
+
     /**
      * 查找文档中的所有文件路径引用
      */
-    private async findFilePathReferences(document: TextDocument): Promise<Array<{
-        range: Range;
-        value: string;
-        yamlPath: string[];
-        schema: IJsonSchema;
-    }>> {
+    private async findFilePathReferences(document: TextDocument): Promise<
+        Array<{
+            range: Range;
+            value: string;
+            yamlPath: string[];
+            schema: IJsonSchema;
+        }>
+    > {
         const references: Array<{
             range: Range;
             value: string;
             yamlPath: string[];
             schema: IJsonSchema;
         }> = [];
-        
+
         try {
             const text = document.getText();
             const lines = text.split('\n');
-            
+
             for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
                 const line = lines[lineIndex];
-                
+
                 // 跳过注释和空行
                 const trimmed = line.trim();
                 if (!trimmed || trimmed.startsWith('#')) {
                     continue;
                 }
-                
+
                 // 查找键值对
                 const colonIndex = line.indexOf(':');
                 if (colonIndex === -1) {
                     continue;
                 }
-                
+
                 const value = line.substring(colonIndex + 1).trim();
                 if (!value) {
                     continue;
                 }
-                
+
                 // 检查是否像是资源位置格式
                 // 移除可能的引号
                 const cleanValue = value.replace(/^["']|["']$/g, '');
-                
+
                 if (!this.looksLikeResourceLocation(cleanValue)) {
                     continue;
                 }
-                
+
                 // 解析 YAML 路径
                 const position = new Position(lineIndex, colonIndex + 1);
                 const yamlPath = this.pathParser.parsePath(document, position);
-                
+
                 if (yamlPath.length === 0) {
                     continue;
                 }
-                
+
                 // 获取 Schema
                 const schema = await this.schemaService.getSchemaForPath(yamlPath);
-                
+
                 // 检查是否有 x-completion-provider: craftengine.filePath
-                if (!schema || this.schemaService.getCustomProperty(schema, 'completion-provider') !== 'craftengine.filePath') {
+                if (
+                    !schema ||
+                    this.schemaService.getCustomProperty(schema, 'completion-provider') !== 'craftengine.filePath'
+                ) {
                     continue;
                 }
-                
+
                 // 计算值的范围
-                const valueStart = colonIndex + 1 + (line.substring(colonIndex + 1).length - line.substring(colonIndex + 1).trimStart().length);
+                const valueStart =
+                    colonIndex +
+                    1 +
+                    (line.substring(colonIndex + 1).length - line.substring(colonIndex + 1).trimStart().length);
                 const valueEnd = valueStart + value.length;
-                
+
                 references.push({
                     range: new Range(lineIndex, valueStart, lineIndex, valueEnd),
                     value: cleanValue,
                     yamlPath,
-                    schema
+                    schema,
                 });
             }
-            
         } catch (error) {
             this.logger.error('Failed to find file path references', error as Error);
         }
-        
+
         return references;
     }
-    
+
     /**
      * 检查字符串是否看起来像资源位置
      */
@@ -331,16 +342,19 @@ export class FilePathDiagnosticProvider implements Disposable {
         // 包含冒号（命名空间分隔符）或斜杠（路径分隔符）
         return value.includes(':') || value.includes('/');
     }
-    
+
     /**
      * 验证文件路径
      */
-    private async validateFilePath(ref: {
-        range: Range;
-        value: string;
-        yamlPath: string[];
-        schema: IJsonSchema;
-    }, _document: TextDocument): Promise<Diagnostic[]> {
+    private async validateFilePath(
+        ref: {
+            range: Range;
+            value: string;
+            yamlPath: string[];
+            schema: IJsonSchema;
+        },
+        _document: TextDocument,
+    ): Promise<Diagnostic[]> {
         const diagnostics: Diagnostic[] = [];
 
         try {
@@ -361,13 +375,13 @@ export class FilePathDiagnosticProvider implements Disposable {
                     const diagnostic = new Diagnostic(
                         ref.range,
                         TYPE_VALIDATION_MESSAGES.invalidFilePath(ref.value),
-                        severity
+                        severity,
                     );
                     diagnostic.code = INVALID_FILE_PATH.code;
                     diagnostic.source = 'CraftEngine File Path';
                     (diagnostic as DiagnosticWithData).data = {
                         type: 'invalid-format',
-                        inputPath: ref.value
+                        inputPath: ref.value,
                     } as IFilePathDiagnosticData;
 
                     diagnostics.push(diagnostic);
@@ -384,14 +398,14 @@ export class FilePathDiagnosticProvider implements Disposable {
                     const diagnostic = new Diagnostic(
                         ref.range,
                         TYPE_VALIDATION_MESSAGES.invalidNamespace(namespace),
-                        severity
+                        severity,
                     );
                     diagnostic.code = INVALID_NAMESPACE.code;
                     diagnostic.source = 'CraftEngine File Path';
                     (diagnostic as DiagnosticWithData).data = {
                         type: 'invalid-format',
                         inputPath: ref.value,
-                        namespace
+                        namespace,
                     } as IFilePathDiagnosticData;
 
                     diagnostics.push(diagnostic);
@@ -406,7 +420,7 @@ export class FilePathDiagnosticProvider implements Disposable {
                     const diagnostic = new Diagnostic(
                         ref.range,
                         TYPE_VALIDATION_MESSAGES.invalidPath(relativePath),
-                        severity
+                        severity,
                     );
                     diagnostic.code = INVALID_PATH.code;
                     diagnostic.source = 'CraftEngine File Path';
@@ -414,7 +428,7 @@ export class FilePathDiagnosticProvider implements Disposable {
                         type: 'invalid-format',
                         inputPath: ref.value,
                         namespace,
-                        relativePath
+                        relativePath,
                     } as IFilePathDiagnosticData;
 
                     diagnostics.push(diagnostic);
@@ -424,30 +438,21 @@ export class FilePathDiagnosticProvider implements Disposable {
 
             // 检查文件是否存在
             if (options.basePath) {
-                const fileExists = await this.checkFileExists(
-                    namespace,
-                    relativePath,
-                    options
-                );
+                const fileExists = await this.checkFileExists(namespace, relativePath, options);
 
                 if (!fileExists.exists) {
                     const severity = this.severityConfig.getSeverity(FILE_NOT_FOUND.code);
                     if (severity !== null) {
                         // 查找相似路径
-                        const suggestions = await this.findSimilarPaths(
-                            namespace,
-                            relativePath,
-                            options
-                        );
+                        const suggestions = await this.findSimilarPaths(namespace, relativePath, options);
 
-                        const suggestionText = suggestions.length > 0
-                            ? ` Did you mean: ${suggestions.slice(0, 3).join(', ')}?`
-                            : '';
+                        const suggestionText =
+                            suggestions.length > 0 ? ` Did you mean: ${suggestions.slice(0, 3).join(', ')}?` : '';
 
                         const diagnostic = new Diagnostic(
                             ref.range,
                             TYPE_VALIDATION_MESSAGES.fileNotFound(ref.value) + suggestionText,
-                            severity
+                            severity,
                         );
                         diagnostic.code = FILE_NOT_FOUND.code;
                         diagnostic.source = 'CraftEngine File Path';
@@ -458,23 +463,22 @@ export class FilePathDiagnosticProvider implements Disposable {
                             relativePath,
                             resourceType: options.resourceType,
                             basePath: options.basePath,
-                            suggestions
+                            suggestions,
                         } as IFilePathDiagnosticData;
 
                         diagnostics.push(diagnostic);
                     }
                 }
             }
-
         } catch (error) {
             this.logger.error('Failed to validate file path', error as Error, {
-                value: ref.value
+                value: ref.value,
             });
         }
 
         return diagnostics;
     }
-    
+
     /**
      * 解析资源位置
      */
@@ -483,21 +487,21 @@ export class FilePathDiagnosticProvider implements Disposable {
         if (match) {
             return {
                 namespace: match[1],
-                relativePath: match[2]
+                relativePath: match[2],
             };
         }
-        
+
         // 尝试解析没有命名空间的格式（使用默认 minecraft）
         if (this.PATH_PATTERN.test(value)) {
             return {
                 namespace: 'minecraft',
-                relativePath: value
+                relativePath: value,
             };
         }
-        
+
         return null;
     }
-    
+
     /**
      * 检查文件是否存在
      *
@@ -508,7 +512,7 @@ export class FilePathDiagnosticProvider implements Disposable {
     private async checkFileExists(
         namespace: string,
         relativePath: string,
-        options: { basePath?: string; fileExtensions?: string[]; stripExtension?: boolean }
+        options: { basePath?: string; fileExtensions?: string[]; stripExtension?: boolean },
     ): Promise<{ exists: boolean; absolutePath?: string }> {
         const workspaceFolders = this.workspaceService.getWorkspaceFolders();
         if (workspaceFolders.length === 0) {
@@ -537,7 +541,7 @@ export class FilePathDiagnosticProvider implements Disposable {
                 if (!normalizedAbsolute.startsWith(normalizedWorkspace)) {
                     this.logger.warn('Path traversal detected after resolution', {
                         workspace: normalizedWorkspace,
-                        absolutePath: normalizedAbsolute
+                        absolutePath: normalizedAbsolute,
                     });
                     continue;
                 }
@@ -559,7 +563,7 @@ export class FilePathDiagnosticProvider implements Disposable {
                 // 更新缓存
                 this.fileExistsCache.set(cacheKey, {
                     exists,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
                 });
 
                 if (exists) {
@@ -585,14 +589,14 @@ export class FilePathDiagnosticProvider implements Disposable {
         const normalized = path.normalize(pathStr);
         return normalized.includes('..') || path.isAbsolute(pathStr);
     }
-    
+
     /**
      * 查找相似路径
      */
     private async findSimilarPaths(
         namespace: string,
         relativePath: string,
-        options: { basePath?: string; fileExtensions?: string[]; stripExtension?: boolean }
+        options: { basePath?: string; fileExtensions?: string[]; stripExtension?: boolean },
     ): Promise<string[]> {
         const suggestions: string[] = [];
 
@@ -636,9 +640,7 @@ export class FilePathDiagnosticProvider implements Disposable {
                         }
 
                         // 计算相似度
-                        const entryName = stripExtension
-                            ? entry.name.replace(/\.[^/.]+$/, '')
-                            : entry.name;
+                        const entryName = stripExtension ? entry.name.replace(/\.[^/.]+$/, '') : entry.name;
 
                         const similarity = calculateSimilarity(fileName, entryName);
 
@@ -660,7 +662,6 @@ export class FilePathDiagnosticProvider implements Disposable {
                 const bName = b.split('/').pop() || '';
                 return calculateSimilarity(fileName, bName) - calculateSimilarity(fileName, aName);
             });
-
         } catch (error) {
             this.logger.error('Failed to find similar paths', error as Error);
         }
@@ -722,4 +723,3 @@ export class FilePathDiagnosticProvider implements Disposable {
         this.fileExistsCache.clear();
     }
 }
-

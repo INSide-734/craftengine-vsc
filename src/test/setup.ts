@@ -13,7 +13,7 @@ import { initializeMinecraftVersions } from '../domain/services/model/utils/Mine
 import { initializeModelProperties } from '../domain/services/model/ModelPropertiesInit';
 import { initializeMiniMessagePatterns } from '../presentation/strategies/delegates/richtext/types';
 import { initializeTypeDisplayNames } from '../core/constants/DiagnosticMessages';
-import { IMiniMessageConstantsConfig, IDiagnosticCodesConfig } from '../core/types/ConfigTypes';
+import { type IMiniMessageConstantsConfig, type IDiagnosticCodesConfig } from '../core/types/ConfigTypes';
 
 /**
  * 从 data/ 目录加载 JSON 配置文件

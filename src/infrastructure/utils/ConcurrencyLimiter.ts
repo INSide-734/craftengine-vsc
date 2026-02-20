@@ -33,7 +33,7 @@ export class ConcurrencyLimiter {
     async run<T>(fn: () => Promise<T>): Promise<T> {
         // 如果已达到并发限制，等待
         if (this.running >= this.maxConcurrency) {
-            await new Promise<void>(resolve => {
+            await new Promise<void>((resolve) => {
                 this.queue.push(resolve);
             });
         }

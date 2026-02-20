@@ -1,5 +1,5 @@
-import { EditorTextDocument, EditorUri } from '../types/EditorTypes';
-import { IParsedDocument } from './IParsedDocument';
+import { type EditorTextDocument, type EditorUri } from '../types/EditorTypes';
+import { type IParsedDocument } from './IParsedDocument';
 
 /**
  * 诊断提供者接口

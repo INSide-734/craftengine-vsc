@@ -1,6 +1,6 @@
 /**
  * EventBus 单元测试
- * 
+ *
  * 测试事件总线的所有功能，包括：
  * - 事件订阅和发布
  * - 精确匹配、通配符匹配、模式匹配
@@ -10,7 +10,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EventBus } from '../../../../infrastructure/events/EventBus';
-import { ILogger } from '../../../../core/interfaces/ILogger';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
 
 describe('EventBus', () => {
     let eventBus: EventBus;
@@ -108,7 +108,7 @@ describe('EventBus', () => {
 
         it('should handle multiple async handlers in parallel', async () => {
             const order: number[] = [];
-            
+
             eventBus.subscribe('parallel.event', async () => {
                 await new Promise((resolve) => setTimeout(resolve, 30));
                 order.push(1);
@@ -425,7 +425,7 @@ describe('EventBus', () => {
 
         it('should handle many subscriptions', async () => {
             const handlers: ReturnType<typeof vi.fn>[] = [];
-            
+
             for (let i = 0; i < 100; i++) {
                 const handler = vi.fn();
                 handlers.push(handler);
@@ -453,7 +453,7 @@ describe('EventBus', () => {
 
         it('should handle errors without logger', async () => {
             const busWithoutLogger = new EventBus();
-            
+
             busWithoutLogger.subscribe('test', () => {
                 throw new Error('No logger to catch this');
             });
@@ -463,4 +463,3 @@ describe('EventBus', () => {
         });
     });
 });
-

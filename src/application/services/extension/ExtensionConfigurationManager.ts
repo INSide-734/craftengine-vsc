@@ -1,6 +1,6 @@
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../core/interfaces/IConfiguration';
-import { IEventBus } from '../../../core/interfaces/IEventBus';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../core/interfaces/IConfiguration';
+import { type IEventBus } from '../../../core/interfaces/IEventBus';
 import { EVENT_TYPES } from '../../../core/constants/ServiceTokens';
 
 /**
@@ -16,7 +16,7 @@ export class ExtensionConfigurationManager {
         private readonly logger: ILogger,
         private readonly configuration: IConfiguration,
         private readonly eventBus: IEventBus,
-        private readonly generateEventId: () => string
+        private readonly generateEventId: () => string,
     ) {}
 
     /**
@@ -31,7 +31,6 @@ export class ExtensionConfigurationManager {
             this.setupConfigurationChangeListener();
 
             this.logger.debug('Configuration initialized');
-
         } catch (error) {
             this.logger.error('Failed to initialize configuration', error as Error);
             throw error;
@@ -66,7 +65,7 @@ export class ExtensionConfigurationManager {
             this.logger.info('Configuration changed', {
                 key: event.key,
                 oldValue: event.oldValue,
-                newValue: event.newValue
+                newValue: event.newValue,
             });
 
             // 发布配置变更事件
@@ -77,9 +76,8 @@ export class ExtensionConfigurationManager {
                 source: 'ExtensionService',
                 key: event.key,
                 oldValue: event.oldValue,
-                newValue: event.newValue
+                newValue: event.newValue,
             });
         });
     }
 }
-

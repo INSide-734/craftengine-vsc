@@ -1,6 +1,6 @@
-import { ErrorObject } from 'ajv';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { ValidationLevel, IValidationError } from '../SchemaValidator';
+import { type ErrorObject } from 'ajv';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { ValidationLevel, type IValidationError } from '../SchemaValidator';
 
 /**
  * 验证错误格式化器
@@ -36,7 +36,7 @@ export class ValidationErrorFormatter {
                 this.logger.debug('Skipping duplicate validation error', {
                     path,
                     keyword: error.keyword,
-                    dedupeKey
+                    dedupeKey,
                 });
                 continue;
             }
@@ -48,7 +48,7 @@ export class ValidationErrorFormatter {
                 message,
                 code: error.keyword,
                 severity,
-                suggestion
+                suggestion,
             });
         }
 
@@ -67,21 +67,20 @@ export class ValidationErrorFormatter {
             }
         }
 
-        return errors.filter(error => {
+        return errors.filter((error) => {
             // 过滤掉版本条件对象 schema 的类型错误
-            if (error.keyword === 'type' &&
-                error.schemaPath &&
-                /\/oneOf\/1\/type$/.test(error.schemaPath)) {
+            if (error.keyword === 'type' && error.schemaPath && /\/oneOf\/1\/type$/.test(error.schemaPath)) {
                 return false;
             }
 
             // 对于 oneOf 失败，如果同一路径有其他更具体的错误，则过滤掉 oneOf 错误
             if (error.keyword === 'oneOf') {
-                const hasSpecificError = errors.some(e =>
-                    e.instancePath === error.instancePath &&
-                    e.keyword !== 'oneOf' &&
-                    e.keyword !== 'type' &&
-                    !/\/oneOf\/1\//.test(e.schemaPath || '')
+                const hasSpecificError = errors.some(
+                    (e) =>
+                        e.instancePath === error.instancePath &&
+                        e.keyword !== 'oneOf' &&
+                        e.keyword !== 'type' &&
+                        !/\/oneOf\/1\//.test(e.schemaPath || ''),
                 );
                 if (hasSpecificError) {
                     return false;
@@ -165,7 +164,7 @@ export class ValidationErrorFormatter {
      */
     private formatType(type: string | string[]): string {
         if (Array.isArray(type)) {
-            return type.map(t => this.formatSingleType(t)).join(' or ');
+            return type.map((t) => this.formatSingleType(t)).join(' or ');
         }
         return this.formatSingleType(type);
     }
@@ -175,13 +174,13 @@ export class ValidationErrorFormatter {
      */
     private formatSingleType(type: string): string {
         const typeMap: Record<string, string> = {
-            'string': '📝 text',
-            'number': '🔢 number',
-            'integer': '🔢 integer',
-            'boolean': '✓ true/false',
-            'object': '📦 object',
-            'array': '📋 list',
-            'null': '∅ null'
+            string: '📝 text',
+            number: '🔢 number',
+            integer: '🔢 integer',
+            boolean: '✓ true/false',
+            object: '📦 object',
+            array: '📋 list',
+            null: '∅ null',
         };
         return typeMap[type] || type;
     }
@@ -199,7 +198,9 @@ export class ValidationErrorFormatter {
      * 首字母大写
      */
     private capitalizeFirst(str: string): string {
-        if (!str) { return str; }
+        if (!str) {
+            return str;
+        }
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
@@ -242,7 +243,10 @@ export class ValidationErrorFormatter {
                     if (values.length <= 5) {
                         return `✓ Choose one:\n    ${values.map((v: string) => `• ${v}`).join('\n    ')}`;
                     } else {
-                        return `✓ Choose one of ${values.length} options:\n    ${values.slice(0, 3).map((v: string) => `• ${v}`).join('\n    ')}\n    ... and ${values.length - 3} more`;
+                        return `✓ Choose one of ${values.length} options:\n    ${values
+                            .slice(0, 3)
+                            .map((v: string) => `• ${v}`)
+                            .join('\n    ')}\n    ... and ${values.length - 3} more`;
                     }
                 }
                 break;
@@ -280,12 +284,12 @@ export class ValidationErrorFormatter {
      */
     private getTypeExample(type: string): string {
         const examples: Record<string, string> = {
-            'string': '📝 Example:\n    field: "text value"',
-            'number': '🔢 Example:\n    field: 42',
-            'integer': '🔢 Example:\n    field: 10',
-            'boolean': '✓ Example:\n    field: true',
-            'object': '📦 Example:\n    field:\n      property: value',
-            'array': '📋 Example:\n    field:\n      - item1\n      - item2'
+            string: '📝 Example:\n    field: "text value"',
+            number: '🔢 Example:\n    field: 42',
+            integer: '🔢 Example:\n    field: 10',
+            boolean: '✓ Example:\n    field: true',
+            object: '📦 Example:\n    field:\n      property: value',
+            array: '📋 Example:\n    field:\n      - item1\n      - item2',
         };
 
         return examples[type] || `Change to ${type} type`;

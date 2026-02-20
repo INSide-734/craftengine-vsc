@@ -10,10 +10,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ExtensionHealthChecker } from '../../../../../application/services/extension/ExtensionHealthChecker';
 import { ExtensionState } from '../../../../../core/interfaces/IExtensionService';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../../../core/interfaces/IConfiguration';
-import { IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
-import { IFileWatcher } from '../../../../../core/interfaces/IFileWatcher';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../../../core/interfaces/IConfiguration';
+import { type IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
+import { type IFileWatcher } from '../../../../../core/interfaces/IFileWatcher';
 
 describe('ExtensionHealthChecker', () => {
     let checker: ExtensionHealthChecker;
@@ -46,17 +46,19 @@ describe('ExtensionHealthChecker', () => {
         } as unknown as IConfiguration;
 
         mockDataStoreService = {
-            getStatistics: vi.fn(() => Promise.resolve({
-                templateCount: 10,
-                translationKeyCount: 20,
-                itemCount: 5,
-                categoryCount: 3,
-                indexedFileCount: 15,
-                languageCount: 2,
-                namespaceCount: 1,
-                lastUpdated: new Date(),
-                isInitialized: true,
-            })),
+            getStatistics: vi.fn(() =>
+                Promise.resolve({
+                    templateCount: 10,
+                    translationKeyCount: 20,
+                    itemCount: 5,
+                    categoryCount: 3,
+                    indexedFileCount: 15,
+                    languageCount: 2,
+                    namespaceCount: 1,
+                    lastUpdated: new Date(),
+                    isInitialized: true,
+                }),
+            ),
         } as unknown as IDataStoreService;
 
         mockFileWatcher = {
@@ -69,12 +71,7 @@ describe('ExtensionHealthChecker', () => {
             dispose: vi.fn(),
         } as unknown as IFileWatcher;
 
-        checker = new ExtensionHealthChecker(
-            mockLogger,
-            mockConfiguration,
-            mockDataStoreService,
-            mockFileWatcher
-        );
+        checker = new ExtensionHealthChecker(mockLogger, mockConfiguration, mockDataStoreService, mockFileWatcher);
     });
 
     // ========================================
@@ -109,7 +106,7 @@ describe('ExtensionHealthChecker', () => {
             expect(result).toBe(false);
             expect(mockLogger.warn).toHaveBeenCalledWith(
                 'Health check failed: extension not active',
-                expect.objectContaining({ currentState: ExtensionState.Initializing })
+                expect.objectContaining({ currentState: ExtensionState.Initializing }),
             );
         });
 
@@ -149,9 +146,7 @@ describe('ExtensionHealthChecker', () => {
 
             const result = await checker.checkHealth(ExtensionState.Active);
             expect(result).toBe(true);
-            expect(mockLogger.debug).toHaveBeenCalledWith(
-                'Data cache is empty (initial scan may still be running)'
-            );
+            expect(mockLogger.debug).toHaveBeenCalledWith('Data cache is empty (initial scan may still be running)');
         });
 
         it('should log cache status when data exists', async () => {
@@ -161,7 +156,7 @@ describe('ExtensionHealthChecker', () => {
                 expect.objectContaining({
                     templateCount: 10,
                     translationKeyCount: 20,
-                })
+                }),
             );
         });
     });
@@ -183,7 +178,7 @@ describe('ExtensionHealthChecker', () => {
                 'Health check warning: configuration validation errors',
                 expect.objectContaining({
                     errors: ['Invalid template path', 'Missing required setting'],
-                })
+                }),
             );
         });
     });
@@ -194,16 +189,11 @@ describe('ExtensionHealthChecker', () => {
 
     describe('checkHealth - error handling', () => {
         it('should return false and log error when an exception occurs', async () => {
-            vi.mocked(mockDataStoreService.getStatistics).mockRejectedValue(
-                new Error('Service unavailable')
-            );
+            vi.mocked(mockDataStoreService.getStatistics).mockRejectedValue(new Error('Service unavailable'));
 
             const result = await checker.checkHealth(ExtensionState.Active);
             expect(result).toBe(false);
-            expect(mockLogger.error).toHaveBeenCalledWith(
-                'Health check failed',
-                expect.any(Error)
-            );
+            expect(mockLogger.error).toHaveBeenCalledWith('Health check failed', expect.any(Error));
         });
     });
 });

@@ -1,10 +1,10 @@
 import {
-    ICompletionManager,
-    ICompletionStrategy,
-    ICompletionContextInfo
+    type ICompletionManager,
+    type ICompletionStrategy,
+    type ICompletionContextInfo,
 } from '../../core/interfaces/ICompletionStrategy';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IDataConfigLoader, ICompletionPrioritiesConfig } from '../../core/interfaces/IDataConfigLoader';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IDataConfigLoader, type ICompletionPrioritiesConfig } from '../../core/interfaces/IDataConfigLoader';
 import { ServiceContainer } from '../ServiceContainer';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { ServiceNotInitializedError } from '../../core/errors/ExtensionErrors';
@@ -115,7 +115,7 @@ export class CompletionManager implements ICompletionManager {
      */
     constructor(
         private readonly logger?: ILogger,
-        config?: { activationTimeoutMs?: number; totalActivationTimeoutMs?: number }
+        config?: { activationTimeoutMs?: number; totalActivationTimeoutMs?: number },
     ) {
         this.activationTimeoutMs = config?.activationTimeoutMs ?? 50;
         this.totalActivationTimeoutMs = config?.totalActivationTimeoutMs ?? 100;
@@ -126,9 +126,7 @@ export class CompletionManager implements ICompletionManager {
      */
     private getConfigLoader(): IDataConfigLoader {
         if (!this.configLoader) {
-            this.configLoader = ServiceContainer.getService<IDataConfigLoader>(
-                SERVICE_TOKENS.DataConfigLoader
-            );
+            this.configLoader = ServiceContainer.getService<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
         }
         return this.configLoader;
     }
@@ -228,7 +226,7 @@ export class CompletionManager implements ICompletionManager {
     registerStrategy(strategy: ICompletionStrategy): void {
         if (this.strategies.has(strategy.name)) {
             this.logger?.warn('Completion strategy already registered', {
-                strategyName: strategy.name
+                strategyName: strategy.name,
             });
             return;
         }
@@ -238,35 +236,35 @@ export class CompletionManager implements ICompletionManager {
         this.logger?.debug('Completion strategy registered', {
             strategyName: strategy.name,
             priority: strategy.priority,
-            triggerCharacters: strategy.triggerCharacters
+            triggerCharacters: strategy.triggerCharacters,
         });
     }
-    
+
     /**
      * 取消注册补全策略
      */
     unregisterStrategy(strategyName: string): void {
         if (!this.strategies.has(strategyName)) {
             this.logger?.warn('Completion strategy not found for unregistration', {
-                strategyName
+                strategyName,
             });
             return;
         }
-        
+
         this.strategies.delete(strategyName);
-        
+
         this.logger?.debug('Completion strategy unregistered', {
-            strategyName
+            strategyName,
         });
     }
-    
+
     /**
      * 获取所有注册的策略
      */
     getStrategies(): ICompletionStrategy[] {
         return Array.from(this.strategies.values());
     }
-    
+
     /**
      * 根据上下文获取激活的策略
      *
@@ -287,36 +285,36 @@ export class CompletionManager implements ICompletionManager {
                         const shouldActivate = await withTimeout(
                             Promise.resolve(strategy.shouldActivate(context)),
                             this.activationTimeoutMs,
-                            `Strategy ${strategy.name} activation timeout`
+                            `Strategy ${strategy.name} activation timeout`,
                         );
                         return { strategy, shouldActivate };
                     } catch (error) {
                         // 超时或其他错误，记录并跳过该策略
                         this.logger?.warn('Strategy activation check failed', {
                             strategyName: strategy.name,
-                            error: error instanceof Error ? error.message : String(error)
+                            error: error instanceof Error ? error.message : String(error),
                         });
                         return { strategy, shouldActivate: false };
                     }
-                })
+                }),
             ),
             this.totalActivationTimeoutMs,
-            'Total completion activation timeout'
+            'Total completion activation timeout',
         ).catch((error) => {
             // 总超时，返回空数组
             this.logger?.warn('Completion activation timed out', {
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             });
-            return strategies.map(strategy => ({ strategy, shouldActivate: false }));
+            return strategies.map((strategy) => ({ strategy, shouldActivate: false }));
         });
 
         // 过滤出激活的策略
         const activeStrategies = activationResults
-            .filter(result => result.shouldActivate)
-            .map(result => {
+            .filter((result) => result.shouldActivate)
+            .map((result) => {
                 this.logger?.debug('Completion strategy activated', {
                     strategyName: result.strategy.name,
-                    position: `${context.position.line}:${context.position.character}`
+                    position: `${context.position.line}:${context.position.character}`,
                 });
                 return result.strategy;
             });
@@ -326,25 +324,24 @@ export class CompletionManager implements ICompletionManager {
 
         this.logger?.debug('Active completion strategies determined', {
             count: activeStrategies.length,
-            strategies: activeStrategies.map(s => s.name)
+            strategies: activeStrategies.map((s) => s.name),
         });
 
         return activeStrategies;
     }
-    
+
     /**
      * 获取所有触发字符
      */
     getAllTriggerCharacters(): string[] {
         const triggerChars = new Set<string>();
-        
+
         for (const strategy of this.strategies.values()) {
             for (const char of strategy.triggerCharacters) {
                 triggerChars.add(char);
             }
         }
-        
+
         return Array.from(triggerChars);
     }
 }
-

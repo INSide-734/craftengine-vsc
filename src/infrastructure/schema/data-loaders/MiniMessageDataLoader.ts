@@ -1,11 +1,11 @@
 import { ServiceContainer } from '../../ServiceContainer';
-import { ILogger } from '../../../core/interfaces/ILogger';
+import { type ILogger } from '../../../core/interfaces/ILogger';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
 import { DataConfigLoader } from '../../data/DataConfigLoader';
 import {
-    IMiniMessageConstantsConfig,
-    IMiniMessageFullTagDefinition,
-    IMiniMessageTagArgument
+    type IMiniMessageConstantsConfig,
+    type IMiniMessageFullTagDefinition,
+    type IMiniMessageTagArgument,
 } from '../../../core/interfaces/IDataConfigLoader';
 
 // ============================================================================
@@ -156,11 +156,8 @@ export class MiniMessageDataLoader {
      * 私有构造函数
      */
     private constructor() {
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild('MiniMessageDataLoader');
-        this.dataConfigLoader = new DataConfigLoader(
-            ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-        );
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild('MiniMessageDataLoader');
+        this.dataConfigLoader = new DataConfigLoader(ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger));
     }
 
     /**
@@ -216,9 +213,8 @@ export class MiniMessageDataLoader {
                 colorCount: this.data.colors.length,
                 tagCount: this.data.tags.length,
                 hexColorCount: this.data.commonHexColors.length,
-                validTagCount: this.validTagNames.size
+                validTagCount: this.validTagNames.size,
             });
-
         } catch (error) {
             this.logger.error('Failed to load MiniMessage data', error as Error);
             this.initializeEmptyData();
@@ -232,17 +228,17 @@ export class MiniMessageDataLoader {
     private convertConfigToSchemaData(config: IMiniMessageConstantsConfig): MiniMessageSchemaData {
         return {
             colors: config.colors,
-            clickActions: config.clickActions.map(a => a.name),
-            hoverActions: config.hoverActions.map(a => a.name),
+            clickActions: config.clickActions.map((a) => a.name),
+            hoverActions: config.hoverActions.map((a) => a.name),
             prideFlags: config.prideFlags,
-            keybinds: config.keybinds.map(k => k.key),
-            nbtSourceTypes: config.nbtSourceTypes.map(t => t.name),
-            commonHexColors: config.commonHexColors.map(c => ({
+            keybinds: config.keybinds.map((k) => k.key),
+            nbtSourceTypes: config.nbtSourceTypes.map((t) => t.name),
+            commonHexColors: config.commonHexColors.map((c) => ({
                 hex: c.hex,
                 name: c.name,
-                description: c.description
+                description: c.description,
             })),
-            tags: config.tags.map(t => this.convertTagDefinition(t))
+            tags: config.tags.map((t) => this.convertTagDefinition(t)),
         };
     }
 
@@ -255,11 +251,11 @@ export class MiniMessageDataLoader {
             aliases: tag.aliases,
             syntax: tag.syntax,
             description: tag.description,
-            arguments: tag.arguments?.map(a => this.convertTagArgument(a)),
+            arguments: tag.arguments?.map((a) => this.convertTagArgument(a)),
             selfClosing: tag.selfClosing,
             example: tag.example,
             category: tag.category,
-            insertSnippet: tag.insertSnippet
+            insertSnippet: tag.insertSnippet,
         };
     }
 
@@ -272,7 +268,7 @@ export class MiniMessageDataLoader {
             type: arg.type,
             required: arg.required,
             description: arg.description,
-            enumValues: arg.enumValues
+            enumValues: arg.enumValues,
         };
     }
 
@@ -291,7 +287,7 @@ export class MiniMessageDataLoader {
             keybinds: [],
             nbtSourceTypes: [],
             commonHexColors: [],
-            tags: []
+            tags: [],
         };
         this.allTags = [];
         this.validTagNames = new Set();
@@ -312,13 +308,13 @@ export class MiniMessageDataLoader {
         }
 
         // 将命名颜色转换为标签定义
-        const colorTags: MiniMessageTagDefinition[] = this.data.colors.map(color => ({
+        const colorTags: MiniMessageTagDefinition[] = this.data.colors.map((color) => ({
             name: color,
             syntax: `<${color}>`,
             description: `Apply ${color} color to text`,
             example: `<${color}>Colored text</${color}>`,
             category: 'color',
-            insertSnippet: `<${color}>\${1:text}</${color}>`
+            insertSnippet: `<${color}>\${1:text}</${color}>`,
         }));
 
         // 合并颜色标签和其他标签
@@ -355,7 +351,7 @@ export class MiniMessageDataLoader {
             }
 
             // 跟踪需要参数的标签
-            if (tag.arguments && tag.arguments.some(arg => arg.required)) {
+            if (tag.arguments && tag.arguments.some((arg) => arg.required)) {
                 this.tagsRequiringArguments.add(tag.name);
                 if (tag.aliases) {
                     for (const alias of tag.aliases) {

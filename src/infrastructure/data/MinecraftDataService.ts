@@ -1,20 +1,20 @@
 import {
-    IMinecraftDataService,
-    IEnchantment,
-    IEntity,
-    IParticle,
-    IPotionEffect,
-    IBiome,
-    ISound,
-    IBlock,
-    IMinecraftItem,
-    IAttribute,
-    IDamageType,
-    IGameEvent,
-    IMinecraftTag
+    type IMinecraftDataService,
+    type IEnchantment,
+    type IEntity,
+    type IParticle,
+    type IPotionEffect,
+    type IBiome,
+    type ISound,
+    type IBlock,
+    type IMinecraftItem,
+    type IAttribute,
+    type IDamageType,
+    type IGameEvent,
+    type IMinecraftTag,
 } from '../../core/interfaces/IMinecraftDataService';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
 import { MinecraftDataLoader } from './MinecraftDataLoader';
 import { MinecraftDataConverter } from './MinecraftDataConverter';
 import { MinecraftTagCache } from './MinecraftTagCache';
@@ -63,7 +63,7 @@ export class MinecraftDataService implements IMinecraftDataService {
         logger: ILogger,
         configLoader: IDataConfigLoader,
         dataLoader?: MinecraftDataLoader,
-        dataConverter?: MinecraftDataConverter
+        dataConverter?: MinecraftDataConverter,
     ) {
         this.logger = logger.createChild('MinecraftDataService');
         this.configLoader = configLoader;
@@ -86,7 +86,7 @@ export class MinecraftDataService implements IMinecraftDataService {
 
     async ensureLoaded(): Promise<void> {
         const now = Date.now();
-        if (this.loaded && (now - this.lastLoadTime) < this.cacheTTL) {
+        if (this.loaded && now - this.lastLoadTime < this.cacheTTL) {
             return;
         }
         if (this.loadPromise) {
@@ -110,63 +110,143 @@ export class MinecraftDataService implements IMinecraftDataService {
     // 数据获取
     // ========================================
 
-    getEnchantments(): IEnchantment[] { return this.enchantments; }
-    getEntities(): IEntity[] { return this.entities; }
-    getParticles(): IParticle[] { return this.particles; }
-    getPotionEffects(): IPotionEffect[] { return this.potionEffects; }
-    getBiomes(): IBiome[] { return this.biomes; }
-    getSounds(): ISound[] { return this.sounds; }
-    getBlocks(): IBlock[] { return this.blocks; }
-    getItems(): IMinecraftItem[] { return this.items; }
-    getAttributes(): IAttribute[] { return this.attributes; }
-    getDamageTypes(): IDamageType[] { return this.damageTypes; }
-    getGameEvents(): IGameEvent[] { return this.gameEvents; }
+    getEnchantments(): IEnchantment[] {
+        return this.enchantments;
+    }
+    getEntities(): IEntity[] {
+        return this.entities;
+    }
+    getParticles(): IParticle[] {
+        return this.particles;
+    }
+    getPotionEffects(): IPotionEffect[] {
+        return this.potionEffects;
+    }
+    getBiomes(): IBiome[] {
+        return this.biomes;
+    }
+    getSounds(): ISound[] {
+        return this.sounds;
+    }
+    getBlocks(): IBlock[] {
+        return this.blocks;
+    }
+    getItems(): IMinecraftItem[] {
+        return this.items;
+    }
+    getAttributes(): IAttribute[] {
+        return this.attributes;
+    }
+    getDamageTypes(): IDamageType[] {
+        return this.damageTypes;
+    }
+    getGameEvents(): IGameEvent[] {
+        return this.gameEvents;
+    }
 
     // 标签操作委托给 MinecraftTagCache
-    getTags(type: IMinecraftTag['type']): IMinecraftTag[] { return this.tagCache.getTags(type); }
-    getAllTags(): IMinecraftTag[] { return this.tagCache.getAllTags(); }
-    getTagNames(type: IMinecraftTag['type']): string[] { return this.tagCache.getTagNames(type); }
-    isValidTag(type: IMinecraftTag['type'], name: string): boolean { return this.tagCache.isValidTag(type, name); }
-    isInTag(type: IMinecraftTag['type'], tagName: string, value: string): boolean { return this.tagCache.isInTag(type, tagName, value); }
+    getTags(type: IMinecraftTag['type']): IMinecraftTag[] {
+        return this.tagCache.getTags(type);
+    }
+    getAllTags(): IMinecraftTag[] {
+        return this.tagCache.getAllTags();
+    }
+    getTagNames(type: IMinecraftTag['type']): string[] {
+        return this.tagCache.getTagNames(type);
+    }
+    isValidTag(type: IMinecraftTag['type'], name: string): boolean {
+        return this.tagCache.isValidTag(type, name);
+    }
+    isInTag(type: IMinecraftTag['type'], tagName: string, value: string): boolean {
+        return this.tagCache.isInTag(type, tagName, value);
+    }
 
     // ========================================
     // 名称列表（带缓存）
     // ========================================
 
-    getEnchantmentNames(): string[] { return this.getNamesCached(this.enchantments, 'enchantments'); }
-    getEntityNames(): string[] { return this.getNamesCached(this.entities, 'entities'); }
-    getParticleNames(): string[] { return this.getNamesCached(this.particles, 'particles'); }
-    getPotionEffectNames(): string[] { return this.getNamesCached(this.potionEffects, 'potionEffects'); }
-    getBiomeNames(): string[] { return this.getNamesCached(this.biomes, 'biomes'); }
-    getSoundNames(): string[] { return this.getNamesCached(this.sounds, 'sounds'); }
-    getBlockNames(): string[] { return this.getNamesCached(this.blocks, 'blocks'); }
-    getItemNames(): string[] { return this.getNamesCached(this.items, 'items'); }
-    getAttributeNames(): string[] { return this.getNamesCached(this.attributes, 'attributes'); }
-    getDamageTypeNames(): string[] { return this.getNamesCached(this.damageTypes, 'damageTypes'); }
-    getGameEventNames(): string[] { return this.getNamesCached(this.gameEvents, 'gameEvents'); }
+    getEnchantmentNames(): string[] {
+        return this.getNamesCached(this.enchantments, 'enchantments');
+    }
+    getEntityNames(): string[] {
+        return this.getNamesCached(this.entities, 'entities');
+    }
+    getParticleNames(): string[] {
+        return this.getNamesCached(this.particles, 'particles');
+    }
+    getPotionEffectNames(): string[] {
+        return this.getNamesCached(this.potionEffects, 'potionEffects');
+    }
+    getBiomeNames(): string[] {
+        return this.getNamesCached(this.biomes, 'biomes');
+    }
+    getSoundNames(): string[] {
+        return this.getNamesCached(this.sounds, 'sounds');
+    }
+    getBlockNames(): string[] {
+        return this.getNamesCached(this.blocks, 'blocks');
+    }
+    getItemNames(): string[] {
+        return this.getNamesCached(this.items, 'items');
+    }
+    getAttributeNames(): string[] {
+        return this.getNamesCached(this.attributes, 'attributes');
+    }
+    getDamageTypeNames(): string[] {
+        return this.getNamesCached(this.damageTypes, 'damageTypes');
+    }
+    getGameEventNames(): string[] {
+        return this.getNamesCached(this.gameEvents, 'gameEvents');
+    }
 
     // ========================================
     // 验证方法（委托给 MinecraftDataValidator）
     // ========================================
 
-    isValidEnchantment(name: string): boolean { return this.validator.isValidEnchantment(name); }
-    isValidEntity(name: string): boolean { return this.validator.isValidEntity(name); }
-    isValidParticle(name: string): boolean { return this.validator.isValidParticle(name); }
-    isValidPotionEffect(name: string): boolean { return this.validator.isValidPotionEffect(name); }
-    isValidBiome(name: string): boolean { return this.validator.isValidBiome(name); }
-    isValidSound(name: string): boolean { return this.validator.isValidSound(name); }
-    isValidBlock(name: string): boolean { return this.validator.isValidBlock(name); }
-    isValidItem(name: string): boolean { return this.validator.isValidItem(name); }
-    isValidAttribute(name: string): boolean { return this.validator.isValidAttribute(name); }
-    isValidDamageType(name: string): boolean { return this.validator.isValidDamageType(name); }
-    isValidGameEvent(name: string): boolean { return this.validator.isValidGameEvent(name); }
+    isValidEnchantment(name: string): boolean {
+        return this.validator.isValidEnchantment(name);
+    }
+    isValidEntity(name: string): boolean {
+        return this.validator.isValidEntity(name);
+    }
+    isValidParticle(name: string): boolean {
+        return this.validator.isValidParticle(name);
+    }
+    isValidPotionEffect(name: string): boolean {
+        return this.validator.isValidPotionEffect(name);
+    }
+    isValidBiome(name: string): boolean {
+        return this.validator.isValidBiome(name);
+    }
+    isValidSound(name: string): boolean {
+        return this.validator.isValidSound(name);
+    }
+    isValidBlock(name: string): boolean {
+        return this.validator.isValidBlock(name);
+    }
+    isValidItem(name: string): boolean {
+        return this.validator.isValidItem(name);
+    }
+    isValidAttribute(name: string): boolean {
+        return this.validator.isValidAttribute(name);
+    }
+    isValidDamageType(name: string): boolean {
+        return this.validator.isValidDamageType(name);
+    }
+    isValidGameEvent(name: string): boolean {
+        return this.validator.isValidGameEvent(name);
+    }
 
     // ========================================
     // 元数据
     // ========================================
 
-    getDataVersion(): string { return this.dataVersion; }
-    isLoaded(): boolean { return this.loaded; }
+    getDataVersion(): string {
+        return this.dataVersion;
+    }
+    isLoaded(): boolean {
+        return this.loaded;
+    }
     // ========================================
     // 私有方法
     // ========================================
@@ -179,7 +259,7 @@ export class MinecraftDataService implements IMinecraftDataService {
         if (cached) {
             return cached;
         }
-        const names = data.map(item => item.name);
+        const names = data.map((item) => item.name);
         this.nameCache.set(cacheKey, names);
         return names;
     }
@@ -192,7 +272,7 @@ export class MinecraftDataService implements IMinecraftDataService {
             return result.value;
         }
         this.logger.warn(`Failed to load ${dataType}, using fallback`, {
-            error: result.reason instanceof Error ? result.reason.message : String(result.reason)
+            error: result.reason instanceof Error ? result.reason.message : String(result.reason),
         });
         return fallback;
     }
@@ -209,22 +289,22 @@ export class MinecraftDataService implements IMinecraftDataService {
 
             // 并行加载所有数据，使用 Promise.allSettled 确保部分失败不影响整体
             const results = await Promise.allSettled([
-                this.dataLoader.loadEnchantments(version),      // 0
-                this.dataLoader.loadEntities(version),           // 1
-                this.dataLoader.loadParticles(version),          // 2
-                this.dataLoader.loadEffects(version),            // 3
-                this.dataLoader.loadBiomes(version),             // 4
-                this.dataLoader.loadSounds(version),             // 5
-                this.dataLoader.loadBlocks(version),             // 6
-                this.dataLoader.loadItems(version),              // 7
-                this.dataLoader.loadAttributes(version),         // 8
-                this.dataLoader.loadBlockTags(version),          // 9
-                this.dataLoader.loadItemTags(version),           // 10
-                this.dataLoader.loadEntityTags(version),         // 11
-                this.dataLoader.loadFluidTags(version),          // 12
-                this.dataLoader.loadGameEventTags(version),      // 13
-                this.dataLoader.loadDamageTypes(version),        // 14
-                this.dataLoader.loadGameEvents(version)          // 15
+                this.dataLoader.loadEnchantments(version), // 0
+                this.dataLoader.loadEntities(version), // 1
+                this.dataLoader.loadParticles(version), // 2
+                this.dataLoader.loadEffects(version), // 3
+                this.dataLoader.loadBiomes(version), // 4
+                this.dataLoader.loadSounds(version), // 5
+                this.dataLoader.loadBlocks(version), // 6
+                this.dataLoader.loadItems(version), // 7
+                this.dataLoader.loadAttributes(version), // 8
+                this.dataLoader.loadBlockTags(version), // 9
+                this.dataLoader.loadItemTags(version), // 10
+                this.dataLoader.loadEntityTags(version), // 11
+                this.dataLoader.loadFluidTags(version), // 12
+                this.dataLoader.loadGameEventTags(version), // 13
+                this.dataLoader.loadDamageTypes(version), // 14
+                this.dataLoader.loadGameEvents(version), // 15
             ]);
 
             // 提取结果，失败的数据源使用空数组/空 Map 作为 fallback
@@ -251,7 +331,7 @@ export class MinecraftDataService implements IMinecraftDataService {
             this.particles = this.dataConverter.convertParticles(particlesRaw);
             this.potionEffects = this.dataConverter.convertPotionEffects(effectsRaw);
             this.biomes = this.dataConverter.convertBiomes(biomesRaw);
-            this.sounds = soundNames.map(name => ({ name }));
+            this.sounds = soundNames.map((name) => ({ name }));
             this.blocks = this.dataConverter.convertBlocks(blocksRaw);
             this.items = this.dataConverter.convertItems(itemsRaw);
             this.attributes = this.dataConverter.convertAttributes(attributesRaw);
@@ -264,7 +344,7 @@ export class MinecraftDataService implements IMinecraftDataService {
                 this.dataConverter.convertTags(itemTagsRaw, 'items'),
                 this.dataConverter.convertTags(entityTagsRaw, 'entity_types'),
                 this.dataConverter.convertTags(fluidTagsRaw, 'fluids'),
-                this.dataConverter.convertTags(gameEventTagsRaw, 'game_events')
+                this.dataConverter.convertTags(gameEventTagsRaw, 'game_events'),
             );
 
             // 构建验证器查找集合
@@ -279,7 +359,7 @@ export class MinecraftDataService implements IMinecraftDataService {
                 items: this.items,
                 attributes: this.attributes,
                 damageTypes: this.damageTypes,
-                gameEvents: this.gameEvents
+                gameEvents: this.gameEvents,
             });
 
             // 更新状态
@@ -301,8 +381,8 @@ export class MinecraftDataService implements IMinecraftDataService {
                     items: this.items.length,
                     attributes: this.attributes.length,
                     damageTypes: this.damageTypes.length,
-                    gameEvents: this.gameEvents.length
-                }
+                    gameEvents: this.gameEvents.length,
+                },
             });
         } catch (error) {
             this.logger.error('Failed to load Minecraft data', error as Error);

@@ -4,7 +4,7 @@
  * 移植自 craft-engine 的 Key 类，表示带命名空间的资源标识符。
  */
 
-import { IResourceKey } from '../../../../core/interfaces/IModelGenerator';
+import { type IResourceKey } from '../../../../core/interfaces/IModelGenerator';
 
 export const DEFAULT_NAMESPACE = 'craftengine';
 
@@ -83,14 +83,16 @@ export class Key implements IResourceKey {
         let hash = 0;
         const str = this.asString();
         for (let i = 0; i < str.length; i++) {
-            hash = ((hash << 5) - hash) + str.charCodeAt(i);
+            hash = (hash << 5) - hash + str.charCodeAt(i);
             hash = hash & hash;
         }
         return hash;
     }
 
     equals(other: Key | null | undefined): boolean {
-        if (!other) {return false;}
+        if (!other) {
+            return false;
+        }
         return this.namespace === other.namespace && this.value === other.value;
     }
 

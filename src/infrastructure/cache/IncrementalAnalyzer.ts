@@ -4,9 +4,9 @@
  * 只分析文档中变更的部分，提高诊断性能
  */
 
-import { Range, Position, TextDocument, TextDocumentContentChangeEvent, Diagnostic } from 'vscode';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IPositionInfo } from '../../core/interfaces/IParsedDocument';
+import { Range, Position, type TextDocument, type TextDocumentContentChangeEvent, Diagnostic } from 'vscode';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IPositionInfo } from '../../core/interfaces/IParsedDocument';
 
 /**
  * 分析范围
@@ -36,7 +36,7 @@ export class IncrementalAnalyzer {
 
     constructor(
         private readonly logger: ILogger,
-        config?: { fullAnalysisLineThreshold?: number; fullAnalysisCharThreshold?: number }
+        config?: { fullAnalysisLineThreshold?: number; fullAnalysisCharThreshold?: number },
     ) {
         this.fullAnalysisThreshold = config?.fullAnalysisLineThreshold ?? 50;
         this.fullAnalysisCharThreshold = config?.fullAnalysisCharThreshold ?? 1000;
@@ -45,14 +45,11 @@ export class IncrementalAnalyzer {
     /**
      * 分析变更影响的范围
      *
-     * @param document 文档
+     * @param _document
      * @param changes 变更事件
      * @returns 分析范围
      */
-    analyzeChangeImpact(
-        document: TextDocument,
-        changes: readonly TextDocumentContentChangeEvent[]
-    ): IAnalysisScope {
+    analyzeChangeImpact(_document: TextDocument, changes: readonly TextDocumentContentChangeEvent[]): IAnalysisScope {
         const affectedLines = new Set<number>();
         let totalCharsChanged = 0;
         let changeType: 'insert' | 'delete' | 'replace' | 'mixed' = 'replace';
@@ -88,7 +85,7 @@ export class IncrementalAnalyzer {
             }
 
             // 行数变化时直接标记需要全量分析，而非枚举所有后续行
-            if (newLines !== (endLine - startLine)) {
+            if (newLines !== endLine - startLine) {
                 lineCountChanged = true;
             }
         }
@@ -109,14 +106,14 @@ export class IncrementalAnalyzer {
             affectedLineCount: affectedLines.size,
             totalCharsChanged,
             changeType,
-            fullAnalysis
+            fullAnalysis,
         });
 
         return {
             fullAnalysis,
             affectedLines,
             affectedPaths: [], // 将在 getAffectedPaths 中填充
-            changeType
+            changeType,
         };
     }
 
@@ -126,7 +123,7 @@ export class IncrementalAnalyzer {
     private shouldDoFullAnalysis(
         affectedLines: Set<number>,
         totalCharsChanged: number,
-        changes: readonly TextDocumentContentChangeEvent[]
+        changes: readonly TextDocumentContentChangeEvent[],
     ): boolean {
         // 变更行数超过阈值
         if (affectedLines.size > this.fullAnalysisThreshold) {
@@ -175,10 +172,7 @@ export class IncrementalAnalyzer {
      * @param changedLines 变更的行
      * @returns 受影响的 YAML 路径
      */
-    getAffectedPaths(
-        positionMap: Map<string, IPositionInfo>,
-        changedLines: Set<number>
-    ): string[] {
+    getAffectedPaths(positionMap: Map<string, IPositionInfo>, changedLines: Set<number>): string[] {
         const affectedPaths: string[] = [];
 
         for (const [path, position] of positionMap.entries()) {
@@ -196,7 +190,7 @@ export class IncrementalAnalyzer {
 
         this.logger.debug('Affected paths identified', {
             totalPaths: positionMap.size,
-            affectedCount: affectedPaths.length
+            affectedCount: affectedPaths.length,
         });
 
         return affectedPaths;
@@ -210,13 +204,9 @@ export class IncrementalAnalyzer {
      * @param affectedRange 受影响的范围
      * @returns 合并后的诊断
      */
-    mergeDiagnostics(
-        existing: Diagnostic[],
-        updated: Diagnostic[],
-        affectedRange: Range
-    ): Diagnostic[] {
+    mergeDiagnostics(existing: Diagnostic[], updated: Diagnostic[], affectedRange: Range): Diagnostic[] {
         // 过滤掉受影响范围内的旧诊断
-        const retained = existing.filter(d => !this.isInRange(d.range, affectedRange));
+        const retained = existing.filter((d) => !this.isInRange(d.range, affectedRange));
 
         // 添加新诊断
         const merged = [...retained, ...updated];
@@ -229,8 +219,7 @@ export class IncrementalAnalyzer {
      * 检查范围是否在指定范围内
      */
     private isInRange(target: Range, container: Range): boolean {
-        return target.start.line >= container.start.line &&
-               target.end.line <= container.end.line;
+        return target.start.line >= container.start.line && target.end.line <= container.end.line;
     }
 
     /**
@@ -238,7 +227,7 @@ export class IncrementalAnalyzer {
      */
     private deduplicateDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
         const seen = new Set<string>();
-        return diagnostics.filter(d => {
+        return diagnostics.filter((d) => {
             const key = `${d.range.start.line}:${d.range.start.character}:${d.message}:${d.source}`;
             if (seen.has(key)) {
                 return false;
@@ -258,37 +247,23 @@ export class IncrementalAnalyzer {
      * @param lineDelta 行数变化量（正数表示增加，负数表示减少）
      * @returns 调整后的诊断
      */
-    adjustDiagnosticPositions(
-        diagnostics: Diagnostic[],
-        changeStartLine: number,
-        lineDelta: number
-    ): Diagnostic[] {
+    adjustDiagnosticPositions(diagnostics: Diagnostic[], changeStartLine: number, lineDelta: number): Diagnostic[] {
         if (lineDelta === 0) {
             return diagnostics;
         }
 
-        return diagnostics.map(d => {
+        return diagnostics.map((d) => {
             // 只调整变更行之后的诊断
             if (d.range.start.line <= changeStartLine) {
                 return d;
             }
 
             // 创建新的范围
-            const newStart = new Position(
-                d.range.start.line + lineDelta,
-                d.range.start.character
-            );
-            const newEnd = new Position(
-                d.range.end.line + lineDelta,
-                d.range.end.character
-            );
+            const newStart = new Position(d.range.start.line + lineDelta, d.range.start.character);
+            const newEnd = new Position(d.range.end.line + lineDelta, d.range.end.character);
 
             // 创建新的诊断（保留其他属性）
-            const adjusted = new Diagnostic(
-                new Range(newStart, newEnd),
-                d.message,
-                d.severity
-            );
+            const adjusted = new Diagnostic(new Range(newStart, newEnd), d.message, d.severity);
             adjusted.source = d.source;
             adjusted.code = d.code;
             adjusted.tags = d.tags;

@@ -12,15 +12,15 @@
 import {
     Uri,
     Position,
-    Range,
-    TextDocument,
-    TextEdit,
-    CompletionItem,
-    CompletionContext,
-    CancellationToken,
-    ExtensionContext,
-    Disposable,
-    Progress
+    type Range,
+    type TextDocument,
+    type TextEdit,
+    type CompletionItem,
+    type CompletionContext,
+    type CancellationToken,
+    type ExtensionContext,
+    type Disposable,
+    type Progress,
 } from 'vscode';
 
 // 基础类型别名
@@ -63,4 +63,14 @@ export function createEditorUri(uriString: string): EditorUri {
  */
 export function createEditorPosition(line: number, character: number): EditorPosition {
     return new Position(line, character);
+}
+
+/**
+ * 从文件路径创建 EditorUri 实例
+ *
+ * @param filePath - 文件系统路径
+ * @returns EditorUri 实例
+ */
+export function createFileUri(filePath: string): EditorUri {
+    return Uri.file(filePath);
 }

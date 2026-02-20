@@ -9,8 +9,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SchemaDynamicGenerator } from '../../../../../application/services/schema/SchemaDynamicGenerator';
-import { IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
 
 describe('SchemaDynamicGenerator', () => {
     let generator: SchemaDynamicGenerator;
@@ -98,9 +98,7 @@ describe('SchemaDynamicGenerator', () => {
         });
 
         it('should generate oneOf with string and array in templates section', async () => {
-            vi.mocked(mockDataStoreService.getAllTemplates).mockResolvedValue([
-                { name: 'base-item' },
-            ] as any[]);
+            vi.mocked(mockDataStoreService.getAllTemplates).mockResolvedValue([{ name: 'base-item' }] as any[]);
 
             const result = await generator.generateDynamicSchema();
             const schema = JSON.parse(result);
@@ -131,9 +129,7 @@ describe('SchemaDynamicGenerator', () => {
 
     describe('generateDynamicSchema - logging', () => {
         it('should log template count and schema size', async () => {
-            vi.mocked(mockDataStoreService.getAllTemplates).mockResolvedValue([
-                { name: 'test' },
-            ] as any[]);
+            vi.mocked(mockDataStoreService.getAllTemplates).mockResolvedValue([{ name: 'test' }] as any[]);
 
             await generator.generateDynamicSchema();
 
@@ -142,7 +138,7 @@ describe('SchemaDynamicGenerator', () => {
                 expect.objectContaining({
                     templateCount: 1,
                     schemaSize: expect.any(Number),
-                })
+                }),
             );
         });
     });
@@ -153,9 +149,7 @@ describe('SchemaDynamicGenerator', () => {
 
     describe('generateDynamicSchema - fallback', () => {
         it('should return fallback schema when getAllTemplates throws', async () => {
-            vi.mocked(mockDataStoreService.getAllTemplates).mockRejectedValue(
-                new Error('Database error')
-            );
+            vi.mocked(mockDataStoreService.getAllTemplates).mockRejectedValue(new Error('Database error'));
 
             const result = await generator.generateDynamicSchema();
             const schema = JSON.parse(result);
@@ -166,22 +160,15 @@ describe('SchemaDynamicGenerator', () => {
         });
 
         it('should log error when falling back', async () => {
-            vi.mocked(mockDataStoreService.getAllTemplates).mockRejectedValue(
-                new Error('Database error')
-            );
+            vi.mocked(mockDataStoreService.getAllTemplates).mockRejectedValue(new Error('Database error'));
 
             await generator.generateDynamicSchema();
 
-            expect(mockLogger.error).toHaveBeenCalledWith(
-                'Error generating dynamic schema',
-                expect.any(Error)
-            );
+            expect(mockLogger.error).toHaveBeenCalledWith('Error generating dynamic schema', expect.any(Error));
         });
 
         it('should return valid JSON in fallback schema', async () => {
-            vi.mocked(mockDataStoreService.getAllTemplates).mockRejectedValue(
-                new Error('fail')
-            );
+            vi.mocked(mockDataStoreService.getAllTemplates).mockRejectedValue(new Error('fail'));
 
             const result = await generator.generateDynamicSchema();
             expect(() => JSON.parse(result)).not.toThrow();

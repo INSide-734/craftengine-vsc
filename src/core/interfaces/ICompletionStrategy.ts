@@ -1,5 +1,11 @@
-import { EditorTextDocument, EditorPosition, EditorCompletionItem, EditorCompletionContext, EditorCancellationToken } from '../types/EditorTypes';
-import { IJsonSchema } from './ISchemaService';
+import {
+    type EditorTextDocument,
+    type EditorPosition,
+    type EditorCompletionItem,
+    type EditorCompletionContext,
+    type EditorCancellationToken,
+} from '../types/EditorTypes';
+import { type IJsonSchema } from './ISchemaService';
 
 /**
  * 补全上下文信息
@@ -41,7 +47,7 @@ export interface ICompletionResult {
 
 /**
  * 补全策略接口
- * 
+ *
  * 每种补全类型（模板、变量、函数等）都应实现此接口
  */
 export interface ICompletionStrategy {
@@ -49,35 +55,35 @@ export interface ICompletionStrategy {
      * 策略名称
      */
     readonly name: string;
-    
+
     /**
      * 策略优先级（0-100，数值越大优先级越高）
      */
     readonly priority: number;
-    
+
     /**
      * 触发字符列表
      */
     readonly triggerCharacters: string[];
-    
+
     /**
      * 判断是否应该激活此补全策略
-     * 
+     *
      * @param context 补全上下文
      * @returns 是否应该激活
      */
     shouldActivate(context: ICompletionContextInfo): boolean | Promise<boolean>;
-    
+
     /**
      * 提供补全项
-     * 
+     *
      * @param context 补全上下文
      * @param token 取消令牌
      * @returns 补全结果
      */
     provideCompletionItems(
         context: ICompletionContextInfo,
-        token?: EditorCancellationToken
+        token?: EditorCancellationToken,
     ): Promise<ICompletionResult | undefined>;
 
     /**
@@ -89,7 +95,7 @@ export interface ICompletionStrategy {
      */
     resolveCompletionItem?(
         item: EditorCompletionItem,
-        token?: EditorCancellationToken
+        token?: EditorCancellationToken,
     ): Promise<EditorCompletionItem | undefined>;
 }
 
@@ -99,31 +105,31 @@ export interface ICompletionStrategy {
 export interface ICompletionManager {
     /**
      * 注册补全策略
-     * 
+     *
      * @param strategy 补全策略
      */
     registerStrategy(strategy: ICompletionStrategy): void;
-    
+
     /**
      * 取消注册补全策略
-     * 
+     *
      * @param strategyName 策略名称
      */
     unregisterStrategy(strategyName: string): void;
-    
+
     /**
      * 获取所有注册的策略
      */
     getStrategies(): ICompletionStrategy[];
-    
+
     /**
      * 根据上下文获取激活的策略
-     * 
+     *
      * @param context 补全上下文
      * @returns 激活的策略列表（按优先级排序）
      */
     getActiveStrategies(context: ICompletionContextInfo): Promise<ICompletionStrategy[]>;
-    
+
     /**
      * 获取所有触发字符
      */

@@ -6,8 +6,8 @@
  * 必须在使用前调用 initializeMinecraftVersions() 初始化。
  */
 
-import { IMinecraftVersionInfo } from '../../../../core/interfaces/IModelGenerator';
-import { IMinecraftVersionsConfig } from '../../../../core/types/ConfigTypes';
+import { type IMinecraftVersionInfo } from '../../../../core/interfaces/IModelGenerator';
+import { type IMinecraftVersionsConfig } from '../../../../core/types/ConfigTypes';
 
 // ============================================================================
 // 模块私有状态（由 initializeMinecraftVersions 填充）
@@ -185,7 +185,9 @@ export class MinecraftVersion implements IMinecraftVersionInfo {
      * 检查是否相等
      */
     equals(other: IMinecraftVersionInfo | null | undefined): boolean {
-        if (!other) {return false;}
+        if (!other) {
+            return false;
+        }
         return this.compareTo(other) === 0;
     }
 
@@ -246,31 +248,25 @@ export function initializeMinecraftVersions(config: IMinecraftVersionsConfig): v
  *
  * 通过 Proxy 延迟访问，未初始化时抛出错误。
  */
-export const MinecraftVersions: Record<string, MinecraftVersion> = new Proxy(
-    {} as Record<string, MinecraftVersion>,
-    {
-        get(_target, prop: string): MinecraftVersion {
-            ensureInitialized();
-            const ver = versionsMap![prop];
-            if (!ver) {
-                throw new Error(`Unknown MinecraftVersion alias: ${prop}`);
-            }
-            return ver;
-        },
-    }
-);
+export const MinecraftVersions: Record<string, MinecraftVersion> = new Proxy({} as Record<string, MinecraftVersion>, {
+    get(_target, prop: string): MinecraftVersion {
+        ensureInitialized();
+        const ver = versionsMap![prop];
+        if (!ver) {
+            throw new Error(`Unknown MinecraftVersion alias: ${prop}`);
+        }
+        return ver;
+    },
+});
 
 /**
  * 默认版本（用于 VSCode 扩展）
  *
  * 通过 Proxy 延迟访问，未初始化时抛出错误。
  */
-export const DEFAULT_VERSION: MinecraftVersion = new Proxy(
-    {} as MinecraftVersion,
-    {
-        get(_target, prop: string | symbol): unknown {
-            ensureInitialized();
-            return (defaultVer as unknown as Record<string | symbol, unknown>)[prop];
-        },
-    }
-) as MinecraftVersion;
+export const DEFAULT_VERSION: MinecraftVersion = new Proxy({} as MinecraftVersion, {
+    get(_target, prop: string | symbol): unknown {
+        ensureInitialized();
+        return (defaultVer as unknown as Record<string | symbol, unknown>)[prop];
+    },
+}) as MinecraftVersion;

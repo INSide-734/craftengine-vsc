@@ -16,13 +16,13 @@
 
 /** 默认类型名称映射 */
 const DEFAULT_TYPE_DISPLAY_NAMES: Record<string, string> = {
-    'string': 'text',
-    'number': 'number',
-    'integer': 'integer',
-    'boolean': 'true/false',
-    'object': 'object',
-    'array': 'list',
-    'null': 'null'
+    string: 'text',
+    number: 'number',
+    integer: 'integer',
+    boolean: 'true/false',
+    object: 'object',
+    array: 'list',
+    null: 'null',
 };
 
 /** 类型名称映射（可从配置初始化） */
@@ -45,7 +45,7 @@ export function initializeTypeDisplayNames(config: Record<string, string>): void
  */
 export function formatTypeName(type: string | string[]): string {
     if (Array.isArray(type)) {
-        return type.map(t => TYPE_DISPLAY_NAMES[t] || t).join(' or ');
+        return type.map((t) => TYPE_DISPLAY_NAMES[t] || t).join(' or ');
     }
     return TYPE_DISPLAY_NAMES[type] || type;
 }
@@ -58,26 +58,22 @@ export const YAML_MESSAGES = {
     /**
      * 通用语法错误
      */
-    syntaxError: (detail?: string): string =>
-        detail ? `YAML syntax error: ${detail}` : 'YAML syntax error',
+    syntaxError: (detail?: string): string => (detail ? `YAML syntax error: ${detail}` : 'YAML syntax error'),
 
     /**
      * 重复键错误
      */
-    duplicateKey: (key: string): string =>
-        `Duplicate key "${key}"`,
+    duplicateKey: (key: string): string => `Duplicate key "${key}"`,
 
     /**
      * 缩进错误
      */
-    invalidIndentation: (): string =>
-        'Invalid indentation',
+    invalidIndentation: (): string => 'Invalid indentation',
 
     /**
      * 隐式键错误
      */
-    implicitKeyError: (): string =>
-        'Implicit keys need to be on a single line'
+    implicitKeyError: (): string => 'Implicit keys need to be on a single line',
 };
 
 // ============================================================================
@@ -88,8 +84,7 @@ export const SCHEMA_MESSAGES = {
     /**
      * 缺少必需字段
      */
-    required: (field: string): string =>
-        `Missing required field "${field}"`,
+    required: (field: string): string => `Missing required field "${field}"`,
 
     /**
      * 类型不匹配
@@ -107,7 +102,7 @@ export const SCHEMA_MESSAGES = {
      */
     enum: (allowedValues: unknown[]): string => {
         if (allowedValues.length <= 3) {
-            const formatted = allowedValues.map(v => `"${v}"`).join(', ');
+            const formatted = allowedValues.map((v) => `"${v}"`).join(', ');
             return `Invalid value. Allowed: ${formatted}`;
         }
         return `Invalid value. Must be one of ${allowedValues.length} allowed values`;
@@ -116,14 +111,12 @@ export const SCHEMA_MESSAGES = {
     /**
      * 模式不匹配
      */
-    pattern: (hint?: string): string =>
-        hint ? `Invalid format: ${hint}` : 'Invalid format',
+    pattern: (hint?: string): string => (hint ? `Invalid format: ${hint}` : 'Invalid format'),
 
     /**
      * 格式无效
      */
-    format: (formatName: string): string =>
-        `Invalid ${formatName} format`,
+    format: (formatName: string): string => `Invalid ${formatName} format`,
 
     /**
      * 字符串太短
@@ -150,26 +143,22 @@ export const SCHEMA_MESSAGES = {
     /**
      * 值太小
      */
-    minimum: (limit: number): string =>
-        `Value too small: minimum is ${limit}`,
+    minimum: (limit: number): string => `Value too small: minimum is ${limit}`,
 
     /**
      * 值太大
      */
-    maximum: (limit: number): string =>
-        `Value too large: maximum is ${limit}`,
+    maximum: (limit: number): string => `Value too large: maximum is ${limit}`,
 
     /**
      * 未知属性
      */
-    additionalProperties: (property: string): string =>
-        `Unknown property "${property}"`,
+    additionalProperties: (property: string): string => `Unknown property "${property}"`,
 
     /**
      * oneOf 不匹配
      */
-    oneOf: (): string =>
-        'Value does not match any allowed schema'
+    oneOf: (): string => 'Value does not match any allowed schema',
 };
 
 // ============================================================================
@@ -180,8 +169,7 @@ export const REFERENCE_MESSAGES = {
     /**
      * 模板未找到
      */
-    templateNotFound: (templateName: string): string =>
-        `Template "${templateName}" not found`,
+    templateNotFound: (templateName: string): string => `Template "${templateName}" not found`,
 
     /**
      * 缺少模板参数
@@ -195,15 +183,12 @@ export const REFERENCE_MESSAGES = {
      * 模板参数无效
      */
     templateParameterInvalid: (paramName: string, reason?: string): string =>
-        reason
-            ? `Invalid parameter "${paramName}": ${reason}`
-            : `Invalid parameter "${paramName}"`,
+        reason ? `Invalid parameter "${paramName}": ${reason}` : `Invalid parameter "${paramName}"`,
 
     /**
      * 翻译键未找到
      */
-    translationNotFound: (key: string): string =>
-        `Translation key "${key}" not found`,
+    translationNotFound: (key: string): string => `Translation key "${key}" not found`,
 
     /**
      * 翻译值为空
@@ -226,16 +211,13 @@ export const REFERENCE_MESSAGES = {
     /**
      * 分类未找到
      */
-    categoryNotFound: (category: string): string =>
-        `Category "${category}" not found`,
+    categoryNotFound: (category: string): string => `Category "${category}" not found`,
 
     /**
      * 循环引用
      */
     circularReference: (path?: string): string =>
-        path
-            ? `Circular reference detected: ${path}`
-            : 'Circular reference detected'
+        path ? `Circular reference detected: ${path}` : 'Circular reference detected',
 };
 
 // ============================================================================
@@ -246,34 +228,28 @@ export const TYPE_VALIDATION_MESSAGES = {
     /**
      * 文件未找到
      */
-    fileNotFound: (filePath: string): string =>
-        `File not found: "${filePath}"`,
+    fileNotFound: (filePath: string): string => `File not found: "${filePath}"`,
 
     /**
      * 物品 ID 未找到
      */
-    itemNotFound: (itemId: string): string =>
-        `Item "${itemId}" not found`,
+    itemNotFound: (itemId: string): string => `Item "${itemId}" not found`,
 
     /**
      * 文件路径格式无效
      */
-    invalidFilePath: (filePath: string): string =>
-        `Invalid file path: "${filePath}"`,
+    invalidFilePath: (filePath: string): string => `Invalid file path: "${filePath}"`,
 
     /**
      * 物品 ID 格式无效
      */
-    invalidItemId: (itemId: string): string =>
-        `Invalid item ID: "${itemId}"`,
+    invalidItemId: (itemId: string): string => `Invalid item ID: "${itemId}"`,
 
     /**
      * 版本条件无效
      */
     invalidVersionCondition: (condition: string, reason?: string): string =>
-        reason
-            ? `Invalid version condition "${condition}": ${reason}`
-            : `Invalid version condition: "${condition}"`,
+        reason ? `Invalid version condition "${condition}": ${reason}` : `Invalid version condition: "${condition}"`,
 
     /**
      * 版本过低
@@ -284,8 +260,7 @@ export const TYPE_VALIDATION_MESSAGES = {
     /**
      * 未知版本
      */
-    versionNotFound: (version: string): string =>
-        `Unknown Minecraft version: "${version}"`,
+    versionNotFound: (version: string): string => `Unknown Minecraft version: "${version}"`,
 
     /**
      * 版本范围无效
@@ -303,7 +278,7 @@ export const TYPE_VALIDATION_MESSAGES = {
      * 路径无效
      */
     invalidPath: (path: string): string =>
-        `Invalid path: "${path}". Paths can only contain lowercase letters, numbers, underscores, hyphens, dots, and forward slashes.`
+        `Invalid path: "${path}". Paths can only contain lowercase letters, numbers, underscores, hyphens, dots, and forward slashes.`,
 };
 
 // ============================================================================
@@ -315,33 +290,27 @@ export const SUGGESTION_MESSAGES = {
      * 已弃用
      */
     deprecated: (replacement?: string): string =>
-        replacement
-            ? `Deprecated. Use "${replacement}" instead`
-            : 'Deprecated',
+        replacement ? `Deprecated. Use "${replacement}" instead` : 'Deprecated',
 
     /**
      * 未使用的参数
      */
-    unusedParameter: (paramName: string): string =>
-        `Parameter "${paramName}" is defined but never used`,
+    unusedParameter: (paramName: string): string => `Parameter "${paramName}" is defined but never used`,
 
     /**
      * 命名规范违反
      */
-    namingConvention: (suggestion: string): string =>
-        `Naming convention: ${suggestion}`,
+    namingConvention: (suggestion: string): string => `Naming convention: ${suggestion}`,
 
     /**
      * MiniMessage 语法问题
      */
-    miniMessageSyntax: (detail: string): string =>
-        `MiniMessage: ${detail}`,
+    miniMessageSyntax: (detail: string): string => `MiniMessage: ${detail}`,
 
     /**
      * 性能提示
      */
-    performanceHint: (hint: string): string =>
-        `Performance: ${hint}`
+    performanceHint: (hint: string): string => `Performance: ${hint}`,
 };
 
 // ============================================================================
@@ -369,20 +338,17 @@ export const MINIMESSAGE_MESSAGES = {
     /**
      * 无效颜色
      */
-    invalidColor: (color: string): string =>
-        `Invalid color: "${color}". Use a named color or hex code (#RRGGBB)`,
+    invalidColor: (color: string): string => `Invalid color: "${color}". Use a named color or hex code (#RRGGBB)`,
 
     /**
      * 无效十六进制颜色
      */
-    invalidHexColor: (color: string): string =>
-        `Invalid hex color format: "${color}". Expected #RRGGBB or #RRGGBBAA`,
+    invalidHexColor: (color: string): string => `Invalid hex color format: "${color}". Expected #RRGGBB or #RRGGBBAA`,
 
     /**
      * 缺少参数
      */
-    missingArgument: (tagName: string, usage: string): string =>
-        `Tag "${tagName}" requires arguments: ${usage}`,
+    missingArgument: (tagName: string, usage: string): string => `Tag "${tagName}" requires arguments: ${usage}`,
 
     /**
      * 无效参数
@@ -393,8 +359,7 @@ export const MINIMESSAGE_MESSAGES = {
     /**
      * 不匹配的关闭标签
      */
-    unmatchedClosing: (closingTag: string): string =>
-        `Closing tag "${closingTag}" has no matching opening tag`,
+    unmatchedClosing: (closingTag: string): string => `Closing tag "${closingTag}" has no matching opening tag`,
 
     /**
      * 关闭顺序错误
@@ -412,7 +377,7 @@ export const MINIMESSAGE_MESSAGES = {
      * 无效悬停动作
      */
     invalidHoverAction: (action: string, validActions: string[]): string =>
-        `Invalid hover action: "${action}". Valid actions: ${validActions.join(', ')}`
+        `Invalid hover action: "${action}". Valid actions: ${validActions.join(', ')}`,
 };
 
 // ============================================================================
@@ -423,68 +388,57 @@ export const QUICK_FIX_MESSAGES = {
     /**
      * 添加缺失字段
      */
-    addMissingField: (field: string): string =>
-        `Add missing field "${field}"`,
+    addMissingField: (field: string): string => `Add missing field "${field}"`,
 
     /**
      * 删除未知属性
      */
-    removeUnknownProperty: (property: string): string =>
-        `Remove unknown property "${property}"`,
+    removeUnknownProperty: (property: string): string => `Remove unknown property "${property}"`,
 
     /**
      * 修复类型
      */
-    fixType: (expectedType: string): string =>
-        `Convert to ${formatTypeName(expectedType)}`,
+    fixType: (expectedType: string): string => `Convert to ${formatTypeName(expectedType)}`,
 
     /**
      * 使用建议值
      */
-    useSuggestedValue: (value: string): string =>
-        `Use "${value}"`,
+    useSuggestedValue: (value: string): string => `Use "${value}"`,
 
     /**
      * 使用允许的值
      */
-    useAllowedValue: (value: string): string =>
-        `Use allowed value "${value}"`,
+    useAllowedValue: (value: string): string => `Use allowed value "${value}"`,
 
     /**
      * 修复格式
      */
-    fixPattern: (): string =>
-        'Check the format and fix any syntax errors',
+    fixPattern: (): string => 'Check the format and fix any syntax errors',
 
     /**
      * 创建模板
      */
-    createTemplate: (templateName: string): string =>
-        `Create template "${templateName}"`,
+    createTemplate: (templateName: string): string => `Create template "${templateName}"`,
 
     /**
      * 创建翻译键
      */
-    createTranslationKey: (key: string): string =>
-        `Create translation key "${key}"`,
+    createTranslationKey: (key: string): string => `Create translation key "${key}"`,
 
     /**
      * 创建文件
      */
-    createFile: (filePath: string): string =>
-        `Create file "${filePath}"`,
+    createFile: (filePath: string): string => `Create file "${filePath}"`,
 
     /**
      * 重命名为
      */
-    renameTo: (newName: string): string =>
-        `Rename to "${newName}"`,
+    renameTo: (newName: string): string => `Rename to "${newName}"`,
 
     /**
      * 使用替代方案
      */
-    useReplacement: (replacement: string): string =>
-        `Use "${replacement}" instead`
+    useReplacement: (replacement: string): string => `Use "${replacement}" instead`,
 };
 
 // ============================================================================
@@ -495,32 +449,27 @@ export const RELATED_INFO_MESSAGES = {
     /**
      * 定义位置
      */
-    definedAt: (name: string): string =>
-        `"${name}" is defined here`,
+    definedAt: (name: string): string => `"${name}" is defined here`,
 
     /**
      * 相似建议
      */
-    didYouMean: (suggestion: string): string =>
-        `Did you mean "${suggestion}"?`,
+    didYouMean: (suggestion: string): string => `Did you mean "${suggestion}"?`,
 
     /**
      * 来自模板
      */
-    fromTemplate: (templateName: string): string =>
-        `From template "${templateName}"`,
+    fromTemplate: (templateName: string): string => `From template "${templateName}"`,
 
     /**
      * 引用位置
      */
-    referencedAt: (location: string): string =>
-        `Referenced at ${location}`,
+    referencedAt: (location: string): string => `Referenced at ${location}`,
 
     /**
      * 允许的值
      */
-    allowedValues: (values: string[]): string =>
-        `Allowed values: ${values.join(', ')}`
+    allowedValues: (values: string[]): string => `Allowed values: ${values.join(', ')}`,
 };
 
 // ============================================================================

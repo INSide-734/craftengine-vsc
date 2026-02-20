@@ -14,15 +14,15 @@
 import {
     commands,
     window,
-    ExtensionContext,
-    TextEditor,
-    Position,
-    TextEditorSelectionChangeEvent,
+    type ExtensionContext,
+    type TextEditor,
+    type Position,
+    type TextEditorSelectionChangeEvent,
     ProgressLocation,
-    Disposable,
+    type Disposable,
 } from 'vscode';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IModelPreviewService } from '../../core/interfaces/IModelPreviewService';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IModelPreviewService } from '../../core/interfaces/IModelPreviewService';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { ModelPreviewPanel } from '../webview/ModelPreviewPanel';
@@ -54,8 +54,7 @@ export class ModelPreviewCommands implements Disposable {
     private readonly disposables: Disposable[] = [];
 
     constructor() {
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild('ModelPreviewCommands');
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild('ModelPreviewCommands');
     }
 
     /**
@@ -63,17 +62,12 @@ export class ModelPreviewCommands implements Disposable {
      */
     register(context: ExtensionContext): void {
         // 注册预览命令
-        const commandDisposable = commands.registerCommand(
-            COMMAND_ID,
-            () => this.previewItemAtCursor()
-        );
+        const commandDisposable = commands.registerCommand(COMMAND_ID, () => this.previewItemAtCursor());
         context.subscriptions.push(commandDisposable);
         this.disposables.push(commandDisposable);
 
         // 注册光标位置监听（用于上下文菜单条件）
-        const selectionDisposable = window.onDidChangeTextEditorSelection(
-            (e) => this.updateContextForCursor(e)
-        );
+        const selectionDisposable = window.onDidChangeTextEditorSelection((e) => this.updateContextForCursor(e));
         context.subscriptions.push(selectionDisposable);
         this.disposables.push(selectionDisposable);
 
@@ -126,7 +120,7 @@ export class ModelPreviewCommands implements Disposable {
             },
             async () => {
                 await this.generateAndShowPreview(itemId);
-            }
+            },
         );
     }
 
@@ -138,7 +132,7 @@ export class ModelPreviewCommands implements Disposable {
             // 延迟获取预览服务（避免循环依赖）
             if (!this.previewService) {
                 this.previewService = ServiceContainer.getService<IModelPreviewService>(
-                    SERVICE_TOKENS.ModelPreviewService
+                    SERVICE_TOKENS.ModelPreviewService,
                 );
             }
 

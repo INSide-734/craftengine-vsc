@@ -62,7 +62,7 @@ export {
     removeQuotes,
     countOccurrences,
     getRelativePath,
-    extractCompletionPrefix
+    extractCompletionPrefix,
 } from './StringUtils';
 
 // 对象工具
@@ -79,7 +79,7 @@ export {
     isEmpty,
     getAllPaths,
     unflatten,
-    flatten
+    flatten,
 } from './ObjectUtils';
 
 // 字符串相似度工具
@@ -92,26 +92,15 @@ export {
     prefixMatchScore,
     isSubsequence,
     calculateMatchScore,
-    filterAndSort
+    filterAndSort,
 } from './StringSimilarityUtils';
 
-export type {
-    FindSimilarOptions,
-    SimilarityResult
-} from './StringSimilarityUtils';
+export type { FindSimilarOptions, SimilarityResult } from './StringSimilarityUtils';
 
 // 缓存工具
-export {
-    LRUCache,
-    TTLCache,
-    StatsCache,
-    getOrSet,
-    getOrSetSync
-} from './CacheUtils';
+export { LRUCache, TTLCache, StatsCache, getOrSet, getOrSetSync } from './CacheUtils';
 
-export type {
-    CacheStats
-} from './CacheUtils';
+export type { CacheStats } from './CacheUtils';
 
 // ID 生成工具
 export {
@@ -125,7 +114,7 @@ export {
     UniqueIdGenerator,
     getCurrentTimestamp,
     calculateUptime,
-    formatDuration
+    formatDuration,
 } from './IdGenerator';
 
 // 异步工具
@@ -139,10 +128,7 @@ export {
     batchAsync,
     debounce,
     throttle,
-    createAsyncInitializer
+    createAsyncInitializer,
 } from './AsyncUtils';
 
-export type {
-    RetryOptions,
-    AsyncInitializer
-} from './AsyncUtils';
+export type { RetryOptions, AsyncInitializer } from './AsyncUtils';

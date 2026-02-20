@@ -1,8 +1,8 @@
-import { EditorUri } from '../types/EditorTypes';
+import { type EditorUri } from '../types/EditorTypes';
 
 /**
  * 分类信息
- * 
+ *
  * 表示在 categories: section 中定义的分类
  */
 export interface ICategory {
@@ -54,51 +54,49 @@ export interface ICategoryRepository {
      * 获取所有分类
      */
     getAllCategories(): Promise<ICategory[]>;
-    
+
     /**
      * 根据完整 ID 获取分类（支持带或不带 # 前缀）
      */
     getCategoryById(id: string): Promise<ICategory | undefined>;
-    
+
     /**
      * 搜索分类（支持前缀匹配）
      */
     searchCategories(prefix: string): Promise<ICategory[]>;
-    
+
     /**
      * 根据命名空间获取分类
      */
     getCategoriesByNamespace(namespace: string): Promise<ICategory[]>;
-    
+
     /**
      * 获取分类数量
      */
     getCategoryCount(): Promise<number>;
-    
+
     /**
      * 添加分类
      */
     addCategory(category: ICategory): Promise<void>;
-    
+
     /**
      * 批量添加分类
      */
     addCategories(categories: ICategory[]): Promise<void>;
-    
+
     /**
      * 删除分类
      */
     removeCategory(id: string): Promise<void>;
-    
+
     /**
      * 根据文件删除分类
      */
     removeCategoriesByFile(sourceFile: EditorUri): Promise<void>;
-    
+
     /**
      * 清空所有分类
      */
     clearCategories(): Promise<void>;
 }
-
-

@@ -1,32 +1,36 @@
-import { CompletionItem, CompletionItemKind, CancellationToken, SnippetString } from 'vscode';
+import { CompletionItem, CompletionItemKind, type CancellationToken, SnippetString } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { ICompletionStrategy, ICompletionContextInfo, ICompletionResult } from '../../core/interfaces/ICompletionStrategy';
-import { ISchemaService, IJsonSchema } from '../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IConfiguration } from '../../core/interfaces/IConfiguration';
-import { IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
+import {
+    type ICompletionStrategy,
+    type ICompletionContextInfo,
+    type ICompletionResult,
+} from '../../core/interfaces/ICompletionStrategy';
+import { type ISchemaService, type IJsonSchema } from '../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../core/interfaces/IConfiguration';
+import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { VersionConditionHelper } from './helpers/VersionConditionHelper';
 import { SchemaKeyDocumentationBuilder } from './helpers/SchemaKeyDocumentationBuilder';
 
 /**
  * Schema 键名补全策略
- * 
+ *
  * 基于 JSON Schema 为 YAML 文件提供键名自动补全功能。
  * 根据当前光标位置的 YAML 路径，查询 Schema 中定义的可用属性，
  * 并生成相应的补全建议。
- * 
+ *
  * ## 功能特性
  * - 支持固定属性（properties）和模式属性（patternProperties）的补全
  * - 自动过滤已存在的键，避免重复
  * - 根据 Schema 类型生成智能代码片段（对象、数组、枚举等）
  * - 支持必需属性标记和弃用属性标记
  * - 提供丰富的文档提示（类型、描述、示例等）
- * 
+ *
  * ## 优先级
  * 优先级为 85，仅次于 SchemaAwareCompletionStrategy（90）
- * 
+ *
  * @example
  * // 在 YAML 文件中输入时触发补全
  * items:
@@ -60,10 +64,10 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
         const configLoader = ServiceContainer.getService<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
         this.priority = configLoader.getCompletionPrioritySync('schemaKey', false);
     }
-    
+
     /**
      * 判断是否应该激活此策略
-     * 
+     *
      * 激活条件：
      * 1. 配置中启用了 schema 键补全
      * 2. 当前文档是 YAML 文件
@@ -71,7 +75,7 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
      * 4. 光标不在注释中
      * 5. 光标在新行开始、冒号后或列表项处
      * 6. 当前路径有对应的 Schema 定义
-     * 
+     *
      * @param context 补全上下文信息
      * @returns 是否激活此策略
      */
@@ -86,15 +90,15 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
             if (context.document.languageId !== 'yaml') {
                 return false;
             }
-            
+
             const linePrefix = context.linePrefix.trim();
-            
+
             // 光标在值部分（冒号后有内容）时不激活
             const colonIndex = linePrefix.lastIndexOf(':');
             if (colonIndex >= 0 && linePrefix.slice(colonIndex + 1).trim().length > 0) {
                 this.logger.debug('Schema key completion skipped: cursor after value', {
                     linePrefix,
-                    colonIndex
+                    colonIndex,
                 });
                 return false;
             }
@@ -102,37 +106,37 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
             if (linePrefix.indexOf('#') >= 0) {
                 return false;
             }
-            
+
             // 只在新行、冒号后、列表项或版本条件开始处提供键名补全
             const isVersionConditionStart = linePrefix === '$$' || linePrefix.startsWith('$$');
             if (linePrefix !== '' && !linePrefix.endsWith(':') && linePrefix !== '-' && !isVersionConditionStart) {
                 this.logger.debug('Schema key completion skipped: not at key position', {
                     linePrefix,
-                    rawLinePrefix: context.linePrefix
+                    rawLinePrefix: context.linePrefix,
                 });
                 return false;
             }
-            
+
             // 检查当前路径是否有 Schema 定义
             const currentPath = this.pathParser.parsePath(context.document, context.position);
             const hasSchema = this.schemaService.hasSchemaForPath(currentPath);
-            
+
             this.logger.debug('Schema key completion activation check', {
                 currentPath,
                 hasSchema,
-                position: `${context.position.line}:${context.position.character}`
+                position: `${context.position.line}:${context.position.character}`,
             });
-            
+
             return hasSchema;
         } catch (error) {
             this.logger.error('Error in shouldActivate', error as Error);
             return false;
         }
     }
-    
+
     /**
      * 提供补全项
-     * 
+     *
      * 工作流程：
      * 1. 解析当前 YAML 路径
      * 2. 从 Schema 获取可用属性
@@ -140,14 +144,14 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
      * 4. 分离固定属性和模式属性，决定是否显示模式属性
      * 5. 过滤已存在的键
      * 6. 为每个属性创建补全项
-     * 
+     *
      * @param context 补全上下文信息
      * @param token 取消令牌
      * @returns 补全结果
      */
     async provideCompletionItems(
         context: ICompletionContextInfo,
-        token?: CancellationToken
+        token?: CancellationToken,
     ): Promise<ICompletionResult | undefined> {
         try {
             if (token?.isCancellationRequested) {
@@ -168,7 +172,11 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
 
             // 过滤属性
             const filteredProperties = this.filterAvailableProperties(
-                availableProperties, existingKeys, linePrefix, currentPath, context
+                availableProperties,
+                existingKeys,
+                linePrefix,
+                currentPath,
+                context,
             );
 
             if (filteredProperties.length === 0) {
@@ -205,25 +213,25 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
         existingKeys: string[],
         linePrefix: string,
         currentPath: string[],
-        context: ICompletionContextInfo
+        context: ICompletionContextInfo,
     ): Array<{ key: string; schema: IJsonSchema }> {
         const isPatternProp = (key: string) => key.startsWith('[') && key.endsWith(']');
 
         const isVersionConditionProp = (prop: { key: string; schema: IJsonSchema }) => {
-            if (!isPatternProp(prop.key)) { return false; }
+            if (!isPatternProp(prop.key)) {
+                return false;
+            }
             const completionKey = prop.schema['x-completion-key'] as string | undefined;
             return completionKey === 'craftengine.versionCondition';
         };
 
         const isTypingVersionCondition = linePrefix.includes('$$') || linePrefix.endsWith('$');
-        const fixedCount = availableProperties.filter(p => !isPatternProp(p.key)).length;
+        const fixedCount = availableProperties.filter((p) => !isPatternProp(p.key)).length;
         const patternCount = availableProperties.length - fixedCount;
 
-        const shouldShowPatternProps = this.shouldShowPatternProperties(
-            currentPath, fixedCount, patternCount, context
-        );
+        const shouldShowPatternProps = this.shouldShowPatternProperties(currentPath, fixedCount, patternCount, context);
 
-        return availableProperties.filter(prop => {
+        return availableProperties.filter((prop) => {
             if (isVersionConditionProp(prop)) {
                 return isTypingVersionCondition;
             }
@@ -233,29 +241,29 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
             return !existingKeys.includes(prop.key);
         });
     }
-    
+
     /**
      * 创建单个补全项
-     * 
+     *
      * @param prop 属性信息，包含键名和 Schema 定义
      * @param linePrefix 用户已输入的行前缀
      * @returns 补全项数组（版本条件会返回多个），失败时返回 undefined
      */
     private async createCompletionItem(
         prop: { key: string; schema: IJsonSchema },
-        linePrefix?: string
+        linePrefix?: string,
     ): Promise<CompletionItem[] | undefined> {
         try {
             // 判断是否为模式属性
             const isPattern = prop.key.startsWith('[') && prop.key.endsWith(']');
-            const pattern = isPattern ? ((prop.schema['x-pattern'] as string) || prop.key.slice(1, -1)) : null;
+            const pattern = isPattern ? (prop.schema['x-pattern'] as string) || prop.key.slice(1, -1) : null;
             const analysis = pattern ? this.docBuilder.analyzePattern(pattern, prop.schema) : null;
-            
+
             // 如果是版本条件模式，生成版本条件补全项
             if (analysis?.isVersionCondition || analysis?.completionKey === 'craftengine.versionCondition') {
                 return await this.createVersionConditionCompletionItems(prop.schema, linePrefix);
             }
-            
+
             // 确定显示标签
             const label = isPattern ? this.docBuilder.getPatternLabel(analysis!) : prop.key;
             const item = new CompletionItem(label, this.getCompletionItemKind(prop.schema));
@@ -273,7 +281,7 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
             const priority = this.docBuilder.calculatePriority(prop.schema);
             item.sortText = priority.toString().padStart(3, '0') + label;
             item.filterText = label;
-            
+
             // 标记必需属性
             if (prop.schema.required || prop.schema['x-isRequired']) {
                 item.label = `${label} ✨`;
@@ -282,56 +290,56 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
             if (prop.schema.deprecated) {
                 item.tags = [1]; // CompletionItemTag.Deprecated
             }
-            
+
             return [item];
         } catch (error) {
             this.logger.error('Error creating completion item', error as Error, { key: prop.key });
             return undefined;
         }
     }
-    
+
     /**
      * 创建版本条件补全项
-     * 
+     *
      * 委托给 VersionConditionHelper 生成补全项
-     * 
+     *
      * 根据 Schema 描述自动判断是否需要标识符后缀：
      * - 包含 "section" 关键词时，表示这是顶层版本条件分组，需要标识符
      * - 否则为普通版本条件块或值，不需要标识符
-     * 
+     *
      * @param schema Schema 定义
      * @param linePrefix 用户已输入的行前缀，用于判断是否已输入 $$
      * @returns 版本条件补全项数组
      */
     private async createVersionConditionCompletionItems(
         schema: IJsonSchema,
-        linePrefix?: string
+        linePrefix?: string,
     ): Promise<CompletionItem[]> {
         // 根据 Schema 描述判断是否需要标识符后缀
         // "section" 关键词表示这是顶层版本条件分组（如 $$>=1.21.4#my_section:）
         const description = (schema.description as string) || '';
         const includeIdentifierSuffix = description.toLowerCase().includes('section');
-        
+
         // 检查是否需要包含 default 键（通常值选择场景不需要）
         const includeDefault = !description.toLowerCase().includes('value');
-        
+
         return this.versionHelper.createCompletionItems({
             isKeyPosition: true,
             includeDefault,
             includeIdentifierSuffix,
             maxVersions: 8,
-            linePrefix: linePrefix || ''
+            linePrefix: linePrefix || '',
         });
     }
-    
+
     /**
      * 根据 Schema 类型创建插入文本
-     * 
+     *
      * - object: 添加冒号和缩进换行
      * - array: 添加冒号和列表项
      * - enum: 创建枚举选择片段
      * - 其他: 添加冒号和光标占位符
-     * 
+     *
      * @param key 键名
      * @param schema Schema 定义
      * @returns 代码片段
@@ -352,7 +360,7 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
 
     /**
      * 根据 Schema 类型获取补全项图标类型
-     * 
+     *
      * @param schema Schema 定义
      * @returns VSCode 补全项类型
      */
@@ -361,29 +369,34 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
             return CompletionItemKind.Enum;
         }
         switch (schema.type) {
-            case 'object': return CompletionItemKind.Class;
-            case 'array': return CompletionItemKind.Value;
-            case 'string': return CompletionItemKind.Text;
+            case 'object':
+                return CompletionItemKind.Class;
+            case 'array':
+                return CompletionItemKind.Value;
+            case 'string':
+                return CompletionItemKind.Text;
             case 'number':
             case 'integer':
-            case 'boolean': return CompletionItemKind.Value;
-            default: return CompletionItemKind.Property;
+            case 'boolean':
+                return CompletionItemKind.Value;
+            default:
+                return CompletionItemKind.Property;
         }
     }
 
     /**
      * 判断是否应该显示模式属性（patternProperties）
-     * 
+     *
      * 模式属性只在以下条件都满足时显示：
      * 1. 存在模式属性
      * 2. 当前层级没有固定属性（纯动态键对象）
      * 3. 路径深度为 1（在顶级 section 的直接子级）
      * 4. 缩进级别与路径深度匹配（验证解析准确性）
-     * 
+     *
      * 这样可以避免模式属性在不应该出现的位置显示，
      * 例如 namespace:name 格式只应该在 items 下直接显示，
      * 而不应该在 items.namespace:name 内部显示。
-     * 
+     *
      * @param currentPath 当前 YAML 路径
      * @param fixedPropertiesCount 固定属性数量
      * @param patternPropertiesCount 模式属性数量
@@ -394,19 +407,19 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
         currentPath: string[],
         fixedPropertiesCount: number,
         patternPropertiesCount: number,
-        context: ICompletionContextInfo
+        context: ICompletionContextInfo,
     ): boolean {
         // 无模式属性、有固定属性、或路径过深时不显示
         if (patternPropertiesCount === 0 || fixedPropertiesCount > 0 || currentPath.length > 1) {
             return false;
         }
-        
+
         // 通过缩进级别验证路径解析的准确性
         const currentIndent = this.pathParser.getIndentLevel(context.linePrefix);
         const expectedMaxIndent = (currentPath.length + 1) * 2;
         return currentIndent < expectedMaxIndent;
     }
-    
+
     /**
      * 获取当前层级已存在的键
      *
@@ -423,9 +436,7 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
         const existingKeys = new Set<string>();
 
         try {
-            const currentIndent = this.pathParser.getIndentLevel(
-                context.document.lineAt(context.position.line).text
-            );
+            const currentIndent = this.pathParser.getIndentLevel(context.document.lineAt(context.position.line).text);
             // 向上和向下扫描（限制扫描范围）
             this.scanKeys(context, currentIndent, -1, existingKeys);
             this.scanKeys(context, currentIndent, 1, existingKeys);
@@ -454,7 +465,7 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
         context: ICompletionContextInfo,
         targetIndent: number,
         direction: -1 | 1,
-        keys: Set<string>
+        keys: Set<string>,
     ): void {
         const startLine = context.position.line + direction;
         const endLine = direction < 0 ? 0 : context.document.lineCount - 1;
@@ -492,52 +503,54 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
             }
         }
     }
-    
+
     /**
      * 提供降级补全
-     * 
+     *
      * 当主要补全逻辑失败时，提供简化的补全建议：
      * - 不过滤已存在的键
      * - 限制返回数量（最多 20 个）
      * - 使用简单的插入文本
      * - 标记为不完整结果
-     * 
+     *
      * @param context 补全上下文
      * @param token 取消令牌
      * @returns 降级补全结果
      */
     private async provideFallbackCompletions(
         context: ICompletionContextInfo,
-        token?: CancellationToken
+        token?: CancellationToken,
     ): Promise<ICompletionResult | undefined> {
         if (token?.isCancellationRequested) {
             return undefined;
         }
-        
+
         // 尝试解析路径，失败则使用空路径
         let currentPath: string[] = [];
         try {
             currentPath = this.pathParser.parsePath(context.document, context.position);
-        } catch { /* 忽略解析错误 */ }
-        
+        } catch {
+            /* 忽略解析错误 */
+        }
+
         const availableProperties = await this.schemaService.getAvailableProperties(currentPath);
         if (availableProperties.length === 0) {
             return undefined;
         }
-        
+
         // 创建简化的补全项
-        const items = availableProperties.slice(0, 20).map(prop => {
+        const items = availableProperties.slice(0, 20).map((prop) => {
             const item = new CompletionItem(prop.key, CompletionItemKind.Property);
             item.insertText = `${prop.key}: `;
             item.detail = 'Schema property (fallback)';
             return item;
         });
-        
+
         return {
             items,
             isIncomplete: true,
             completionType: `${this.name}-fallback`,
-            priority: this.priority - 10
+            priority: this.priority - 10,
         };
     }
 }

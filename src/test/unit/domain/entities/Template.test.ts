@@ -1,6 +1,6 @@
 /**
  * Template 实体单元测试
- * 
+ *
  * 测试 Template 领域实体的所有功能，包括：
  * - 构造和验证
  * - 参数查询
@@ -12,13 +12,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Template } from '../../../../domain/entities/Template';
 import { Uri, Position } from 'vscode';
-import { ITemplateParameter } from '../../../../core/interfaces/ITemplate';
+import { type ITemplateParameter } from '../../../../core/interfaces/ITemplate';
 
 describe('Template', () => {
     // 测试数据
     const createTestUri = () => Uri.file('/test/templates.yaml');
     const createTestPosition = () => new Position(10, 0);
-    
+
     const createBasicTemplateData = () => ({
         id: 'tpl-001',
         name: 'test-template',
@@ -94,62 +94,86 @@ describe('Template', () => {
 
     describe('validation', () => {
         it('should throw error when ID is empty', () => {
-            expect(() => new Template({
-                ...createBasicTemplateData(),
-                id: '',
-            })).toThrow(/ID cannot be empty/);
+            expect(
+                () =>
+                    new Template({
+                        ...createBasicTemplateData(),
+                        id: '',
+                    }),
+            ).toThrow(/ID cannot be empty/);
         });
 
         it('should throw error when ID is only whitespace', () => {
-            expect(() => new Template({
-                ...createBasicTemplateData(),
-                id: '   ',
-            })).toThrow(/ID cannot be empty/);
+            expect(
+                () =>
+                    new Template({
+                        ...createBasicTemplateData(),
+                        id: '   ',
+                    }),
+            ).toThrow(/ID cannot be empty/);
         });
 
         it('should throw error when name is empty', () => {
-            expect(() => new Template({
-                ...createBasicTemplateData(),
-                name: '',
-            })).toThrow(/name cannot be empty/);
+            expect(
+                () =>
+                    new Template({
+                        ...createBasicTemplateData(),
+                        name: '',
+                    }),
+            ).toThrow(/name cannot be empty/);
         });
 
         it('should throw error when name is only whitespace', () => {
-            expect(() => new Template({
-                ...createBasicTemplateData(),
-                name: '   ',
-            })).toThrow(/name cannot be empty/);
+            expect(
+                () =>
+                    new Template({
+                        ...createBasicTemplateData(),
+                        name: '   ',
+                    }),
+            ).toThrow(/name cannot be empty/);
         });
 
         it('should throw error when parameter name is empty', () => {
-            expect(() => new Template({
-                ...createBasicTemplateData(),
-                parameters: [{ name: '', required: true }],
-            })).toThrow(/invalid name/);
+            expect(
+                () =>
+                    new Template({
+                        ...createBasicTemplateData(),
+                        parameters: [{ name: '', required: true }],
+                    }),
+            ).toThrow(/invalid name/);
         });
 
         it('should throw error when parameter name is duplicate', () => {
-            expect(() => new Template({
-                ...createBasicTemplateData(),
-                parameters: [
-                    { name: 'userId', required: true },
-                    { name: 'userId', required: false },
-                ],
-            })).toThrow(/duplicate parameter name/);
+            expect(
+                () =>
+                    new Template({
+                        ...createBasicTemplateData(),
+                        parameters: [
+                            { name: 'userId', required: true },
+                            { name: 'userId', required: false },
+                        ],
+                    }),
+            ).toThrow(/duplicate parameter name/);
         });
 
         it('should throw error when parameter is not an object', () => {
-            expect(() => new Template({
-                ...createBasicTemplateData(),
-                parameters: [null as any],
-            })).toThrow(/must be an object/);
+            expect(
+                () =>
+                    new Template({
+                        ...createBasicTemplateData(),
+                        parameters: [null as any],
+                    }),
+            ).toThrow(/must be an object/);
         });
 
         it('should throw error when parameter name is not a string', () => {
-            expect(() => new Template({
-                ...createBasicTemplateData(),
-                parameters: [{ name: 123 as any, required: true }],
-            })).toThrow(/invalid name type/);
+            expect(
+                () =>
+                    new Template({
+                        ...createBasicTemplateData(),
+                        parameters: [{ name: 123 as any, required: true }],
+                    }),
+            ).toThrow(/invalid name type/);
         });
     });
 
@@ -348,7 +372,7 @@ describe('Template', () => {
 
         it('should accumulate usage count', () => {
             let template = new Template(createBasicTemplateData());
-            
+
             template = template.recordUsage();
             template = template.recordUsage();
             template = template.recordUsage();
@@ -457,7 +481,7 @@ describe('Template', () => {
         it('should return consistent hash for same template', () => {
             const data = createBasicTemplateData();
             const template = new Template(data);
-            
+
             const hash1 = template.getHashCode();
             const hash2 = template.getHashCode();
 
@@ -616,7 +640,7 @@ describe('Template', () => {
 
         it('should not throw exception for invalid data', () => {
             const data = { ...createBasicTemplateData(), name: '' };
-            
+
             expect(() => Template.createSafe(data)).not.toThrow();
         });
 
@@ -678,4 +702,3 @@ describe('Template', () => {
         });
     });
 });
-

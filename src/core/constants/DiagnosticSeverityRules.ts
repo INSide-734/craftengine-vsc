@@ -5,7 +5,7 @@
  * 必须在使用前调用 initializeDiagnosticSeverityRules() 初始化。
  */
 
-import { IDiagnosticSeverityRulesConfig } from '../types/ConfigTypes';
+import { type IDiagnosticSeverityRulesConfig } from '../types/ConfigTypes';
 
 /**
  * 严重程度级别
@@ -62,7 +62,7 @@ export function initializeDiagnosticSeverityRules(config: IDiagnosticSeverityRul
             default: def.default as SeverityLevel,
             loose: def.loose as SeverityLevel | undefined,
             strict: def.strict as SeverityLevel | undefined,
-            configurable: def.configurable
+            configurable: def.configurable,
         };
     }
     loadedRules = rules;
@@ -75,10 +75,9 @@ export function initializeDiagnosticSeverityRules(config: IDiagnosticSeverityRul
 /**
  * 诊断严重程度规则定义
  */
-export const SEVERITY_RULES: Record<string, ISeverityRule> = new Proxy(
-    {} as Record<string, ISeverityRule>,
-    { get: (_, prop: string) => ensureInitialized()[prop] }
-);
+export const SEVERITY_RULES: Record<string, ISeverityRule> = new Proxy({} as Record<string, ISeverityRule>, {
+    get: (_, prop: string) => ensureInitialized()[prop],
+});
 
 /**
  * 检查错误代码是否可由用户配置

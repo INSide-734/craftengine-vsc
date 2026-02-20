@@ -8,15 +8,15 @@
 
 import { Key } from '../utils/Key';
 import {
-    Property,
-    PropertyFactory,
-    PropertyReader,
+    type Property,
+    type PropertyFactory,
+    type PropertyReader,
     SimpleProperty,
     SimplePropertyFactory,
     SimplePropertyReader,
     PropertyRegistry,
 } from '../property/PropertyBase';
-import { IModelPropertyDefinition } from '../../../../core/types/ConfigTypes';
+import { type IModelPropertyDefinition } from '../../../../core/types/ConfigTypes';
 
 // ============================================
 // 范围分发属性接口（保持向后兼容）
@@ -47,21 +47,20 @@ let rangeDispatchPropertyTypesData: Record<string, Key> | null = null;
  *
  * 通过 Proxy 延迟访问，未初始化时抛出错误。
  */
-export const RANGE_DISPATCH_PROPERTY_TYPES: Record<string, Key> = new Proxy(
-    {} as Record<string, Key>,
-    {
-        get(_target, prop: string): Key {
-            if (!rangeDispatchPropertyTypesData) {
-                throw new Error('RANGE_DISPATCH_PROPERTY_TYPES not initialized. Call initializeRangeDispatchProperties() first.');
-            }
-            const val = rangeDispatchPropertyTypesData[prop];
-            if (!val) {
-                throw new Error(`Unknown RANGE_DISPATCH_PROPERTY_TYPES key: ${prop}`);
-            }
-            return val;
-        },
-    }
-);
+export const RANGE_DISPATCH_PROPERTY_TYPES: Record<string, Key> = new Proxy({} as Record<string, Key>, {
+    get(_target, prop: string): Key {
+        if (!rangeDispatchPropertyTypesData) {
+            throw new Error(
+                'RANGE_DISPATCH_PROPERTY_TYPES not initialized. Call initializeRangeDispatchProperties() first.',
+            );
+        }
+        const val = rangeDispatchPropertyTypesData[prop];
+        if (!val) {
+            throw new Error(`Unknown RANGE_DISPATCH_PROPERTY_TYPES key: ${prop}`);
+        }
+        return val;
+    },
+});
 
 // ============================================
 // 注册表（延迟初始化）
@@ -71,7 +70,9 @@ let registry: PropertyRegistry<RangeDispatchProperty> | null = null;
 
 function ensureRegistryInitialized(): PropertyRegistry<RangeDispatchProperty> {
     if (!registry) {
-        throw new Error('Range dispatch property registry not initialized. Call initializeRangeDispatchProperties() first.');
+        throw new Error(
+            'Range dispatch property registry not initialized. Call initializeRangeDispatchProperties() first.',
+        );
     }
     return registry;
 }
@@ -88,17 +89,17 @@ export function initializeRangeDispatchProperties(definitions: IModelPropertyDef
     }
 
     const simpleFactory = new SimplePropertyFactory<RangeDispatchProperty>(
-        (type) => new SimpleRangeDispatchProperty(type)
+        (type) => new SimpleRangeDispatchProperty(type),
     );
     const simpleReader = new SimplePropertyReader<RangeDispatchProperty>(
-        (type) => new SimpleRangeDispatchProperty(type)
+        (type) => new SimpleRangeDispatchProperty(type),
     );
 
     registry = new PropertyRegistry<RangeDispatchProperty>('range dispatch property');
     registry.registerSimpleTypes(
-        definitions.map(d => Key.of(d.key)),
+        definitions.map((d) => Key.of(d.key)),
         simpleFactory,
-        simpleReader
+        simpleReader,
     );
 }
 

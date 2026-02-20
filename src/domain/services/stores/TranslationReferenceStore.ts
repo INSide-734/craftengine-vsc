@@ -1,4 +1,4 @@
-import { ITranslationReference } from '../../../core/interfaces/ITranslation';
+import { type ITranslationReference } from '../../../core/interfaces/ITranslation';
 
 /**
  * 翻译引用索引存储
@@ -54,7 +54,7 @@ export class TranslationReferenceStore {
         for (const key of keys) {
             const refs = this.referencesByKey.get(key);
             if (refs) {
-                const filtered = refs.filter(r => r.sourceFile !== sourceFile);
+                const filtered = refs.filter((r) => r.sourceFile !== sourceFile);
                 if (filtered.length === 0) {
                     this.referencesByKey.delete(key);
                 } else {

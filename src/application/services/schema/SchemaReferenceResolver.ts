@@ -1,7 +1,7 @@
 import * as path from 'path';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
-import { SchemaFileLoader } from './SchemaFileLoader';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type ISchemaFileLoader } from '../../../core/interfaces/ISchemaFileLoader';
+import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
 import { SCHEMA_METADATA, SCHEMA_RESOLUTION } from './SchemaConstants';
 
 /**
@@ -36,10 +36,10 @@ export function isCircularRef(schema: JsonSchemaNode): boolean {
  */
 export class SchemaReferenceResolver {
     constructor(
-        private readonly loader: SchemaFileLoader,
-        private readonly logger: ILogger
+        private readonly loader: ISchemaFileLoader,
+        private readonly logger: ILogger,
     ) {}
-    
+
     /**
      * 解析 Schema 中的所有引用
      *
@@ -51,11 +51,12 @@ export class SchemaReferenceResolver {
     async resolveReferences(
         schema: JsonSchemaNode,
         maxDepth: number = SCHEMA_RESOLUTION.DEFAULT_MAX_DEPTH,
-        contextSchema?: JsonSchemaNode
+        contextSchema?: JsonSchemaNode,
     ): Promise<JsonSchemaNode> {
         // 优先使用 Schema 上标记的上下文（由之前的外部引用解析设置）
         // 这样可以正确解析外部 Schema 中的内部引用
-        const effectiveContext = (schema?.[SCHEMA_METADATA.CONTEXT_SCHEMA] as JsonSchemaNode | undefined) || contextSchema || schema;
+        const effectiveContext =
+            (schema?.[SCHEMA_METADATA.CONTEXT_SCHEMA] as JsonSchemaNode | undefined) || contextSchema || schema;
 
         // 确定当前 Schema 文件目录，优先级：
         // 1. schema[SCHEMA_METADATA.SCHEMA_DIR]（直接保存的目录路径）
@@ -64,11 +65,12 @@ export class SchemaReferenceResolver {
         // 4. 从 effectiveContext[SCHEMA_METADATA.SCHEMA_FILE] 计算
         let currentSchemaDir = schema?.[SCHEMA_METADATA.SCHEMA_DIR] as string | undefined;
         if (!currentSchemaDir) {
-            const schemaFile = (schema?.[SCHEMA_METADATA.SCHEMA_FILE] || effectiveContext?.[SCHEMA_METADATA.SCHEMA_FILE]) as string | undefined;
+            const schemaFile = (schema?.[SCHEMA_METADATA.SCHEMA_FILE] ||
+                effectiveContext?.[SCHEMA_METADATA.SCHEMA_FILE]) as string | undefined;
             // 使用 path.posix.dirname 确保跨平台一致性
             currentSchemaDir = schemaFile
                 ? path.posix.dirname(schemaFile.replace(/\\/g, '/'))
-                : effectiveContext?.[SCHEMA_METADATA.SCHEMA_DIR] as string | undefined;
+                : (effectiveContext?.[SCHEMA_METADATA.SCHEMA_DIR] as string | undefined);
         }
 
         const context: RefResolutionContext = {
@@ -76,24 +78,21 @@ export class SchemaReferenceResolver {
             visited: new Set<string>(),
             depth: 0,
             maxDepth,
-            currentSchemaDir
+            currentSchemaDir,
         };
 
         return this.resolveWithContext(schema, context);
     }
-    
+
     /**
      * 带上下文的引用解析
      */
-    private async resolveWithContext(
-        schema: JsonSchemaNode,
-        context: RefResolutionContext
-    ): Promise<JsonSchemaNode> {
+    private async resolveWithContext(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
         if (!schema || context.depth >= context.maxDepth) {
             if (context.depth >= context.maxDepth) {
                 this.logger.debug('Max resolution depth reached', {
                     depth: context.depth,
-                    maxDepth: context.maxDepth
+                    maxDepth: context.maxDepth,
                 });
             }
             return schema;
@@ -102,12 +101,13 @@ export class SchemaReferenceResolver {
         // 增加深度，并且如果 schema 有自己的 SCHEMA_DIR，使用它
         // 这确保了从外部引用解析的 Schema 在处理其内部的 oneOf/allOf 时
         // 使用正确的目录上下文来解析相对路径
-        const effectiveSchemaDir = (schema[SCHEMA_METADATA.SCHEMA_DIR] as string | undefined) || context.currentSchemaDir;
+        const effectiveSchemaDir =
+            (schema[SCHEMA_METADATA.SCHEMA_DIR] as string | undefined) || context.currentSchemaDir;
 
         const newContext = {
             ...context,
             depth: context.depth + 1,
-            currentSchemaDir: effectiveSchemaDir
+            currentSchemaDir: effectiveSchemaDir,
         };
 
         try {
@@ -132,23 +132,19 @@ export class SchemaReferenceResolver {
             }
 
             return schema;
-
         } catch (error) {
             this.logger.error('Failed to resolve references', error as Error);
             return schema;
         }
     }
-    
+
     /**
      * 解析 $ref 引用
      */
-    private async resolveRef(
-        schema: JsonSchemaNode,
-        context: RefResolutionContext
-    ): Promise<JsonSchemaNode> {
+    private async resolveRef(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
         const ref = schema.$ref as string;
 
-        // 循环引用检测
+        // 循环引用检测：使用当前链路的副本，避免不同分支间的误判
         if (context.visited.has(ref)) {
             this.logger.debug('Circular reference detected', { ref });
             // 返回一个标记了循环引用的 schema，下游代码可以检测并处理
@@ -156,12 +152,15 @@ export class SchemaReferenceResolver {
                 [CIRCULAR_REF_KEY]: true,
                 __circularRef__: ref,
                 type: 'object',
-                description: `Circular reference to ${ref}`
+                description: `Circular reference to ${ref}`,
             };
         }
-        
-        context.visited.add(ref);
-        
+
+        // 创建新的 visited 集合（当前链路的副本 + 当前 ref）
+        // 这样同一个 $ref 在不同分支中被引用不会误判为循环
+        const branchVisited = new Set(context.visited);
+        branchVisited.add(ref);
+
         try {
             // 分离文件路径和内部路径
             const [filePart, internalPath] = ref.split('#');
@@ -199,7 +198,7 @@ export class SchemaReferenceResolver {
                 }
                 targetSchema = navigated;
             }
-            
+
             // 合并其他属性
             const { $ref: _ref, ...rest } = schema;
             const resolved: JsonSchemaNode = { ...targetSchema, ...rest };
@@ -216,24 +215,25 @@ export class SchemaReferenceResolver {
             // 以便后续嵌套引用解析能获取正确的目录
             // 这确保了当后续代码再次调用 resolveReferences 时，能正确计算相对路径
             if (filePart && newSchemaDir) {
-                resolved[SCHEMA_METADATA.SCHEMA_FILE] = externalSchemaRoot?.[SCHEMA_METADATA.SCHEMA_FILE] || resolvedFilename;
+                resolved[SCHEMA_METADATA.SCHEMA_FILE] =
+                    externalSchemaRoot?.[SCHEMA_METADATA.SCHEMA_FILE] || resolvedFilename;
                 resolved[SCHEMA_METADATA.SCHEMA_DIR] = newSchemaDir;
             }
-            
-            const resolveContext = { 
-                ...context, 
+
+            const resolveContext = {
+                ...context,
                 schema: newContextSchema,
-                currentSchemaDir: newSchemaDir
+                currentSchemaDir: newSchemaDir,
+                visited: branchVisited,
             };
-            
+
             return await this.resolveWithContext(resolved, resolveContext);
-            
         } catch (error) {
             this.logger.error('Failed to resolve $ref', error as Error, { ref });
             return schema;
         }
     }
-    
+
     /**
      * 解析文件引用路径
      *
@@ -258,19 +258,16 @@ export class SchemaReferenceResolver {
 
         return resolvedPath;
     }
-    
+
     /**
      * 解析 allOf
      *
      * 注意：除了合并 allOf 中的 Schema，还需要保留原始 Schema 中的其他属性
      * （如 patternProperties、required 等），否则这些属性会丢失
      */
-    private async resolveAllOf(
-        schema: JsonSchemaNode,
-        context: RefResolutionContext
-    ): Promise<JsonSchemaNode> {
+    private async resolveAllOf(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
         const resolvedSchemas = await Promise.all(
-            (schema.allOf as JsonSchemaNode[]).map((s: JsonSchemaNode) => this.resolveWithContext(s, context))
+            (schema.allOf as JsonSchemaNode[]).map((s: JsonSchemaNode) => this.resolveWithContext(s, context)),
         );
 
         // 提取原始 Schema 中除 allOf 之外的属性
@@ -283,16 +280,13 @@ export class SchemaReferenceResolver {
         this.preserveMetadata(result, schema, context);
         return result;
     }
-    
+
     /**
      * 解析 oneOf
      */
-    private async resolveOneOf(
-        schema: JsonSchemaNode,
-        context: RefResolutionContext
-    ): Promise<JsonSchemaNode> {
+    private async resolveOneOf(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
         const resolvedSchemas = await Promise.all(
-            (schema.oneOf as JsonSchemaNode[]).map((s: JsonSchemaNode) => this.resolveWithContext(s, context))
+            (schema.oneOf as JsonSchemaNode[]).map((s: JsonSchemaNode) => this.resolveWithContext(s, context)),
         );
 
         const result = { ...schema, oneOf: resolvedSchemas };
@@ -300,16 +294,13 @@ export class SchemaReferenceResolver {
         this.preserveMetadata(result, schema, context);
         return result;
     }
-    
+
     /**
      * 解析 anyOf
      */
-    private async resolveAnyOf(
-        schema: JsonSchemaNode,
-        context: RefResolutionContext
-    ): Promise<JsonSchemaNode> {
+    private async resolveAnyOf(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
         const resolvedSchemas = await Promise.all(
-            (schema.anyOf as JsonSchemaNode[]).map((s: JsonSchemaNode) => this.resolveWithContext(s, context))
+            (schema.anyOf as JsonSchemaNode[]).map((s: JsonSchemaNode) => this.resolveWithContext(s, context)),
         );
 
         const result = { ...schema, anyOf: resolvedSchemas };
@@ -317,14 +308,14 @@ export class SchemaReferenceResolver {
         this.preserveMetadata(result, schema, context);
         return result;
     }
-    
+
     /**
      * 导航 Schema 路径
      *
      * 导航到内部路径后，确保返回的子对象继承父 Schema 的元数据
      */
     private navigateSchemaPath(schema: JsonSchemaNode, internalPath: string): JsonSchemaNode | undefined {
-        const parts = internalPath.split('/').filter(p => p);
+        const parts = internalPath.split('/').filter((p) => p);
         let current: unknown = schema;
 
         for (const part of parts) {
@@ -355,7 +346,7 @@ export class SchemaReferenceResolver {
 
         return current as JsonSchemaNode | undefined;
     }
-    
+
     /**
      * 查找 Schema 根
      */
@@ -376,12 +367,12 @@ export class SchemaReferenceResolver {
     private preserveMetadata(
         result: JsonSchemaNode,
         originalSchema: JsonSchemaNode,
-        context: RefResolutionContext
+        context: RefResolutionContext,
     ): void {
         // 保留 SCHEMA_FILE：优先使用原始 Schema 的值，否则从上下文 schema 获取
         if (!result[SCHEMA_METADATA.SCHEMA_FILE]) {
-            result[SCHEMA_METADATA.SCHEMA_FILE] = originalSchema[SCHEMA_METADATA.SCHEMA_FILE] ||
-                context.schema?.[SCHEMA_METADATA.SCHEMA_FILE];
+            result[SCHEMA_METADATA.SCHEMA_FILE] =
+                originalSchema[SCHEMA_METADATA.SCHEMA_FILE] || context.schema?.[SCHEMA_METADATA.SCHEMA_FILE];
         }
 
         // 设置 CONTEXT_SCHEMA：用于解析内部引用（如 #/$defs/xxx）
@@ -410,7 +401,7 @@ export class SchemaReferenceResolver {
             SCHEMA_METADATA.SCHEMA_DIR,
             SCHEMA_METADATA.SCHEMA_FILE,
             SCHEMA_METADATA.LOADED_AT,
-            SCHEMA_METADATA.SCHEMA_SOURCE
+            SCHEMA_METADATA.SCHEMA_SOURCE,
         ];
         // CONTEXT_SCHEMA 需要特殊处理：使用后面的值（用于内部引用解析）
 
@@ -423,23 +414,22 @@ export class SchemaReferenceResolver {
             if (schema.properties) {
                 result.properties = {
                     ...(result.properties as Record<string, unknown>),
-                    ...(schema.properties as Record<string, unknown>)
+                    ...(schema.properties as Record<string, unknown>),
                 };
             }
 
             // 合并 required
             if (schema.required) {
-                result.required = [...new Set([
-                    ...((result.required as string[]) || []),
-                    ...(schema.required as string[])
-                ])];
+                result.required = [
+                    ...new Set([...((result.required as string[]) || []), ...(schema.required as string[])]),
+                ];
             }
 
             // 合并 patternProperties
             if (schema.patternProperties) {
                 result.patternProperties = {
                     ...(result.patternProperties as Record<string, unknown>),
-                    ...(schema.patternProperties as Record<string, unknown>)
+                    ...(schema.patternProperties as Record<string, unknown>),
                 };
             }
 
@@ -463,4 +453,3 @@ export class SchemaReferenceResolver {
         return result;
     }
 }
-

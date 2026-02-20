@@ -1,5 +1,5 @@
 import * as https from 'https';
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type ILogger } from '../../core/interfaces/ILogger';
 
 /**
  * HTTP 工具类
@@ -100,7 +100,12 @@ export class HttpUtils {
      * @param redirectCount - 当前重定向次数
      * @param maxResponseSize - 最大响应体大小（字节）
      */
-    private static fetchJsonWithRedirects<T>(url: string, timeout: number, redirectCount: number, maxResponseSize: number): Promise<T> {
+    private static fetchJsonWithRedirects<T>(
+        url: string,
+        timeout: number,
+        redirectCount: number,
+        maxResponseSize: number,
+    ): Promise<T> {
         return new Promise((resolve, reject) => {
             // 创建超时定时器
             const timer = setTimeout(() => {
@@ -124,7 +129,9 @@ export class HttpUtils {
                     // 解析相对 URL 并验证 scheme
                     const redirectUrl = new URL(res.headers.location, url).href;
                     HttpUtils.validateUrl(redirectUrl);
-                    resolve(HttpUtils.fetchJsonWithRedirects<T>(redirectUrl, timeout, redirectCount + 1, maxResponseSize));
+                    resolve(
+                        HttpUtils.fetchJsonWithRedirects<T>(redirectUrl, timeout, redirectCount + 1, maxResponseSize),
+                    );
                     return;
                 }
 
@@ -140,7 +147,11 @@ export class HttpUtils {
                 if (!isNaN(contentLength) && contentLength > maxResponseSize) {
                     clearTimeout(timer);
                     res.destroy();
-                    reject(new Error(`Response too large: Content-Length ${contentLength} exceeds limit of ${maxResponseSize} bytes`));
+                    reject(
+                        new Error(
+                            `Response too large: Content-Length ${contentLength} exceeds limit of ${maxResponseSize} bytes`,
+                        ),
+                    );
                     return;
                 }
 
@@ -206,11 +217,7 @@ export class HttpUtils {
      * );
      * ```
      */
-    static async fetchFromMultipleSources<T>(
-        urls: string[],
-        timeout: number,
-        logger?: ILogger
-    ): Promise<T | null> {
+    static async fetchFromMultipleSources<T>(urls: string[], timeout: number, logger?: ILogger): Promise<T | null> {
         const errors: Array<{ url: string; error: string }> = [];
 
         for (let i = 0; i < urls.length; i++) {
@@ -220,14 +227,14 @@ export class HttpUtils {
             try {
                 logger?.debug('Attempting to fetch from source', {
                     sourceType,
-                    url: HttpUtils.maskUrl(url)
+                    url: HttpUtils.maskUrl(url),
                 });
 
                 const data = await HttpUtils.fetchJson<T>(url, timeout);
 
                 logger?.debug('Successfully fetched from source', {
                     sourceType,
-                    url: HttpUtils.maskUrl(url)
+                    url: HttpUtils.maskUrl(url),
                 });
 
                 return data;
@@ -239,7 +246,7 @@ export class HttpUtils {
                     sourceType,
                     url: HttpUtils.maskUrl(url),
                     error: errorMessage,
-                    remainingSources: urls.length - i - 1
+                    remainingSources: urls.length - i - 1,
                 });
             }
         }
@@ -247,7 +254,7 @@ export class HttpUtils {
         // 所有源都失败
         logger?.warn('All data sources failed', {
             attemptedSources: urls.length,
-            errors
+            errors,
         });
 
         return null;

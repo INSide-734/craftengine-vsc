@@ -1,5 +1,5 @@
-import { EditorUri } from '../types/EditorTypes';
-import { IDataStoreStatistics } from './IDataStoreService';
+import { type EditorUri } from '../types/EditorTypes';
+import { type IDataStoreStatistics } from './IDataStoreService';
 
 /**
  * 数据存储生命周期接口

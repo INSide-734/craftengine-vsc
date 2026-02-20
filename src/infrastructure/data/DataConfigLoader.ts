@@ -6,26 +6,26 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type ILogger } from '../../core/interfaces/ILogger';
 import {
-    IDataConfigLoader,
-    IDataSourcesConfig,
-    ICompletionPrioritiesConfig,
-    IPerformanceConfig,
-    IExtendedTypesConfig,
-    IMinecraftVersionsConfig,
-    IModelPropertiesConfig,
-    IVersionConditionConfig,
-    ITimingConfig,
-    IVersionRequirementsConfig,
-    IApiEndpointsConfig,
-    IMiniMessageConstantsConfig,
-    IResourceTypePresetsConfig,
-    IParameterTypesConfig,
-    IDiagnosticCodesConfig,
-    IDiagnosticSeverityRulesConfig,
-    ISchemaConfig,
-    IItemTypeConfig
+    type IDataConfigLoader,
+    type IDataSourcesConfig,
+    type ICompletionPrioritiesConfig,
+    type IPerformanceConfig,
+    type IExtendedTypesConfig,
+    type IMinecraftVersionsConfig,
+    type IModelPropertiesConfig,
+    type IVersionConditionConfig,
+    type ITimingConfig,
+    type IVersionRequirementsConfig,
+    type IApiEndpointsConfig,
+    type IMiniMessageConstantsConfig,
+    type IResourceTypePresetsConfig,
+    type IParameterTypesConfig,
+    type IDiagnosticCodesConfig,
+    type IDiagnosticSeverityRulesConfig,
+    type ISchemaConfig,
+    type IItemTypeConfig,
 } from '../../core/interfaces/IDataConfigLoader';
 
 /**
@@ -34,7 +34,7 @@ import {
 export class ConfigLoadError extends Error {
     constructor(
         public readonly configPath: string,
-        message: string
+        message: string,
     ) {
         super(`Failed to load config '${configPath}': ${message}`);
         this.name = 'ConfigLoadError';
@@ -90,10 +90,7 @@ export class DataConfigLoader implements IDataConfigLoader {
      * @param validator 可选的验证函数，用于验证加载的数据结构
      * @throws ConfigLoadError 当配置文件不存在或加载失败时
      */
-    private async loadJsonFile<T>(
-        relativePath: string,
-        validator?: (data: unknown) => data is T
-    ): Promise<T> {
+    private async loadJsonFile<T>(relativePath: string, validator?: (data: unknown) => data is T): Promise<T> {
         // 路径安全检查：防止路径遍历攻击
         const normalizedPath = path.normalize(relativePath);
         if (normalizedPath.startsWith('..') || path.isAbsolute(normalizedPath)) {
@@ -128,7 +125,6 @@ export class DataConfigLoader implements IDataConfigLoader {
 
             this.logger.debug('Config file loaded successfully', { filePath });
             return data as T;
-
         } catch (error) {
             if (error instanceof ConfigLoadError) {
                 this.logger.error('Config load error', error, { filePath });
@@ -178,7 +174,10 @@ export class DataConfigLoader implements IDataConfigLoader {
     }
 
     async loadCompletionPrioritiesConfig(): Promise<ICompletionPrioritiesConfig> {
-        return this.loadCachedConfig<ICompletionPrioritiesConfig>('completionPriorities', 'constants/completion-priorities.json');
+        return this.loadCachedConfig<ICompletionPrioritiesConfig>(
+            'completionPriorities',
+            'constants/completion-priorities.json',
+        );
     }
 
     async loadPerformanceConfig(): Promise<IPerformanceConfig> {
@@ -206,7 +205,10 @@ export class DataConfigLoader implements IDataConfigLoader {
     }
 
     async loadVersionRequirementsConfig(): Promise<IVersionRequirementsConfig> {
-        return this.loadCachedConfig<IVersionRequirementsConfig>('versionRequirements', 'constants/version-requirements.json');
+        return this.loadCachedConfig<IVersionRequirementsConfig>(
+            'versionRequirements',
+            'constants/version-requirements.json',
+        );
     }
 
     async loadApiEndpointsConfig(): Promise<IApiEndpointsConfig> {
@@ -214,11 +216,17 @@ export class DataConfigLoader implements IDataConfigLoader {
     }
 
     async loadMiniMessageConstantsConfig(): Promise<IMiniMessageConstantsConfig> {
-        return this.loadCachedConfig<IMiniMessageConstantsConfig>('miniMessageConstants', 'schema/minimessage-constants.json');
+        return this.loadCachedConfig<IMiniMessageConstantsConfig>(
+            'miniMessageConstants',
+            'schema/minimessage-constants.json',
+        );
     }
 
     async loadResourceTypePresetsConfig(): Promise<IResourceTypePresetsConfig> {
-        return this.loadCachedConfig<IResourceTypePresetsConfig>('resourceTypePresets', 'schema/resource-type-presets.json');
+        return this.loadCachedConfig<IResourceTypePresetsConfig>(
+            'resourceTypePresets',
+            'schema/resource-type-presets.json',
+        );
     }
 
     async loadParameterTypesConfig(): Promise<IParameterTypesConfig> {
@@ -230,7 +238,10 @@ export class DataConfigLoader implements IDataConfigLoader {
     }
 
     async loadDiagnosticSeverityRulesConfig(): Promise<IDiagnosticSeverityRulesConfig> {
-        return this.loadCachedConfig<IDiagnosticSeverityRulesConfig>('diagnosticSeverityRules', 'constants/diagnostic-severity-rules.json');
+        return this.loadCachedConfig<IDiagnosticSeverityRulesConfig>(
+            'diagnosticSeverityRules',
+            'constants/diagnostic-severity-rules.json',
+        );
     }
 
     async loadSchemaConfig(): Promise<ISchemaConfig> {
@@ -251,7 +262,7 @@ export class DataConfigLoader implements IDataConfigLoader {
     async getDataSourceUrls(
         sourceKey: string,
         endpointKey: string,
-        params?: Record<string, string>
+        params?: Record<string, string>,
     ): Promise<string[]> {
         const config = await this.loadDataSourcesConfig();
         const source = config.sources[sourceKey];
@@ -312,12 +323,10 @@ export class DataConfigLoader implements IDataConfigLoader {
         const cache = this.configCache.get('completionPriorities') as ICompletionPrioritiesConfig | undefined;
         if (!cache) {
             // 缓存未加载，返回默认值
-            return isDelegate ? 75 : (strategyKey === 'schemaAware' ? 90 : 85);
+            return isDelegate ? 75 : strategyKey === 'schemaAware' ? 90 : 85;
         }
 
-        const strategies = isDelegate
-            ? cache.strategies.delegates
-            : cache.strategies.main;
+        const strategies = isDelegate ? cache.strategies.delegates : cache.strategies.main;
         const strategy = strategies[strategyKey];
 
         if (strategy) {
@@ -374,7 +383,7 @@ export class DataConfigLoader implements IDataConfigLoader {
             this.loadMinecraftVersionsConfig(),
             this.loadModelPropertiesConfig(),
             this.loadItemTypeConfig(),
-            this.loadMiniMessageConstantsConfig()
+            this.loadMiniMessageConstantsConfig(),
         ]);
 
         this.logger.info('All configuration files preloaded successfully');
@@ -515,11 +524,7 @@ export class DataConfigLoader implements IDataConfigLoader {
     /**
      * 构建完整 URL
      */
-    private buildUrl(
-        baseUrl: string,
-        endpointTemplate: string,
-        params?: Record<string, string>
-    ): string {
+    private buildUrl(baseUrl: string, endpointTemplate: string, params?: Record<string, string>): string {
         let url = `${baseUrl}/${endpointTemplate}`;
 
         if (params) {

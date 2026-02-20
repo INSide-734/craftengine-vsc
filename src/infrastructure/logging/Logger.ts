@@ -1,10 +1,5 @@
-import {
-    ILogger,
-    ILogEntry,
-    ILogTarget,
-    LogLevel
-} from '../../core/interfaces/ILogger';
-import { FileLogTarget, FileLogTargetOptions } from './FileLogTarget';
+import { type ILogger, type ILogEntry, type ILogTarget, LogLevel } from '../../core/interfaces/ILogger';
+import { FileLogTarget, type FileLogTargetOptions } from './FileLogTarget';
 import { ConsoleLogTarget } from './ConsoleLogTarget';
 
 // 重新导出日志目标类，保持向后兼容
@@ -20,7 +15,7 @@ export class Logger implements ILogger {
 
     constructor(
         private level: LogLevel = LogLevel.INFO, // 默认 INFO 级别
-        private readonly category?: string
+        private readonly category?: string,
     ) {}
 
     addTarget(target: ILogTarget): void {
@@ -86,12 +81,12 @@ export class Logger implements ILogger {
             timestamp: new Date(),
             category: this.category,
             data,
-            error
+            error,
         };
 
         for (let i = 0; i < targets.length; i++) {
             try {
-                targets[i].write(entry).catch(err => {
+                targets[i].write(entry).catch((err) => {
                     console.error('Logger write error:', err);
                 });
             } catch (err) {
@@ -136,11 +131,7 @@ export class LoggerManager {
      * @param options.enableHotReload - 启用配置热重载（默认 true）
      * @param options.logFilePath - 日志文件路径（可选）
      */
-    initialize(options?: {
-        level?: LogLevel;
-        enableHotReload?: boolean;
-        logFilePath?: string;
-    }): void {
+    initialize(options?: { level?: LogLevel; enableHotReload?: boolean; logFilePath?: string }): void {
         // 从环境变量读取调试模式
         const debugMode = process.env.CRAFTENGINE_DEBUG_MODE === 'true';
 
@@ -188,7 +179,9 @@ export class LoggerManager {
                     this.enableFileLogging(envLogFilePath);
                 } else {
                     // 如果没有指定文件路径，回退到控制台
-                    console.warn('[LoggerManager] CRAFTENGINE_DEBUG_OUTPUT=file but no log file path specified, falling back to console');
+                    console.warn(
+                        '[LoggerManager] CRAFTENGINE_DEBUG_OUTPUT=file but no log file path specified, falling back to console',
+                    );
                     this.addGlobalTarget(new ConsoleLogTarget());
                 }
                 break;
@@ -286,11 +279,13 @@ export class LoggerManager {
             const vscode = require('vscode');
 
             // 监听配置变更
-            this.configChangeListener = vscode.workspace.onDidChangeConfiguration((e: { affectsConfiguration(section: string): boolean }) => {
-                if (e.affectsConfiguration('craftengine.logging')) {
-                    this.reloadConfiguration();
-                }
-            });
+            this.configChangeListener = vscode.workspace.onDidChangeConfiguration(
+                (e: { affectsConfiguration(section: string): boolean }) => {
+                    if (e.affectsConfiguration('craftengine.logging')) {
+                        this.reloadConfiguration();
+                    }
+                },
+            );
 
             // 初始加载配置
             this.reloadConfiguration();
@@ -317,7 +312,7 @@ export class LoggerManager {
                 this.globalLevel = newLevel;
 
                 // 更新所有现有 Logger 的级别
-                this.loggers.forEach(logger => {
+                this.loggers.forEach((logger) => {
                     logger.setLevel(newLevel);
                 });
 
@@ -326,7 +321,7 @@ export class LoggerManager {
                 logger.info('Log level updated', {
                     oldLevel,
                     newLevel: levelStr,
-                    loggersUpdated: this.loggers.size
+                    loggersUpdated: this.loggers.size,
                 });
             }
 
@@ -334,7 +329,7 @@ export class LoggerManager {
             const debugMode = config.get('debugMode', false) as boolean;
             if (debugMode && this.globalLevel > LogLevel.DEBUG) {
                 this.globalLevel = LogLevel.DEBUG;
-                this.loggers.forEach(logger => {
+                this.loggers.forEach((logger) => {
                     logger.setLevel(LogLevel.DEBUG);
                 });
 
@@ -344,7 +339,6 @@ export class LoggerManager {
 
             // 热重载文件日志配置
             this.reloadFileLoggingConfig(config);
-
         } catch (error) {
             console.error('Failed to reload configuration:', error);
         }
@@ -425,7 +419,7 @@ export class LoggerManager {
         logger.info('Log level manually updated', {
             oldLevel,
             newLevel: LogLevel[level],
-            loggersUpdated: this.loggers.size
+            loggersUpdated: this.loggers.size,
         });
     }
 
@@ -453,7 +447,7 @@ export class LoggerManager {
             this.configChangeListener = undefined;
         }
 
-        await Promise.all(this.globalTargets.map(target => target.dispose()));
+        await Promise.all(this.globalTargets.map((target) => target.dispose()));
         this.globalTargets.length = 0;
         this.loggers.clear();
     }

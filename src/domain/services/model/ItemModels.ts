@@ -8,8 +8,8 @@
 
 import { Key } from './utils/Key';
 import { ResourceKey } from './registry/ResourceKey';
-import { WritableRegistry } from './registry/WritableRegistry';
-import { BuiltInRegistries, ItemModelFactory, ItemModelReader } from './registry/BuiltInRegistries';
+import { type WritableRegistry } from './registry/WritableRegistry';
+import { BuiltInRegistries, type ItemModelFactory, type ItemModelReader } from './registry/BuiltInRegistries';
 import { Registries } from './registry/Registries';
 import { InvalidItemModelError } from '../../../core/errors/ExtensionErrors';
 
@@ -37,31 +37,25 @@ export function initializeItemModelTypes(types: Record<string, string>): void {
  *
  * 通过 Proxy 延迟访问，未初始化时抛出错误。
  */
-export const ITEM_MODEL_TYPES: Record<string, Key> = new Proxy(
-    {} as Record<string, Key>,
-    {
-        get(_target, prop: string): Key {
-            if (!itemModelTypesData) {
-                throw new Error('ITEM_MODEL_TYPES not initialized. Call initializeItemModelTypes() first.');
-            }
-            const val = itemModelTypesData[prop];
-            if (!val) {
-                throw new Error(`Unknown ITEM_MODEL_TYPES key: ${prop}`);
-            }
-            return val;
-        },
-    }
-);
+export const ITEM_MODEL_TYPES: Record<string, Key> = new Proxy({} as Record<string, Key>, {
+    get(_target, prop: string): Key {
+        if (!itemModelTypesData) {
+            throw new Error('ITEM_MODEL_TYPES not initialized. Call initializeItemModelTypes() first.');
+        }
+        const val = itemModelTypesData[prop];
+        if (!val) {
+            throw new Error(`Unknown ITEM_MODEL_TYPES key: ${prop}`);
+        }
+        return val;
+    },
+});
 
 /**
  * 注册物品模型工厂
  */
 export function registerItemModelFactory(key: Key, factory: ItemModelFactory): void {
     const registry = BuiltInRegistries.ITEM_MODEL_FACTORY as WritableRegistry<ItemModelFactory>;
-    const resourceKey = ResourceKey.create<ItemModelFactory>(
-        Registries.ITEM_MODEL_FACTORY.getLocation(),
-        key
-    );
+    const resourceKey = ResourceKey.create<ItemModelFactory>(Registries.ITEM_MODEL_FACTORY.getLocation(), key);
     registry.register(resourceKey, factory);
 }
 
@@ -70,10 +64,7 @@ export function registerItemModelFactory(key: Key, factory: ItemModelFactory): v
  */
 export function registerItemModelReader(key: Key, reader: ItemModelReader): void {
     const registry = BuiltInRegistries.ITEM_MODEL_READER as WritableRegistry<ItemModelReader>;
-    const resourceKey = ResourceKey.create<ItemModelReader>(
-        Registries.ITEM_MODEL_READER.getLocation(),
-        key
-    );
+    const resourceKey = ResourceKey.create<ItemModelReader>(Registries.ITEM_MODEL_READER.getLocation(), key);
     registry.register(resourceKey, reader);
 }
 

@@ -6,14 +6,14 @@
  */
 
 import {
-    IExtendedTypeService,
-    IExtendedParameterTypeDefinition,
-    IExtendedPropertyDefinition
+    type IExtendedTypeService,
+    type IExtendedParameterTypeDefinition,
+    type IExtendedPropertyDefinition,
 } from '../../core/interfaces/IExtendedParameterType';
-import { IDataConfigLoader, IExtendedTypesConfig } from '../../core/interfaces/IDataConfigLoader';
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type IDataConfigLoader, type IExtendedTypesConfig } from '../../core/interfaces/IDataConfigLoader';
+import { type ILogger } from '../../core/interfaces/ILogger';
 import { ServiceNotInitializedError } from '../../core/errors/ExtensionErrors';
-import { createAsyncInitializer, AsyncInitializer } from '../../core/utils';
+import { createAsyncInitializer, type AsyncInitializer } from '../../core/utils';
 
 /**
  * 扩展参数类型服务实现

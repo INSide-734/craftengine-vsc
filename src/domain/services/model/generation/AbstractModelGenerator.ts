@@ -4,8 +4,8 @@
  * 移植自 craft-engine 的 AbstractModelGenerator，包含验证逻辑
  */
 
-import { ModelGeneration } from './ModelGeneration';
-import { ModelGenerator } from './ModelGenerator';
+import { type ModelGeneration } from './ModelGeneration';
+import { type ModelGenerator } from './ModelGenerator';
 import { isValidResourceLocation } from '../utils/ResourceLocation';
 
 /**
@@ -15,7 +15,7 @@ export class ModelGenerationError extends Error {
     constructor(
         message: string,
         public readonly code: string,
-        public readonly details?: Record<string, unknown>
+        public readonly details?: Record<string, unknown>,
     ) {
         super(message);
         this.name = 'ModelGenerationError';
@@ -48,11 +48,9 @@ export abstract class AbstractModelGenerator implements ModelGenerator {
             if (conflict.equals(model)) {
                 return;
             }
-            throw new ModelGenerationError(
-                `Model generation conflict at path: ${pathKey}`,
-                'MODEL_CONFLICT',
-                { path: pathKey }
-            );
+            throw new ModelGenerationError(`Model generation conflict at path: ${pathKey}`, 'MODEL_CONFLICT', {
+                path: pathKey,
+            });
         }
 
         // 2. 验证父模型路径
@@ -60,7 +58,7 @@ export abstract class AbstractModelGenerator implements ModelGenerator {
             throw new ModelGenerationError(
                 `Invalid parent model path: ${model.parentModelPath}`,
                 'INVALID_PARENT_PATH',
-                { parentPath: model.parentModelPath }
+                { parentPath: model.parentModelPath },
             );
         }
 
@@ -73,7 +71,7 @@ export abstract class AbstractModelGenerator implements ModelGenerator {
                         throw new ModelGenerationError(
                             `Invalid texture path for '${key}': ${value}`,
                             'INVALID_TEXTURE_PATH',
-                            { textureKey: key, texturePath: value }
+                            { textureKey: key, texturePath: value },
                         );
                     }
                 }

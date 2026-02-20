@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ILogEntry, ILogTarget, LogLevel } from '../../core/interfaces/ILogger';
+import { type ILogEntry, type ILogTarget, LogLevel } from '../../core/interfaces/ILogger';
 
 /**
  * 文件日志配置选项
@@ -37,7 +37,7 @@ export class FileLogTarget implements ILogTarget {
 
     constructor(
         private readonly logFilePath: string,
-        options?: FileLogTargetOptions
+        options?: FileLogTargetOptions,
     ) {
         this.maxFileSize = options?.maxFileSize ?? 10 * 1024 * 1024;
         this.maxBackupCount = options?.maxBackupCount ?? 5;
@@ -107,7 +107,7 @@ export class FileLogTarget implements ILogTarget {
 
             this.writeStream = fs.createWriteStream(this.logFilePath, {
                 flags: 'a',
-                encoding: 'utf8'
+                encoding: 'utf8',
             });
 
             this.writeStream.on('error', (error) => {
@@ -178,7 +178,7 @@ export class FileLogTarget implements ILogTarget {
         const baseName = path.basename(this.logFilePath, ext);
         // 匹配模式: {baseName}_{timestamp}{ext}
         const backupPattern = new RegExp(
-            `^${this.escapeRegExp(baseName)}_\\d{4}-\\d{2}-\\d{2}T[\\w-]+${this.escapeRegExp(ext)}$`
+            `^${this.escapeRegExp(baseName)}_\\d{4}-\\d{2}-\\d{2}T[\\w-]+${this.escapeRegExp(ext)}$`,
         );
 
         try {

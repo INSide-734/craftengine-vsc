@@ -8,10 +8,10 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ExtensionFileWatcherManager } from '../../../../../application/services/extension/ExtensionFileWatcherManager';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../../../core/interfaces/IConfiguration';
-import { IFileWatcher } from '../../../../../core/interfaces/IFileWatcher';
-import { DataFileHandler } from '../../../../../application/services/extension/DataFileHandler';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../../../core/interfaces/IConfiguration';
+import { type IFileWatcher } from '../../../../../core/interfaces/IFileWatcher';
+import { type DataFileHandler } from '../../../../../application/services/extension/DataFileHandler';
 import { Uri } from 'vscode';
 
 describe('ExtensionFileWatcherManager', () => {
@@ -52,12 +52,7 @@ describe('ExtensionFileWatcherManager', () => {
             handleFileDeleted: vi.fn(() => Promise.resolve()),
         } as unknown as DataFileHandler;
 
-        manager = new ExtensionFileWatcherManager(
-            mockLogger,
-            mockConfiguration,
-            mockFileWatcher,
-            mockFileHandler
-        );
+        manager = new ExtensionFileWatcherManager(mockLogger, mockConfiguration, mockFileWatcher, mockFileHandler);
     });
 
     // ========================================
@@ -67,10 +62,7 @@ describe('ExtensionFileWatcherManager', () => {
     describe('setup', () => {
         it('should read exclude pattern from configuration', async () => {
             await manager.setup();
-            expect(mockConfiguration.get).toHaveBeenCalledWith(
-                'files.exclude',
-                '**/node_modules/**'
-            );
+            expect(mockConfiguration.get).toHaveBeenCalledWith('files.exclude', '**/node_modules/**');
         });
 
         it('should watch YAML files with correct pattern', async () => {
@@ -80,7 +72,7 @@ describe('ExtensionFileWatcherManager', () => {
                 expect.objectContaining({
                     recursive: true,
                     debounceDelay: 300,
-                })
+                }),
             );
         });
 
@@ -96,13 +88,12 @@ describe('ExtensionFileWatcherManager', () => {
 
         it('should throw and log error when setup fails', async () => {
             const error = new Error('Watch failed');
-            vi.mocked(mockFileWatcher.watch).mockImplementation(() => { throw error; });
+            vi.mocked(mockFileWatcher.watch).mockImplementation(() => {
+                throw error;
+            });
 
             await expect(manager.setup()).rejects.toThrow('Watch failed');
-            expect(mockLogger.error).toHaveBeenCalledWith(
-                'Failed to setup file watching',
-                error
-            );
+            expect(mockLogger.error).toHaveBeenCalledWith('Failed to setup file watching', error);
         });
     });
 
@@ -150,7 +141,7 @@ describe('ExtensionFileWatcherManager', () => {
                 expect.objectContaining({
                     file: uri.fsPath,
                     type: 'modified',
-                })
+                }),
             );
         });
 
@@ -167,7 +158,7 @@ describe('ExtensionFileWatcherManager', () => {
                 expect.objectContaining({
                     file: uri.fsPath,
                     type: 'modified',
-                })
+                }),
             );
         });
     });

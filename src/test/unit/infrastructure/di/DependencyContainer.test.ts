@@ -1,6 +1,6 @@
 /**
  * DependencyContainer 单元测试
- * 
+ *
  * 测试依赖注入容器的所有功能，包括：
  * - 服务注册（类、实例、工厂）
  * - 服务解析
@@ -12,10 +12,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DependencyContainer } from '../../../../infrastructure/di/DependencyContainer';
 import { ServiceLifetime } from '../../../../core/interfaces/IDependencyContainer';
-import { 
-    ServiceNotRegisteredError, 
-    CircularDependencyError 
-} from '../../../../core/errors/ExtensionErrors';
+import { ServiceNotRegisteredError, CircularDependencyError } from '../../../../core/errors/ExtensionErrors';
 
 describe('DependencyContainer', () => {
     let container: DependencyContainer;
@@ -444,23 +441,21 @@ describe('DependencyContainer', () => {
             container.registerInstance(token, { version: 1 });
             container.registerInstance(token, { version: 2 });
 
-            expect(warnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('Service override detected')
-            );
+            expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Service override detected'));
             warnSpy.mockRestore();
         });
 
         it('should warn when overriding existing registration via register', () => {
-            class TestClass { value = 'test'; }
+            class TestClass {
+                value = 'test';
+            }
             const token = Symbol('Service');
             const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
             container.register(token, TestClass);
             container.register(token, TestClass);
 
-            expect(warnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('Service override detected')
-            );
+            expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Service override detected'));
             warnSpy.mockRestore();
         });
 
@@ -471,9 +466,7 @@ describe('DependencyContainer', () => {
             container.registerFactory(token, () => ({ v: 1 }));
             container.registerFactory(token, () => ({ v: 2 }));
 
-            expect(warnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('Service override detected')
-            );
+            expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Service override detected'));
             warnSpy.mockRestore();
         });
     });
@@ -536,9 +529,13 @@ describe('DependencyContainer', () => {
             const topToken = Symbol('Top');
 
             let sharedCreateCount = 0;
-            container.registerFactory(sharedToken, () => ({
-                id: ++sharedCreateCount,
-            }), ServiceLifetime.Singleton);
+            container.registerFactory(
+                sharedToken,
+                () => ({
+                    id: ++sharedCreateCount,
+                }),
+                ServiceLifetime.Singleton,
+            );
 
             container.registerFactory(leftToken, (c) => ({
                 shared: c.resolve(sharedToken),
@@ -559,4 +556,3 @@ describe('DependencyContainer', () => {
         });
     });
 });
-

@@ -11,14 +11,8 @@
  * - 处理面板生命周期
  */
 
-import {
-    WebviewPanel,
-    window,
-    ViewColumn,
-    Disposable,
-    env,
-} from 'vscode';
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type WebviewPanel, window, ViewColumn, type Disposable, env } from 'vscode';
+import { type ILogger } from '../../core/interfaces/ILogger';
 
 // ============================================
 // 模型预览面板
@@ -115,15 +109,10 @@ export class ModelPreviewPanel implements Disposable {
      * 创建 WebView 面板
      */
     private createPanel(): void {
-        this.panel = window.createWebviewPanel(
-            'craftengineModelPreview',
-            'Model Preview',
-            ViewColumn.Beside,
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true,
-            }
-        );
+        this.panel = window.createWebviewPanel('craftengineModelPreview', 'Model Preview', ViewColumn.Beside, {
+            enableScripts: true,
+            retainContextWhenHidden: true,
+        });
 
         // 监听面板关闭事件
         this.panel.onDidDispose(
@@ -134,15 +123,11 @@ export class ModelPreviewPanel implements Disposable {
                 this.logger.debug('Preview panel closed by user');
             },
             null,
-            this.disposables
+            this.disposables,
         );
 
         // 监听 WebView 消息
-        this.panel.webview.onDidReceiveMessage(
-            (message) => this.handleWebviewMessage(message),
-            null,
-            this.disposables
-        );
+        this.panel.webview.onDidReceiveMessage((message) => this.handleWebviewMessage(message), null, this.disposables);
 
         this.logger.debug('Preview panel created');
     }
@@ -202,7 +187,7 @@ export class ModelPreviewPanel implements Disposable {
         for (let i = 0; i < array.length; i++) {
             array[i] = Math.floor(Math.random() * 256);
         }
-        return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+        return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
     }
 
     /**

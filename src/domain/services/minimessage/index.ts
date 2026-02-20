@@ -3,5 +3,5 @@ export type {
     MiniMessageTag,
     MiniMessageValidationError,
     MiniMessageValidationResult,
-    IMiniMessageDataProvider
+    IMiniMessageDataProvider,
 } from './MiniMessageTypes';

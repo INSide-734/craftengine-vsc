@@ -1,19 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SchemaLoader } from '../../../../infrastructure/schema/SchemaLoader';
-import * as fs from 'fs/promises';
-import { ServiceContainer } from '../../../../infrastructure/ServiceContainer';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-
-vi.mock('fs/promises');
-vi.mock('../../../../infrastructure/ServiceContainer', () => ({
-    ServiceContainer: {
-        getService: vi.fn()
-    }
-}));
+import { type ISchemaFileLoader } from '../../../../core/interfaces/ISchemaFileLoader';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type JsonSchemaNode } from '../../../../core/types/JsonSchemaTypes';
 
 describe('SchemaLoader', () => {
     let schemaLoader: SchemaLoader;
     let mockLogger: ILogger;
+    let mockFileLoader: ISchemaFileLoader;
 
     beforeEach(() => {
         mockLogger = {
@@ -24,12 +18,12 @@ describe('SchemaLoader', () => {
             createChild: vi.fn().mockReturnThis(),
         } as unknown as ILogger;
 
-        vi.mocked(ServiceContainer.getService).mockReturnValue(mockLogger);
+        mockFileLoader = {
+            loadSchema: vi.fn(),
+            clearCache: vi.fn(),
+        };
 
-        // Reset fs mocks
-        vi.mocked(fs.readFile).mockReset();
-
-        schemaLoader = new SchemaLoader(mockLogger, '/mock/schemas');
+        schemaLoader = new SchemaLoader(mockLogger, mockFileLoader, '/mock/schemas');
     });
 
     afterEach(() => {
@@ -37,108 +31,115 @@ describe('SchemaLoader', () => {
     });
 
     describe('loadSchema', () => {
-        it('should load and parse schema file', async () => {
-            const schemaContent = JSON.stringify({
+        it('should load and parse schema file via fileLoader', async () => {
+            const schemaObj: JsonSchemaNode = {
                 $id: 'test.schema.json',
                 type: 'object',
                 properties: {
-                    name: { type: 'string' }
-                }
-            });
+                    name: { type: 'string' },
+                },
+            };
+            // PLACEHOLDER_REST
 
-            vi.mocked(fs.readFile).mockResolvedValue(schemaContent);
+            vi.mocked(mockFileLoader.loadSchema).mockResolvedValue(schemaObj);
 
             const result = await schemaLoader.loadSchema('test.schema.json');
 
-            expect(result.schema).toEqual(JSON.parse(schemaContent));
+            expect(result.schema).toEqual(schemaObj);
             expect(result.resolved).toBeDefined();
-            expect(fs.readFile).toHaveBeenCalled();
+            expect(mockFileLoader.loadSchema).toHaveBeenCalledWith('test.schema.json');
         });
 
         it('should use cache for subsequent loads', async () => {
-            const schemaContent = JSON.stringify({
+            const schemaObj: JsonSchemaNode = {
                 $id: 'test.schema.json',
-                type: 'object'
-            });
+                type: 'object',
+            };
 
-            vi.mocked(fs.readFile).mockResolvedValue(schemaContent);
+            vi.mocked(mockFileLoader.loadSchema).mockResolvedValue(schemaObj);
 
             await schemaLoader.loadSchema('test.schema.json');
             await schemaLoader.loadSchema('test.schema.json');
 
-            expect(fs.readFile).toHaveBeenCalledTimes(1);
+            expect(mockFileLoader.loadSchema).toHaveBeenCalledTimes(1);
         });
 
         it('should handle load errors', async () => {
-            vi.mocked(fs.readFile).mockRejectedValue(new Error('File not found'));
+            vi.mocked(mockFileLoader.loadSchema).mockRejectedValue(new Error('File not found'));
 
-            await expect(schemaLoader.loadSchema('nonexistent.json'))
-                .rejects.toThrow('Failed to load schema nonexistent.json');
-            
+            await expect(schemaLoader.loadSchema('nonexistent.json')).rejects.toThrow(
+                'Failed to load schema nonexistent.json',
+            );
+
             expect(mockLogger.error).toHaveBeenCalled();
         });
     });
 
     describe('resolveRef', () => {
         it('should resolve internal refs', async () => {
-            const schemaContent = JSON.stringify({
+            const schemaObj: JsonSchemaNode = {
                 $id: 'test.schema.json',
                 type: 'object',
                 properties: {
-                    user: { $ref: '#/$defs/user' }
+                    user: { $ref: '#/$defs/user' },
                 },
                 $defs: {
                     user: {
                         type: 'object',
                         properties: {
-                            name: { type: 'string' }
-                        }
-                    }
-                }
-            });
+                            name: { type: 'string' },
+                        },
+                    },
+                },
+            };
 
-            vi.mocked(fs.readFile).mockResolvedValue(schemaContent);
+            vi.mocked(mockFileLoader.loadSchema).mockResolvedValue(schemaObj);
 
             const result = await schemaLoader.loadSchema('test.schema.json');
-            
-            // Note: resolveRef in SchemaLoader keeps internal refs for Ajv, 
-            // so we check if the loading process completed successfully.
+
+            // SchemaLoader 保留内部引用让 Ajv 处理
             expect(result.resolved.properties?.user).toHaveProperty('$ref', '#/$defs/user');
         });
 
         it('should resolve external refs', async () => {
-            const mainSchema = JSON.stringify({
+            const mainSchemaObj: JsonSchemaNode = {
                 $id: 'main.json',
                 type: 'object',
                 properties: {
-                    other: { $ref: 'other.json' }
-                }
-            });
+                    other: { $ref: 'other.json' },
+                },
+            };
 
-            const otherSchema = JSON.stringify({
+            const otherSchemaObj: JsonSchemaNode = {
                 $id: 'other.json',
-                type: 'string'
-            });
+                type: 'string',
+            };
 
-            vi.mocked(fs.readFile).mockImplementation(async (path) => {
-                if (path.toString().includes('main.json')) {return mainSchema;}
-                if (path.toString().includes('other.json')) {return otherSchema;}
+            vi.mocked(mockFileLoader.loadSchema).mockImplementation(async (filename: string) => {
+                if (filename === 'main.json') {
+                    return structuredClone(mainSchemaObj);
+                }
+                if (filename === 'other.json') {
+                    return structuredClone(otherSchemaObj);
+                }
                 throw new Error('Not found');
             });
 
             const result = await schemaLoader.loadSchema('main.json');
             const resolved = result.resolved;
 
-            // External refs are resolved and merged
-            expect(resolved.properties?.other).toEqual(expect.objectContaining({
-                type: 'string'
-            }));
+            // 外部引用被解析并合并
+            expect(resolved.properties?.other).toEqual(
+                expect.objectContaining({
+                    type: 'string',
+                }),
+            );
         });
     });
 
     describe('findSchemaForContext', () => {
         it('should match schema path', async () => {
-            const mainSchema = JSON.stringify({
+            const mainSchemaObj: JsonSchemaNode = {
                 type: 'object',
                 properties: {
                     items: {
@@ -147,47 +148,47 @@ describe('SchemaLoader', () => {
                             my_item: {
                                 type: 'object',
                                 properties: {
-                                    name: { type: 'string' }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+                                    name: { type: 'string' },
+                                },
+                            },
+                        },
+                    },
+                },
+            };
 
-            vi.mocked(fs.readFile).mockResolvedValue(mainSchema);
+            vi.mocked(mockFileLoader.loadSchema).mockResolvedValue(mainSchemaObj);
 
             const matches = await schemaLoader.findSchemaForContext({
                 yamlPath: ['items', 'my_item'],
                 inObject: true,
-                inArray: false
+                inArray: false,
             });
 
             expect(matches).toHaveLength(2);
-            const targetMatch = matches.find(m => m.path.join('/') === 'items/my_item');
+            const targetMatch = matches.find((m) => m.path.join('/') === 'items/my_item');
             expect(targetMatch).toBeDefined();
             expect(targetMatch?.schema.properties).toHaveProperty('name');
         });
 
         it('should match pattern properties', async () => {
-            const mainSchema = JSON.stringify({
+            const mainSchemaObj: JsonSchemaNode = {
                 type: 'object',
                 patternProperties: {
-                    "^item_.*$": {
+                    '^item_.*$': {
                         type: 'object',
                         properties: {
-                            id: { type: 'number' }
-                        }
-                    }
-                }
-            });
+                            id: { type: 'number' },
+                        },
+                    },
+                },
+            };
 
-            vi.mocked(fs.readFile).mockResolvedValue(mainSchema);
+            vi.mocked(mockFileLoader.loadSchema).mockResolvedValue(mainSchemaObj);
 
             const matches = await schemaLoader.findSchemaForContext({
                 yamlPath: ['item_123'],
                 inObject: true,
-                inArray: false
+                inArray: false,
             });
 
             expect(matches).toHaveLength(1);
@@ -202,24 +203,30 @@ describe('SchemaLoader', () => {
                 allOf: [
                     {
                         properties: {
-                            prop1: { type: 'string' }
-                        }
+                            prop1: { type: 'string' },
+                        },
                     },
                     {
                         properties: {
-                            prop2: { type: 'number' }
-                        }
-                    }
-                ]
+                            prop2: { type: 'number' },
+                        },
+                    },
+                ],
             };
 
-            // Using any to access private method or public method if exposed
-            // SchemaLoader.extractProperties is public
             const props = schemaLoader.extractProperties(schema as any);
-            
+
             expect(props.has('prop1')).toBe(true);
             expect(props.has('prop2')).toBe(true);
         });
     });
-});
 
+    describe('clearCache', () => {
+        it('should clear both schema cache and file loader cache', () => {
+            schemaLoader.clearCache();
+
+            expect(mockFileLoader.clearCache).toHaveBeenCalled();
+            expect(mockLogger.debug).toHaveBeenCalledWith('Schema cache cleared');
+        });
+    });
+});

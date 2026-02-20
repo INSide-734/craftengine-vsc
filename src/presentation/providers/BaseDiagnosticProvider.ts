@@ -1,18 +1,18 @@
 import {
-    TextDocument,
-    DiagnosticCollection,
+    type TextDocument,
+    type DiagnosticCollection,
     Diagnostic,
-    Range,
-    Uri,
-    Disposable,
+    type Range,
+    type Uri,
+    type Disposable,
     DiagnosticRelatedInformation,
     Location,
-    languages
+    languages,
 } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IConfiguration } from '../../core/interfaces/IConfiguration';
-import { IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../core/interfaces/IConfiguration';
+import { type IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { DiagnosticSeverityConfig } from '../../infrastructure/config/DiagnosticSeverityConfig';
 import { calculateSimilarity } from '../../infrastructure/utils';
@@ -63,7 +63,7 @@ export abstract class BaseDiagnosticProvider implements Disposable {
         protected readonly diagnosticSource: string,
         protected readonly timerName: string,
         loggerName: string,
-        protected readonly configKey?: string
+        protected readonly configKey?: string,
     ) {
         this.diagnosticCollection = languages.createDiagnosticCollection(collectionName);
         this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(loggerName);
@@ -105,11 +105,11 @@ export abstract class BaseDiagnosticProvider implements Disposable {
 
             this.logger.debug('Diagnostics updated', {
                 file: document.fileName,
-                diagnosticCount: diagnostics.length
+                diagnosticCount: diagnostics.length,
             });
         } catch (error) {
             this.logger.error('Error updating diagnostics', error as Error, {
-                file: document.fileName
+                file: document.fileName,
             });
         } finally {
             timer.stop({ document: document.fileName });
@@ -123,10 +123,7 @@ export abstract class BaseDiagnosticProvider implements Disposable {
      * @param parsedDoc 预解析的文档（可选）
      * @returns 诊断结果数组
      */
-    protected abstract doUpdateDiagnostics(
-        document: TextDocument,
-        parsedDoc?: unknown
-    ): Promise<Diagnostic[]>;
+    protected abstract doUpdateDiagnostics(document: TextDocument, parsedDoc?: unknown): Promise<Diagnostic[]>;
 
     /**
      * 清除文档的诊断信息
@@ -169,7 +166,7 @@ export abstract class BaseDiagnosticProvider implements Disposable {
         range: Range,
         message: string,
         codeInfo: DiagnosticCodeInfo,
-        relatedInfo?: DiagnosticRelatedInformation[]
+        relatedInfo?: DiagnosticRelatedInformation[],
     ): Diagnostic | null {
         const severity = this.severityConfig.getSeverity(codeInfo.code);
         if (severity === null) {
@@ -203,22 +200,20 @@ export abstract class BaseDiagnosticProvider implements Disposable {
         range: Range,
         messagePrefix: string,
         threshold = 0.5,
-        maxResults = 3
+        maxResults = 3,
     ): DiagnosticRelatedInformation[] {
         const similar = candidates
-            .map(name => ({
+            .map((name) => ({
                 name,
-                score: calculateSimilarity(target.toLowerCase(), name.toLowerCase())
+                score: calculateSimilarity(target.toLowerCase(), name.toLowerCase()),
             }))
-            .filter(item => item.score > threshold)
+            .filter((item) => item.score > threshold)
             .sort((a, b) => b.score - a.score)
             .slice(0, maxResults);
 
-        return similar.map(item =>
-            new DiagnosticRelatedInformation(
-                new Location(document.uri, range),
-                `${messagePrefix} ${item.name}?`
-            )
+        return similar.map(
+            (item) =>
+                new DiagnosticRelatedInformation(new Location(document.uri, range), `${messagePrefix} ${item.name}?`),
         );
     }
 }

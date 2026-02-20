@@ -5,4 +5,3 @@
 export * from './NamespaceDiscoveryService';
 export * from './ResourcePackDiscovery';
 export * from './WorkspaceScanCache';
-

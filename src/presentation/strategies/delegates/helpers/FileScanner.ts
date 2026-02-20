@@ -1,9 +1,9 @@
-import { CancellationToken, workspace } from 'vscode';
+import { type CancellationToken, workspace } from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { INamespaceDiscoveryService } from '../../../../core/interfaces/INamespaceDiscoveryService';
-import { IFilePathCompletionOptions } from '../FilePathCompletionStrategy';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type INamespaceDiscoveryService } from '../../../../core/interfaces/INamespaceDiscoveryService';
+import { type IFilePathCompletionOptions } from '../FilePathCompletionStrategy';
 
 /**
  * 带命名空间的文件信息
@@ -39,11 +39,7 @@ export class FileScanner {
     /** 最大并发数 */
     private static readonly MAX_CONCURRENCY = 4;
 
-    constructor(
-        logger: ILogger,
-        namespaceService: INamespaceDiscoveryService,
-        cacheTTL: number
-    ) {
+    constructor(logger: ILogger, namespaceService: INamespaceDiscoveryService, cacheTTL: number) {
         this.logger = logger;
         this.namespaceService = namespaceService;
         this.cacheTTL = cacheTTL;
@@ -71,7 +67,7 @@ export class FileScanner {
      */
     async scanAllNamespaceFiles(
         options: IFilePathCompletionOptions,
-        token?: CancellationToken
+        token?: CancellationToken,
     ): Promise<INamespacedFile[]> {
         if (!options.basePath) {
             return [];
@@ -85,11 +81,11 @@ export class FileScanner {
         if (cached && Date.now() - cached.timestamp < this.cacheTTL) {
             this.logger.debug('Using cached file list', { cacheKey, count: cached.files.length });
             // 缓存的格式是 "namespace:path"，需要解析
-            return cached.files.map(f => {
+            return cached.files.map((f) => {
                 const colonIdx = f.indexOf(':');
                 return {
                     namespace: f.substring(0, colonIdx),
-                    relativePath: f.substring(colonIdx + 1)
+                    relativePath: f.substring(colonIdx + 1),
                 };
             });
         }
@@ -107,13 +103,13 @@ export class FileScanner {
             const basePathParts = options.basePath.split('{namespace}');
             if (basePathParts.length !== 2) {
                 this.logger.warn('Invalid basePath format, missing {namespace} placeholder', {
-                    basePath: options.basePath
+                    basePath: options.basePath,
                 });
                 return [];
             }
 
             const parentDir = basePathParts[0].replace(/\/$/, ''); // 例如 "assets"
-            const subPath = basePathParts[1].replace(/^\//, '');   // 例如 "models"
+            const subPath = basePathParts[1].replace(/^\//, ''); // 例如 "models"
 
             for (const folder of workspaceFolders) {
                 if (token?.isCancellationRequested) {
@@ -123,7 +119,7 @@ export class FileScanner {
                 const parentPath = path.join(folder.uri.fsPath, parentDir);
 
                 // 异步检查目录是否存在
-                if (!await this.directoryExistsAsync(parentPath)) {
+                if (!(await this.directoryExistsAsync(parentPath))) {
                     continue;
                 }
 
@@ -134,7 +130,7 @@ export class FileScanner {
 
                 this.logger.debug('Discovered namespaces', {
                     parentPath,
-                    namespaces
+                    namespaces,
                 });
 
                 // 并行扫描每个命名空间目录下的文件（限制并发数）
@@ -147,22 +143,16 @@ export class FileScanner {
                     const batchPromises = batch.map(async (namespace) => {
                         const searchPath = path.join(parentPath, namespace, subPath);
 
-                        if (!await this.directoryExistsAsync(searchPath)) {
+                        if (!(await this.directoryExistsAsync(searchPath))) {
                             return [];
                         }
 
-                        const foundFiles = await this.scanDirectory(
-                            searchPath,
-                            '',
-                            options,
-                            0,
-                            token
-                        );
+                        const foundFiles = await this.scanDirectory(searchPath, '', options, 0, token);
 
                         // 为每个文件添加命名空间
-                        return foundFiles.map(file => ({
+                        return foundFiles.map((file) => ({
                             namespace,
-                            relativePath: file
+                            relativePath: file,
                         }));
                     });
 
@@ -175,13 +165,12 @@ export class FileScanner {
 
             // 缓存结果（以 "namespace:path" 格式存储）
             this.fileCache.set(cacheKey, {
-                files: results.map(r => `${r.namespace}:${r.relativePath}`),
-                timestamp: Date.now()
+                files: results.map((r) => `${r.namespace}:${r.relativePath}`),
+                timestamp: Date.now(),
             });
-
         } catch (error) {
             this.logger.error('Failed to scan files', error as Error, {
-                basePath: options.basePath
+                basePath: options.basePath,
             });
         }
 
@@ -203,7 +192,7 @@ export class FileScanner {
         relativePath: string,
         options: IFilePathCompletionOptions,
         depth: number,
-        token?: CancellationToken
+        token?: CancellationToken,
     ): Promise<string[]> {
         if (token?.isCancellationRequested) {
             return [];
@@ -229,7 +218,7 @@ export class FileScanner {
         if (!normalizedCurrent.startsWith(normalizedBase)) {
             this.logger.warn('Path traversal detected after resolution', {
                 basePath: normalizedBase,
-                currentPath: normalizedCurrent
+                currentPath: normalizedCurrent,
             });
             return [];
         }
@@ -263,7 +252,7 @@ export class FileScanner {
                             entryRelativePath,
                             options,
                             depth + 1,
-                            token
+                            token,
                         );
                         files.push(...subFiles);
                     }
@@ -291,7 +280,7 @@ export class FileScanner {
         } catch (error) {
             this.logger.debug('Failed to scan directory', {
                 path: currentPath,
-                error: (error as Error).message
+                error: (error as Error).message,
             });
         }
 
@@ -329,10 +318,7 @@ export class FileScanner {
         for (const pattern of patterns) {
             // 处理 ** 模式
             if (pattern.includes('**')) {
-                const regexPattern = pattern
-                    .replace(/\*\*/g, '.*')
-                    .replace(/\*/g, '[^/]*')
-                    .replace(/\?/g, '.');
+                const regexPattern = pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*').replace(/\?/g, '.');
                 if (new RegExp(`^${regexPattern}$`).test(filePath)) {
                     return true;
                 }
@@ -368,9 +354,9 @@ export class FileScanner {
     filterNamespacedFiles(
         files: INamespacedFile[],
         namespaceFilter: string | null,
-        pathPrefix: string
+        pathPrefix: string,
     ): INamespacedFile[] {
-        return files.filter(file => {
+        return files.filter((file) => {
             // 验证文件的命名空间是否有效
             if (!this.namespaceService.isValidNamespace(file.namespace)) {
                 return false;
@@ -391,10 +377,9 @@ export class FileScanner {
                     // 如果没有命名空间过滤器，也检查完整路径（namespace:path）
                     if (!namespaceFilter) {
                         // 使用服务构建完整路径
-                        const fullPath = this.namespaceService.buildResourceLocation(
-                            file.namespace,
-                            file.relativePath
-                        ).toLowerCase();
+                        const fullPath = this.namespaceService
+                            .buildResourceLocation(file.namespace, file.relativePath)
+                            .toLowerCase();
                         if (!fullPath.startsWith(lowerPrefix)) {
                             return false;
                         }

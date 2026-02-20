@@ -1,17 +1,17 @@
-import { IDependencyContainer, ServiceLifetime } from '../../../core/interfaces/IDependencyContainer';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../core/interfaces/IEventBus';
-import { IYamlScanner } from '../../../core/interfaces/IYamlScanner';
-import { IYamlParser } from '../../../core/interfaces/IYamlParser';
-import { IDataStoreService } from '../../../core/interfaces/IDataStoreService';
-import { IMinecraftDataService } from '../../../core/interfaces/IMinecraftDataService';
-import { IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
-import { IBuiltinItemLoader } from '../../../core/interfaces/IItemId';
+import { type IDependencyContainer, ServiceLifetime } from '../../../core/interfaces/IDependencyContainer';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../core/interfaces/IEventBus';
+import { type IYamlScanner } from '../../../core/interfaces/IYamlScanner';
+import { type IYamlParser } from '../../../core/interfaces/IYamlParser';
+import { type IDataStoreService } from '../../../core/interfaces/IDataStoreService';
+import { type IMinecraftDataService } from '../../../core/interfaces/IMinecraftDataService';
+import { type IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
+import { type IBuiltinItemLoader } from '../../../core/interfaces/IItemId';
 
-import { IFileReader } from '../../../core/interfaces/IFileReader';
+import { type IFileReader } from '../../../core/interfaces/IFileReader';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
 import { TemplateService, DataStoreService } from '../../../domain/index';
-import { WorkspaceScanCache } from '../../filesystem/WorkspaceScanCache';
+import { type WorkspaceScanCache } from '../../filesystem/WorkspaceScanCache';
 import { CompletionManager } from '../../completion/CompletionManager';
 import { TemplateExpander } from '../../../application/services/schema/TemplateExpander';
 import { ModelGenerationService } from '../../../domain/services/ModelGenerationService';
@@ -33,16 +33,17 @@ export function registerDomainServices(container: IDependencyContainer): void {
     // 核心数据存储服务
     container.registerFactory(
         SERVICE_TOKENS.DataStoreService,
-        (c) => new DataStoreService(
-            c.resolve<ILogger>(SERVICE_TOKENS.Logger),
-            c.resolve<IEventBus>(SERVICE_TOKENS.EventBus),
-            c.resolve<IYamlScanner>(SERVICE_TOKENS.YamlScanner),
-            c.resolve<IYamlParser>(SERVICE_TOKENS.YamlParser),
-            c.resolve<IFileReader>(SERVICE_TOKENS.FileReader),
-            c.tryResolve<WorkspaceScanCache>(SERVICE_TOKENS.WorkspaceScanCache),
-            c.tryResolve<IBuiltinItemLoader>(SERVICE_TOKENS.BuiltinItemLoader)
-        ),
-        ServiceLifetime.Singleton
+        (c) =>
+            new DataStoreService(
+                c.resolve<ILogger>(SERVICE_TOKENS.Logger),
+                c.resolve<IEventBus>(SERVICE_TOKENS.EventBus),
+                c.resolve<IYamlScanner>(SERVICE_TOKENS.YamlScanner),
+                c.resolve<IYamlParser>(SERVICE_TOKENS.YamlParser),
+                c.resolve<IFileReader>(SERVICE_TOKENS.FileReader),
+                c.tryResolve<WorkspaceScanCache>(SERVICE_TOKENS.WorkspaceScanCache),
+                c.tryResolve<IBuiltinItemLoader>(SERVICE_TOKENS.BuiltinItemLoader),
+            ),
+        ServiceLifetime.Singleton,
     );
 
     // 将同一个 DataStoreService 实例注册到细粒度 Token
@@ -53,19 +54,20 @@ export function registerDomainServices(container: IDependencyContainer): void {
     registerServices(container, [
         {
             token: SERVICE_TOKENS.TemplateService,
-            factory: (c) => new TemplateService(
-                c.resolve<IDataStoreService>(SERVICE_TOKENS.DataStoreService),
-                c.resolve<ILogger>(SERVICE_TOKENS.Logger)
-            )
+            factory: (c) =>
+                new TemplateService(
+                    c.resolve<IDataStoreService>(SERVICE_TOKENS.DataStoreService),
+                    c.resolve<ILogger>(SERVICE_TOKENS.Logger),
+                ),
         },
         {
             token: SERVICE_TOKENS.TemplateExpander,
             factory: (c) => {
                 return new TemplateExpander(
                     c.resolve<IDataStoreService>(SERVICE_TOKENS.DataStoreService),
-                    c.resolve<ILogger>(SERVICE_TOKENS.Logger)
+                    c.resolve<ILogger>(SERVICE_TOKENS.Logger),
                 );
-            }
+            },
         },
         {
             token: SERVICE_TOKENS.ModelGenerator,
@@ -73,19 +75,19 @@ export function registerDomainServices(container: IDependencyContainer): void {
                 return new ModelGenerationService(
                     c.resolve<ILogger>(SERVICE_TOKENS.Logger),
                     c.resolve<IMinecraftDataService>(SERVICE_TOKENS.MinecraftDataService),
-                    c.resolve<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader)
+                    c.resolve<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader),
                 );
-            }
+            },
         },
         {
             token: SERVICE_TOKENS.ExtendedTypeService,
             factory: (c) => {
                 return new ExtendedTypeService(
                     c.resolve<ILogger>(SERVICE_TOKENS.Logger),
-                    c.resolve<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader)
+                    c.resolve<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader),
                 );
-            }
-        }
+            },
+        },
     ]);
 
     container.resolve<ILogger>(SERVICE_TOKENS.Logger).info('Domain services registered');
@@ -109,7 +111,7 @@ function registerDataStoreAliases(container: IDependencyContainer): void {
         container.registerFactory(
             token,
             (c) => c.resolve<IDataStoreService>(SERVICE_TOKENS.DataStoreService),
-            ServiceLifetime.Singleton
+            ServiceLifetime.Singleton,
         );
     }
 }
@@ -121,18 +123,14 @@ export function registerCompletionServices(container: IDependencyContainer): voi
     registerServices(container, [
         {
             token: SERVICE_TOKENS.CompletionManager,
-            factory: (c) => new CompletionManager(
-                c.resolve<ILogger>(SERVICE_TOKENS.Logger)
-            )
+            factory: (c) => new CompletionManager(c.resolve<ILogger>(SERVICE_TOKENS.Logger)),
         },
         {
             token: SERVICE_TOKENS.DelegateStrategyRegistry,
             factory: (c) => {
-                return new DelegateStrategyRegistry(
-                    c.resolve<ILogger>(SERVICE_TOKENS.Logger)
-                );
-            }
-        }
+                return new DelegateStrategyRegistry(c.resolve<ILogger>(SERVICE_TOKENS.Logger));
+            },
+        },
     ]);
 
     container.resolve<ILogger>(SERVICE_TOKENS.Logger).info('Completion services registered');

@@ -1,16 +1,8 @@
-import {
-    TextDocument,
-    CodeAction,
-    CodeActionKind,
-    WorkspaceEdit,
-    Position,
-    Range,
-    Diagnostic
-} from 'vscode';
+import { type TextDocument, CodeAction, CodeActionKind, WorkspaceEdit, Position, Range, type Diagnostic } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { IDataStoreService } from '../../core/interfaces/IDataStoreService';
+import { type IDataStoreService } from '../../core/interfaces/IDataStoreService';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
-import { IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
+import { type IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
 import { TranslationDiagnosticProvider } from './TranslationDiagnosticProvider';
 import { BaseCodeActionProvider } from './BaseCodeActionProvider';
 import { calculateSimilarity } from '../../infrastructure/utils';
@@ -18,7 +10,7 @@ import {
     TRANSLATION_NOT_FOUND,
     TRANSLATION_EMPTY_VALUE,
     TRANSLATION_DUPLICATE_KEY,
-    TRANSLATION_MISSING_LANGUAGE
+    TRANSLATION_MISSING_LANGUAGE,
 } from '../../core/constants/DiagnosticCodes';
 import { extractDiagnosticCode } from './helpers';
 
@@ -32,17 +24,13 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
     private readonly yamlPathParser: IYamlPathParser;
 
     /** 提供的 CodeAction 类型 */
-    static readonly providedCodeActionKinds = [
-        CodeActionKind.QuickFix
-    ];
+    static readonly providedCodeActionKinds = [CodeActionKind.QuickFix];
 
     protected readonly diagnosticSource = TranslationDiagnosticProvider.DIAGNOSTIC_SOURCE;
 
     constructor() {
         super('TranslationCodeActionProvider');
-        this.dataStoreService = ServiceContainer.getService<IDataStoreService>(
-            SERVICE_TOKENS.DataStoreService
-        );
+        this.dataStoreService = ServiceContainer.getService<IDataStoreService>(SERVICE_TOKENS.DataStoreService);
         this.yamlPathParser = ServiceContainer.getService<IYamlPathParser>(SERVICE_TOKENS.YamlPathParser);
     }
 
@@ -53,10 +41,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
      * @param diagnostic 需要修复的诊断信息
      * @returns 针对该诊断可用的代码操作集合
      */
-    protected async createFixActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    protected async createFixActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
 
         // 提取诊断代码值
@@ -64,7 +49,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
 
         switch (codeValue) {
             case TRANSLATION_NOT_FOUND.code:
-                actions.push(...await this.createMissingKeyActions(document, diagnostic));
+                actions.push(...(await this.createMissingKeyActions(document, diagnostic)));
                 break;
 
             case TRANSLATION_EMPTY_VALUE.code:
@@ -76,7 +61,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
                 break;
 
             case TRANSLATION_MISSING_LANGUAGE.code:
-                actions.push(...await this.createMissingLanguageActions(document, diagnostic));
+                actions.push(...(await this.createMissingLanguageActions(document, diagnostic)));
                 break;
 
             default:
@@ -93,12 +78,9 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
      * @param diagnostic 缺失键诊断
      * @returns 可添加缺失键或替换为相似键的操作列表
      */
-    private async createMissingKeyActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    private async createMissingKeyActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
-        
+
         // 从诊断消息中提取翻译键名称
         const keyName = this.extractKeyNameFromDiagnostic(diagnostic);
         if (!keyName) {
@@ -107,14 +89,10 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
 
         const translationsPosition = this.findTranslationsSectionPosition(document);
         const preferredLanguages = await this.getPreferredLanguages(document);
-        
+
         if (translationsPosition) {
             for (const language of preferredLanguages) {
-                const insertInfo = this.getLanguageInsertInfo(
-                    document,
-                    translationsPosition,
-                    language
-                );
+                const insertInfo = this.getLanguageInsertInfo(document, translationsPosition, language);
 
                 if (!insertInfo) {
                     continue;
@@ -122,7 +100,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
 
                 const action = new CodeAction(
                     `Add '${keyName}' to '${language}' translations`,
-                    CodeActionKind.QuickFix
+                    CodeActionKind.QuickFix,
                 );
                 action.diagnostics = [diagnostic];
                 action.isPreferred = language === preferredLanguages[0];
@@ -132,7 +110,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
                     language,
                     keyName,
                     insertInfo.languageIndent,
-                    insertInfo.needsLanguageHeader
+                    insertInfo.needsLanguageHeader,
                 );
 
                 edit.insert(document.uri, insertInfo.insertPosition, newText);
@@ -143,19 +121,15 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
             // 如果没有 translations 部分，创建它
             const createSectionAction = new CodeAction(
                 `Create translations section with key '${keyName}'`,
-                CodeActionKind.QuickFix
+                CodeActionKind.QuickFix,
             );
             createSectionAction.diagnostics = [diagnostic];
-            
+
             const sectionEdit = new WorkspaceEdit();
             const insertPosition = new Position(document.lineCount, 0);
             const fallbackLanguage = preferredLanguages[0] ?? 'en';
-            const newText = this.buildTranslationsSectionText(
-                fallbackLanguage,
-                keyName,
-                document.lineCount > 0
-            );
-            
+            const newText = this.buildTranslationsSectionText(fallbackLanguage, keyName, document.lineCount > 0);
+
             sectionEdit.insert(document.uri, insertPosition, newText);
             createSectionAction.edit = sectionEdit;
             actions.push(createSectionAction);
@@ -168,18 +142,15 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
             const similarKeys = this.findSimilarKeys(keyName, keyNames as string[]);
 
             for (const similarKey of similarKeys.slice(0, 3)) {
-                const replaceAction = new CodeAction(
-                    `Replace with '${similarKey}'`,
-                    CodeActionKind.QuickFix
-                );
+                const replaceAction = new CodeAction(`Replace with '${similarKey}'`, CodeActionKind.QuickFix);
                 replaceAction.diagnostics = [diagnostic];
 
                 const replaceEdit = new WorkspaceEdit();
-                replaceEdit.replace(document.uri, diagnostic.range, this.replaceKeyInReference(
-                    document.getText(diagnostic.range),
-                    keyName,
-                    similarKey
-                ));
+                replaceEdit.replace(
+                    document.uri,
+                    diagnostic.range,
+                    this.replaceKeyInReference(document.getText(diagnostic.range), keyName, similarKey),
+                );
                 replaceAction.edit = replaceEdit;
 
                 actions.push(replaceAction);
@@ -198,34 +169,28 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
      * @param diagnostic 空值诊断
      * @returns 能填入占位符文本的代码操作
      */
-    private createEmptyValueActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createEmptyValueActions(document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
-        
+
         const keyName = this.extractKeyNameFromDiagnostic(diagnostic);
         if (!keyName) {
             return actions;
         }
 
         // 提供占位符值
-        const fixAction = new CodeAction(
-            `Add placeholder value for '${keyName}'`,
-            CodeActionKind.QuickFix
-        );
+        const fixAction = new CodeAction(`Add placeholder value for '${keyName}'`, CodeActionKind.QuickFix);
         fixAction.diagnostics = [diagnostic];
         fixAction.isPreferred = true;
 
         const edit = new WorkspaceEdit();
         const line = document.lineAt(diagnostic.range.start.line);
         const colonIndex = line.text.indexOf(':');
-        
+
         if (colonIndex !== -1) {
             const valueStart = new Position(diagnostic.range.start.line, colonIndex + 1);
             const valueEnd = diagnostic.range.end;
             const valueRange = new Range(valueStart, valueEnd);
-            
+
             edit.replace(document.uri, valueRange, ` "${keyName}"`);
             fixAction.edit = edit;
             actions.push(fixAction);
@@ -241,26 +206,20 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
      * @param diagnostic 重复键诊断
      * @returns 将冗余键删除的修复列表
      */
-    private createDuplicateKeyActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createDuplicateKeyActions(document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 删除当前重复的键
-        const deleteAction = new CodeAction(
-            'Remove duplicate translation key',
-            CodeActionKind.QuickFix
-        );
+        const deleteAction = new CodeAction('Remove duplicate translation key', CodeActionKind.QuickFix);
         deleteAction.diagnostics = [diagnostic];
         deleteAction.isPreferred = true;
 
         const edit = new WorkspaceEdit();
         const lineRange = new Range(
             new Position(diagnostic.range.start.line, 0),
-            new Position(diagnostic.range.start.line + 1, 0)
+            new Position(diagnostic.range.start.line + 1, 0),
         );
-        
+
         edit.delete(document.uri, lineRange);
         deleteAction.edit = edit;
         actions.push(deleteAction);
@@ -275,12 +234,9 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
      * @param diagnostic 缺失语言诊断
      * @returns 针对每种缺失语言的插入动作
      */
-    private async createMissingLanguageActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    private async createMissingLanguageActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
-        
+
         // 从诊断消息中提取缺失的语言
         const message = diagnostic.message;
         const languagesMatch = message.match(/languages: (.+)$/);
@@ -288,9 +244,9 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
             return actions;
         }
 
-        const missingLanguages = languagesMatch[1].split(', ').map(l => l.trim());
+        const missingLanguages = languagesMatch[1].split(', ').map((l) => l.trim());
         const keyName = this.extractKeyNameFromDiagnostic(diagnostic);
-        
+
         if (!keyName || missingLanguages.length === 0) {
             return actions;
         }
@@ -302,11 +258,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
 
         // 为每个缺失的语言创建添加操作
         for (const language of missingLanguages) {
-            const insertInfo = this.getLanguageInsertInfo(
-                document,
-                translationsPosition,
-                language
-            );
+            const insertInfo = this.getLanguageInsertInfo(document, translationsPosition, language);
 
             if (!insertInfo) {
                 continue;
@@ -314,7 +266,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
 
             const addAction = new CodeAction(
                 `Add translation for '${keyName}' in '${language}'`,
-                CodeActionKind.QuickFix
+                CodeActionKind.QuickFix,
             );
             addAction.diagnostics = [diagnostic];
 
@@ -323,7 +275,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
                 language,
                 keyName,
                 insertInfo.languageIndent,
-                insertInfo.needsLanguageHeader
+                insertInfo.needsLanguageHeader,
             );
             edit.insert(document.uri, insertInfo.insertPosition, newText);
             addAction.edit = edit;
@@ -363,7 +315,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
 
     /**
      * 获取当前文档优先使用的语言列表
-     * 
+     *
      * 优先顺序：文档内声明的语言 → 工作区内出现过的语言 → 'en'
      *
      * @param document 当前处理的文本文档
@@ -395,8 +347,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
             return [];
         }
 
-        const translationsIndent = this.yamlPathParser
-            .getIndentLevel(document.lineAt(translationsPosition.line).text);
+        const translationsIndent = this.yamlPathParser.getIndentLevel(document.lineAt(translationsPosition.line).text);
         const languageIndent = translationsIndent + 2;
         const languages = new Set<string>();
 
@@ -452,7 +403,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
     private getLanguageInsertInfo(
         document: TextDocument,
         translationsPosition: Position,
-        languageCode: string
+        languageCode: string,
     ): { insertPosition: Position; languageIndent: number; needsLanguageHeader: boolean } | null {
         const translationsLine = document.lineAt(translationsPosition.line);
         const translationsIndent = this.yamlPathParser.getIndentLevel(translationsLine.text);
@@ -500,7 +451,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
                     return {
                         insertPosition: new Position(insertionLine, 0),
                         languageIndent,
-                        needsLanguageHeader: false
+                        needsLanguageHeader: false,
                     };
                 }
             }
@@ -510,7 +461,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
         return {
             insertPosition: new Position(insertLine, 0),
             languageIndent,
-            needsLanguageHeader: true
+            needsLanguageHeader: true,
         };
     }
 
@@ -527,7 +478,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
         language: string,
         keyName: string,
         languageIndent: number,
-        includeLanguageHeader: boolean
+        includeLanguageHeader: boolean,
     ): string {
         const languageIndentText = ' '.repeat(languageIndent);
         const keyIndentText = ' '.repeat(languageIndent + 2);
@@ -547,11 +498,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
      * @param needsLeadingNewline 是否在片段前插入空行
      * @returns 带缩进的 YAML 字符串
      */
-    private buildTranslationsSectionText(
-        language: string,
-        keyName: string,
-        needsLeadingNewline: boolean
-    ): string {
+    private buildTranslationsSectionText(language: string, keyName: string, needsLeadingNewline: boolean): string {
         const prefix = needsLeadingNewline ? '\n' : '';
         return `${prefix}translations:\n  ${language}:\n    ${keyName}: "${keyName}"\n`;
     }
@@ -573,9 +520,7 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
             }
         }
 
-        return similarities
-            .sort((a, b) => b.score - a.score)
-            .map(item => item.key);
+        return similarities.sort((a, b) => b.score - a.score).map((item) => item.key);
     }
 
     /**
@@ -590,5 +535,3 @@ export class TranslationCodeActionProvider extends BaseCodeActionProvider {
         return reference.replace(oldKey, newKey);
     }
 }
-
-

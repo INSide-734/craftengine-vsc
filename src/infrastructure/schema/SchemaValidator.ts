@@ -1,16 +1,17 @@
-import Ajv, { ValidateFunction } from 'ajv';
-import { JSONSchema7 } from 'json-schema';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { ISchemaParser } from '../../core/interfaces/ISchemaParser';
-import { IConfiguration } from '../../core/interfaces/IConfiguration';
+import Ajv, { type ValidateFunction } from 'ajv';
+import { type JSONSchema7 } from 'json-schema';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type ISchemaParser } from '../../core/interfaces/ISchemaParser';
+import { type IConfiguration } from '../../core/interfaces/IConfiguration';
 import {
-    ITemplateExpander,
-    ITemplateExpansionResult,
-    IPositionMapping
+    type ITemplateExpander,
+    type ITemplateExpansionResult,
+    type IPositionMapping,
 } from '../../core/interfaces/ITemplateExpander';
 import { SchemaTransformer } from './helpers/SchemaTransformer';
 import { ValidationErrorFormatter } from './helpers/ValidationErrorFormatter';
 import { SCHEMA_CACHE } from '../../core/constants/SchemaConstants';
+import { LRUCache } from '../../core/utils';
 
 /**
  * 验证级别
@@ -21,7 +22,7 @@ export enum ValidationLevel {
     /** 宽松：允许额外属性，只验证已知字段 */
     Loose = 'loose',
     /** 关闭：不进行验证 */
-    Off = 'off'
+    Off = 'off',
 }
 
 /**
@@ -63,28 +64,33 @@ export class SchemaValidator {
     private readonly schemaParser: ISchemaParser;
     private readonly config: IConfiguration;
     private readonly logger: ILogger;
-    private readonly validateCache = new Map<string, ValidateFunction>();
+    private readonly validateCache: LRUCache<string, ValidateFunction>;
     private readonly schemaTransformer = new SchemaTransformer();
     private readonly errorFormatter: ValidationErrorFormatter;
+    /** 需要跳过验证的 Schema ID 模式列表 */
+    private readonly skipPatterns: string[];
     private templateExpander?: ITemplateExpander;
 
     constructor(
         schemaParser: ISchemaParser,
         config: IConfiguration,
         logger: ILogger,
-        templateExpander?: ITemplateExpander
+        templateExpander?: ITemplateExpander,
+        skipPatterns: string[] = ['template', 'parameter'],
     ) {
         this.ajv = new Ajv({
             allErrors: true,
             verbose: true,
             strict: false,
-            validateFormats: false
+            validateFormats: false,
         });
 
         this.schemaParser = schemaParser;
         this.config = config;
         this.logger = logger.createChild('SchemaValidator');
         this.errorFormatter = new ValidationErrorFormatter(this.logger);
+        this.skipPatterns = skipPatterns;
+        this.validateCache = new LRUCache<string, ValidateFunction>(SCHEMA_CACHE.VALIDATE_CACHE_SIZE);
 
         if (templateExpander) {
             this.templateExpander = templateExpander;
@@ -103,15 +109,12 @@ export class SchemaValidator {
                 return { valid: true, errors: [], warnings: [] };
             }
 
-            if (schemaId.includes('template') || schemaId.includes('parameter')) {
+            if (this.shouldSkipValidation(schemaId)) {
                 return { valid: true, errors: [], warnings: [] };
             }
 
             const schemaResult = await this.schemaParser.loadSchema(schemaId);
-            const schema = this.schemaTransformer.prepareSchema(
-                schemaResult.resolved || schemaResult.schema,
-                level
-            );
+            const schema = this.schemaTransformer.prepareSchema(schemaResult.resolved || schemaResult.schema, level);
 
             const validate = this.getValidateFunction(schemaId, schema);
             const valid = validate(data);
@@ -124,20 +127,22 @@ export class SchemaValidator {
 
             return {
                 valid: false,
-                errors: errors.filter(e => e.severity === 'error'),
-                warnings: []
+                errors: errors.filter((e) => e.severity === 'error'),
+                warnings: [],
             };
         } catch (error) {
             this.logger.error('Validation failed', error as Error, { schemaId });
             return {
                 valid: false,
-                errors: [{
-                    path: '',
-                    message: `Validation error: ${(error as Error).message}`,
-                    code: 'validation_error',
-                    severity: 'error'
-                }],
-                warnings: []
+                errors: [
+                    {
+                        path: '',
+                        message: `Validation error: ${(error as Error).message}`,
+                        code: 'validation_error',
+                        severity: 'error',
+                    },
+                ],
+                warnings: [],
             };
         }
     }
@@ -161,16 +166,16 @@ export class SchemaValidator {
                         data = expansionResult.expanded;
                         this.logger.debug('Template expansion completed', {
                             usedTemplates: expansionResult.usedTemplates.length,
-                            expansionErrors: expansionResult.errors.length
+                            expansionErrors: expansionResult.errors.length,
                         });
                     } else {
                         this.logger.warn('Template expansion failed, validating original data', {
-                            errors: expansionResult.errors.map(e => e.message)
+                            errors: expansionResult.errors.map((e) => e.message),
                         });
                     }
                 } catch (expandError) {
                     this.logger.warn('Template expansion error, validating original data', {
-                        error: (expandError as Error).message
+                        error: (expandError as Error).message,
                     });
                 }
             }
@@ -189,8 +194,15 @@ export class SchemaValidator {
             this.logger.error('Failed to validate document', error as Error);
             return {
                 valid: false,
-                errors: [{ path: '', message: `Parse error: ${(error as Error).message}`, code: 'parse_error', severity: 'error' }],
-                warnings: []
+                errors: [
+                    {
+                        path: '',
+                        message: `Parse error: ${(error as Error).message}`,
+                        code: 'parse_error',
+                        severity: 'error',
+                    },
+                ],
+                warnings: [],
             };
         }
     }
@@ -198,12 +210,9 @@ export class SchemaValidator {
     /** 清除缓存 */
     clearCache(): void {
         this.validateCache.clear();
-        this.logger.debug('Validation cache cleared');
+        this.ajv.removeSchema();
+        this.logger.debug('Validation cache cleared (including Ajv internal cache)');
     }
-
-    // ========================================
-    // 私有方法
-    // ========================================
 
     private shouldExpandTemplates(): boolean {
         return this.config.get<boolean>('craftengine.validation.templateExpansion', true);
@@ -211,9 +220,9 @@ export class SchemaValidator {
 
     private mapErrorPositions(
         errors: IValidationError[],
-        positionMap: Map<string, IPositionMapping>
+        positionMap: Map<string, IPositionMapping>,
     ): IValidationError[] {
-        return errors.map(error => {
+        return errors.map((error) => {
             const mapping = positionMap.get(error.path);
             if (mapping?.source === 'template') {
                 return {
@@ -221,7 +230,7 @@ export class SchemaValidator {
                     message: `${error.message} (from template: ${mapping.templateName})`,
                     suggestion: error.suggestion
                         ? `${error.suggestion} (check template: ${mapping.templateName})`
-                        : `Check template: ${mapping.templateName}`
+                        : `Check template: ${mapping.templateName}`,
                 };
             }
             return error;
@@ -230,13 +239,18 @@ export class SchemaValidator {
 
     private addExpansionErrors(
         result: IValidationResult,
-        expansionErrors: { path: string; message: string; type: string; templateName?: string }[]
+        expansionErrors: { path: string; message: string; type: string; templateName?: string }[],
     ): void {
         for (const error of expansionErrors) {
             if (error.type === 'template_not_found') {
                 result.warnings.push({
-                    path: error.path, message: error.message, code: 'template_not_found', severity: 'warning',
-                    suggestion: error.templateName ? `Define template "${error.templateName}" or check the template name` : undefined
+                    path: error.path,
+                    message: error.message,
+                    code: 'template_not_found',
+                    severity: 'warning',
+                    suggestion: error.templateName
+                        ? `Define template "${error.templateName}" or check the template name`
+                        : undefined,
                 });
             } else {
                 result.errors.push({ path: error.path, message: error.message, code: error.type, severity: 'error' });
@@ -245,27 +259,30 @@ export class SchemaValidator {
         }
     }
 
+    /**
+     * 检查是否应跳过指定 Schema 的验证
+     */
+    private shouldSkipValidation(schemaId: string): boolean {
+        return this.skipPatterns.some((pattern) => schemaId.includes(pattern));
+    }
+
     private getValidationLevel(): ValidationLevel {
         const level = this.config.get<string>('craftengine.validation.level', 'loose');
-        return ValidationLevel[level as keyof typeof ValidationLevel] || ValidationLevel.Loose;
+        const validLevels = Object.values(ValidationLevel) as string[];
+        if (validLevels.includes(level)) {
+            return level as ValidationLevel;
+        }
+        this.logger.warn('Invalid validation level, falling back to loose', { level });
+        return ValidationLevel.Loose;
     }
 
     private getValidateFunction(schemaId: string, schema: JSONSchema7): ValidateFunction {
         const schemaHash = this.computeSchemaHash(schema);
         const cacheKey = `${schemaId}_${this.getValidationLevel()}_${schemaHash}`;
 
-        if (this.validateCache.has(cacheKey)) {
-            return this.validateCache.get(cacheKey)!;
-        }
-
-        this.cleanupOldCacheEntries(schemaId);
-
-        // 全局容量限制：超出时淘汰最早的条目
-        if (this.validateCache.size >= SCHEMA_CACHE.VALIDATE_CACHE_SIZE) {
-            const firstKey = this.validateCache.keys().next().value;
-            if (firstKey !== undefined) {
-                this.validateCache.delete(firstKey);
-            }
+        const cached = this.validateCache.get(cacheKey);
+        if (cached) {
+            return cached;
         }
 
         const validate = this.ajv.compile(schema);
@@ -281,18 +298,5 @@ export class SchemaValidator {
             hash = ((hash << 5) + hash + str.charCodeAt(i)) & 0xffffffff;
         }
         return hash.toString(36);
-    }
-
-    private cleanupOldCacheEntries(schemaId: string): void {
-        const prefix = `${schemaId}_`;
-        const keysToDelete: string[] = [];
-        for (const key of this.validateCache.keys()) {
-            if (key.startsWith(prefix)) {
-                keysToDelete.push(key);
-            }
-        }
-        for (const key of keysToDelete) {
-            this.validateCache.delete(key);
-        }
     }
 }

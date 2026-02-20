@@ -9,9 +9,9 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ExtensionConfigurationManager } from '../../../../../application/services/extension/ExtensionConfigurationManager';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { IConfiguration, IConfigurationChangeEvent } from '../../../../../core/interfaces/IConfiguration';
-import { IEventBus } from '../../../../../core/interfaces/IEventBus';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IConfiguration, type IConfigurationChangeEvent } from '../../../../../core/interfaces/IConfiguration';
+import { type IEventBus } from '../../../../../core/interfaces/IEventBus';
 import { EVENT_TYPES } from '../../../../../core/constants/ServiceTokens';
 
 describe('ExtensionConfigurationManager', () => {
@@ -62,7 +62,7 @@ describe('ExtensionConfigurationManager', () => {
             mockLogger,
             mockConfiguration,
             mockEventBus,
-            mockGenerateEventId as unknown as () => string
+            mockGenerateEventId as unknown as () => string,
         );
     });
 
@@ -87,10 +87,7 @@ describe('ExtensionConfigurationManager', () => {
         });
 
         it('should log warning when validation has errors', async () => {
-            vi.mocked(mockConfiguration.validate).mockResolvedValue([
-                'Invalid path',
-                'Missing value',
-            ]);
+            vi.mocked(mockConfiguration.validate).mockResolvedValue(['Invalid path', 'Missing value']);
 
             await manager.initialize();
 
@@ -98,7 +95,7 @@ describe('ExtensionConfigurationManager', () => {
                 'Configuration validation warnings',
                 expect.objectContaining({
                     errors: ['Invalid path', 'Missing value'],
-                })
+                }),
             );
         });
 
@@ -107,10 +104,7 @@ describe('ExtensionConfigurationManager', () => {
             vi.mocked(mockConfiguration.validate).mockRejectedValue(error);
 
             await expect(manager.initialize()).rejects.toThrow('Validate failed');
-            expect(mockLogger.error).toHaveBeenCalledWith(
-                'Failed to initialize configuration',
-                error
-            );
+            expect(mockLogger.error).toHaveBeenCalledWith('Failed to initialize configuration', error);
         });
     });
 
@@ -142,7 +136,7 @@ describe('ExtensionConfigurationManager', () => {
                     key: 'templates.maxResults',
                     oldValue: 50,
                     newValue: 100,
-                })
+                }),
             );
         });
 
@@ -164,7 +158,7 @@ describe('ExtensionConfigurationManager', () => {
                     key: 'logging.level',
                     oldValue: 'info',
                     newValue: 'debug',
-                })
+                }),
             );
         });
     });

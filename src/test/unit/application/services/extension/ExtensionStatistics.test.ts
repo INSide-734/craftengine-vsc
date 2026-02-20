@@ -10,8 +10,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ExtensionStatistics } from '../../../../../application/services/extension/ExtensionStatistics';
-import { IPerformanceMonitor } from '../../../../../core/interfaces/IPerformanceMonitor';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IPerformanceMonitor } from '../../../../../core/interfaces/IPerformanceMonitor';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
 
 describe('ExtensionStatistics', () => {
     let statistics: ExtensionStatistics;
@@ -197,7 +197,7 @@ describe('ExtensionStatistics', () => {
             expect(stats.cacheHitRate).toBeUndefined();
             expect(mockLogger.warn).toHaveBeenCalledWith(
                 'Failed to get cache hit rate',
-                expect.objectContaining({ error: 'Monitor error' })
+                expect.objectContaining({ error: 'Monitor error' }),
             );
         });
     });

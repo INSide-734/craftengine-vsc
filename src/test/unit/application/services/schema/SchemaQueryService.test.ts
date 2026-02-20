@@ -9,11 +9,11 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SchemaQueryService } from '../../../../../application/services/schema/SchemaQueryService';
-import { SchemaPathNavigator } from '../../../../../application/services/schema/SchemaPathNavigator';
-import { SchemaPropertyExtractor } from '../../../../../application/services/schema/SchemaPropertyExtractor';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { IPerformanceMonitor } from '../../../../../core/interfaces/IPerformanceMonitor';
-import { SchemaProperty } from '../../../../../application/services/schema/SchemaUtils';
+import { type SchemaPathNavigator } from '../../../../../application/services/schema/SchemaPathNavigator';
+import { type SchemaPropertyExtractor } from '../../../../../application/services/schema/SchemaPropertyExtractor';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IPerformanceMonitor } from '../../../../../core/interfaces/IPerformanceMonitor';
+import { type SchemaProperty } from '../../../../../application/services/schema/SchemaUtils';
 
 describe('SchemaQueryService', () => {
     let service: SchemaQueryService;
@@ -27,12 +27,12 @@ describe('SchemaQueryService', () => {
         type: 'object',
         properties: {
             name: { type: 'string', description: 'Item name' },
-            amount: { type: 'number', description: 'Item amount' }
+            amount: { type: 'number', description: 'Item amount' },
         },
         patternProperties: {
-            '^items(#.*)?$': { type: 'object', description: 'Items section' }
+            '^items(#.*)?$': { type: 'object', description: 'Items section' },
         },
-        required: ['name']
+        required: ['name'],
     });
 
     beforeEach(() => {
@@ -49,32 +49,27 @@ describe('SchemaQueryService', () => {
 
         mockNavigator = {
             getSchemaForPath: vi.fn(),
-            isVersionConditionKey: vi.fn(() => false)
+            isVersionConditionKey: vi.fn(() => false),
         } as unknown as SchemaPathNavigator;
 
         mockExtractor = {
             extractProperties: vi.fn(),
             findPropertySchema: vi.fn(),
-            extractPropertyDetails: vi.fn()
+            extractPropertyDetails: vi.fn(),
         } as unknown as SchemaPropertyExtractor;
 
         const mockTimer = {
-            stop: vi.fn()
+            stop: vi.fn(),
         };
 
         mockPerformanceMonitor = {
             startTimer: vi.fn(() => mockTimer),
             recordMetric: vi.fn(),
             getMetrics: vi.fn(() => ({})),
-            clearMetrics: vi.fn()
+            clearMetrics: vi.fn(),
         } as unknown as IPerformanceMonitor;
 
-        service = new SchemaQueryService(
-            mockNavigator,
-            mockExtractor,
-            mockLogger,
-            mockPerformanceMonitor
-        );
+        service = new SchemaQueryService(mockNavigator, mockExtractor, mockLogger, mockPerformanceMonitor);
     });
 
     // ========================================
@@ -116,7 +111,7 @@ describe('SchemaQueryService', () => {
             expect(mockLogger.error).toHaveBeenCalledWith(
                 'Failed to get schema for path',
                 expect.any(Error),
-                expect.objectContaining({ path: 'invalid.path' })
+                expect.objectContaining({ path: 'invalid.path' }),
             );
         });
 
@@ -164,11 +159,11 @@ describe('SchemaQueryService', () => {
         it('should return true when schema has $ref', () => {
             const rootSchema = {
                 properties: {
-                    item: { $ref: '#/$defs/ItemSchema' }
+                    item: { $ref: '#/$defs/ItemSchema' },
                 },
                 $defs: {
-                    ItemSchema: { type: 'object' }
-                }
+                    ItemSchema: { type: 'object' },
+                },
             };
 
             const result = service.hasSchemaForPath(rootSchema, ['item', 'nested']);
@@ -179,8 +174,8 @@ describe('SchemaQueryService', () => {
         it('should return true for patternProperties match', () => {
             const rootSchema = {
                 patternProperties: {
-                    '^item_[0-9]+$': { type: 'object' }
-                }
+                    '^item_[0-9]+$': { type: 'object' },
+                },
             };
 
             const result = service.hasSchemaForPath(rootSchema, ['item_123']);
@@ -190,7 +185,7 @@ describe('SchemaQueryService', () => {
 
         it('should return true for additionalProperties', () => {
             const rootSchema = {
-                additionalProperties: { type: 'string' }
+                additionalProperties: { type: 'string' },
             };
 
             const result = service.hasSchemaForPath(rootSchema, ['anyKey']);
@@ -201,7 +196,7 @@ describe('SchemaQueryService', () => {
         it('should return true for array items', () => {
             const rootSchema = {
                 type: 'array',
-                items: { type: 'object' }
+                items: { type: 'object' },
             };
 
             const result = service.hasSchemaForPath(rootSchema, ['0']);
@@ -212,8 +207,8 @@ describe('SchemaQueryService', () => {
         it('should return false for invalid path', () => {
             const rootSchema = {
                 properties: {
-                    name: { type: 'string' }
-                }
+                    name: { type: 'string' },
+                },
             };
 
             const result = service.hasSchemaForPath(rootSchema, ['nonexistent']);
@@ -223,9 +218,7 @@ describe('SchemaQueryService', () => {
 
         it('should handle allOf/oneOf/anyOf', () => {
             const rootSchema = {
-                allOf: [
-                    { properties: { name: { type: 'string' } } }
-                ]
+                allOf: [{ properties: { name: { type: 'string' } } }],
             };
 
             const result = service.hasSchemaForPath(rootSchema, ['name']);
@@ -243,7 +236,7 @@ describe('SchemaQueryService', () => {
             const rootSchema = createTestSchema();
             const properties: SchemaProperty[] = [
                 { key: 'name', schema: { type: 'string' } },
-                { key: 'amount', schema: { type: 'number' } }
+                { key: 'amount', schema: { type: 'number' } },
             ];
 
             vi.mocked(mockNavigator.getSchemaForPath).mockResolvedValue(rootSchema);
@@ -257,9 +250,7 @@ describe('SchemaQueryService', () => {
 
         it('should cache properties', async () => {
             const rootSchema = createTestSchema();
-            const properties: SchemaProperty[] = [
-                { key: 'name', schema: { type: 'string' } }
-            ];
+            const properties: SchemaProperty[] = [{ key: 'name', schema: { type: 'string' } }];
 
             vi.mocked(mockNavigator.getSchemaForPath).mockResolvedValue(rootSchema);
             vi.mocked(mockExtractor.extractProperties).mockResolvedValue(properties);
@@ -295,9 +286,7 @@ describe('SchemaQueryService', () => {
 
         it('should log properties loaded from cache', async () => {
             const rootSchema = createTestSchema();
-            const properties: SchemaProperty[] = [
-                { key: 'name', schema: { type: 'string' } }
-            ];
+            const properties: SchemaProperty[] = [{ key: 'name', schema: { type: 'string' } }];
 
             vi.mocked(mockNavigator.getSchemaForPath).mockResolvedValue(rootSchema);
             vi.mocked(mockExtractor.extractProperties).mockResolvedValue(properties);
@@ -309,7 +298,7 @@ describe('SchemaQueryService', () => {
 
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Properties loaded from cache',
-                expect.objectContaining({ path: 'items' })
+                expect.objectContaining({ path: 'items' }),
             );
         });
     });
@@ -325,7 +314,7 @@ describe('SchemaQueryService', () => {
             const details = {
                 type: 'string',
                 description: 'Item name',
-                required: true
+                required: true,
             };
 
             vi.mocked(mockNavigator.getSchemaForPath).mockResolvedValue(rootSchema);
@@ -385,11 +374,7 @@ describe('SchemaQueryService', () => {
             await service.getPropertyDetails(rootSchema, ['name']);
 
             // 当路径长度为 1 时，应该直接使用 rootSchema 作为父 Schema
-            expect(mockExtractor.findPropertySchema).toHaveBeenCalledWith(
-                rootSchema,
-                'name',
-                rootSchema
-            );
+            expect(mockExtractor.findPropertySchema).toHaveBeenCalledWith(rootSchema, 'name', rootSchema);
         });
     });
 
@@ -402,8 +387,8 @@ describe('SchemaQueryService', () => {
             const rootSchema = {
                 properties: {
                     items: { type: 'object' },
-                    templates: { type: 'object' }
-                }
+                    templates: { type: 'object' },
+                },
             };
 
             const result = await service.getTopLevelFields(rootSchema);
@@ -416,8 +401,8 @@ describe('SchemaQueryService', () => {
             const rootSchema = {
                 patternProperties: {
                     '^items(#.*)?$': { type: 'object' },
-                    '^templates(#.*)?$': { type: 'object' }
-                }
+                    '^templates(#.*)?$': { type: 'object' },
+                },
             };
 
             const result = await service.getTopLevelFields(rootSchema);
@@ -429,8 +414,8 @@ describe('SchemaQueryService', () => {
         it('should cache top level fields', async () => {
             const rootSchema = {
                 properties: {
-                    items: { type: 'object' }
-                }
+                    items: { type: 'object' },
+                },
             };
 
             // 第一次调用
@@ -454,7 +439,7 @@ describe('SchemaQueryService', () => {
             const badSchema = {
                 get patternProperties() {
                     throw new Error('Test error');
-                }
+                },
             };
 
             const result = await service.getTopLevelFields(badSchema);
@@ -467,11 +452,11 @@ describe('SchemaQueryService', () => {
         it('should merge fields from both properties and patternProperties', async () => {
             const rootSchema = {
                 properties: {
-                    categories: { type: 'object' }
+                    categories: { type: 'object' },
                 },
                 patternProperties: {
-                    '^items(#.*)?$': { type: 'object' }
-                }
+                    '^items(#.*)?$': { type: 'object' },
+                },
             };
 
             const result = await service.getTopLevelFields(rootSchema);
@@ -485,8 +470,8 @@ describe('SchemaQueryService', () => {
                 properties: {
                     zebra: { type: 'object' },
                     apple: { type: 'object' },
-                    mango: { type: 'object' }
-                }
+                    mango: { type: 'object' },
+                },
             };
 
             const result = await service.getTopLevelFields(rootSchema);
@@ -502,9 +487,7 @@ describe('SchemaQueryService', () => {
     describe('clearCaches', () => {
         it('should clear all caches', async () => {
             const rootSchema = createTestSchema();
-            const properties: SchemaProperty[] = [
-                { key: 'name', schema: { type: 'string' } }
-            ];
+            const properties: SchemaProperty[] = [{ key: 'name', schema: { type: 'string' } }];
 
             vi.mocked(mockNavigator.getSchemaForPath).mockResolvedValue(rootSchema);
             vi.mocked(mockExtractor.extractProperties).mockResolvedValue(properties);
@@ -536,8 +519,8 @@ describe('SchemaQueryService', () => {
             const rootSchema = {
                 $id: 'https://example.com/schema.json',
                 properties: {
-                    name: { type: 'string' }
-                }
+                    name: { type: 'string' },
+                },
             };
 
             // 使用 $id 作为缓存键的一部分
@@ -550,11 +533,7 @@ describe('SchemaQueryService', () => {
 
         it('should handle performance monitor not provided', async () => {
             // 创建一个没有 performance monitor 的服务实例
-            const serviceWithoutMonitor = new SchemaQueryService(
-                mockNavigator,
-                mockExtractor,
-                mockLogger
-            );
+            const serviceWithoutMonitor = new SchemaQueryService(mockNavigator, mockExtractor, mockLogger);
 
             const rootSchema = createTestSchema();
             const properties: SchemaProperty[] = [];

@@ -1,6 +1,6 @@
-import { IExtensionStatistics } from '../../../core/interfaces/IExtensionService';
-import { IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
-import { ILogger } from '../../../core/interfaces/ILogger';
+import { type IExtensionStatistics } from '../../../core/interfaces/IExtensionService';
+import { type IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
+import { type ILogger } from '../../../core/interfaces/ILogger';
 
 /**
  * 扩展统计信息管理器
@@ -15,7 +15,7 @@ export class ExtensionStatistics {
 
     constructor(
         private readonly performanceMonitor: IPerformanceMonitor,
-        private readonly logger: ILogger
+        private readonly logger: ILogger,
     ) {}
 
     /**
@@ -36,10 +36,12 @@ export class ExtensionStatistics {
      * 增加已处理文档计数
      */
     incrementProcessedDocuments(): void {
-        if (this.disposed) {return;}
+        if (this.disposed) {
+            return;
+        }
         this.processedDocumentsCount++;
         this.logger.debug('Document processed', {
-            totalDocuments: this.processedDocumentsCount
+            totalDocuments: this.processedDocumentsCount,
         });
     }
 
@@ -47,10 +49,12 @@ export class ExtensionStatistics {
      * 增加已提供补全计数
      */
     incrementCompletionsProvided(): void {
-        if (this.disposed) {return;}
+        if (this.disposed) {
+            return;
+        }
         this.completionsProvidedCount++;
         this.logger.debug('Completion provided', {
-            totalCompletions: this.completionsProvidedCount
+            totalCompletions: this.completionsProvidedCount,
         });
     }
 
@@ -85,7 +89,7 @@ export class ExtensionStatistics {
             memoryUsage: this.getMemoryUsage(),
             processedDocuments: this.processedDocumentsCount,
             completionsProvided: this.completionsProvidedCount,
-            cacheHitRate: this.getCacheHitRate()
+            cacheHitRate: this.getCacheHitRate(),
         };
     }
 
@@ -126,13 +130,11 @@ export class ExtensionStatistics {
             }
 
             return cacheHits / cacheTotal;
-
         } catch (error) {
             this.logger.warn('Failed to get cache hit rate', {
-                error: (error as Error).message
+                error: (error as Error).message,
             });
             return undefined; // 出错时返回 undefined 而非虚假数据
         }
     }
 }
-

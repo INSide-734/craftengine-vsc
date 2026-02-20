@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CompletionManager } from '../../../../infrastructure/completion/CompletionManager';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { ICompletionStrategy, ICompletionContextInfo } from '../../../../core/interfaces/ICompletionStrategy';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type ICompletionStrategy, type ICompletionContextInfo } from '../../../../core/interfaces/ICompletionStrategy';
 
 describe('CompletionManager', () => {
     let completionManager: CompletionManager;
@@ -34,7 +34,7 @@ describe('CompletionManager', () => {
             expect(completionManager.getStrategies()).toContain(strategy);
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Completion strategy registered',
-                expect.objectContaining({ strategyName: 'test-strategy' })
+                expect.objectContaining({ strategyName: 'test-strategy' }),
             );
         });
 
@@ -53,7 +53,7 @@ describe('CompletionManager', () => {
             expect(completionManager.getStrategies().length).toBe(1);
             expect(mockLogger.warn).toHaveBeenCalledWith(
                 'Completion strategy already registered',
-                expect.objectContaining({ strategyName: 'test-strategy' })
+                expect.objectContaining({ strategyName: 'test-strategy' }),
             );
         });
     });
@@ -74,7 +74,7 @@ describe('CompletionManager', () => {
             expect(completionManager.getStrategies()).not.toContain(strategy);
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Completion strategy unregistered',
-                expect.objectContaining({ strategyName: 'test-strategy' })
+                expect.objectContaining({ strategyName: 'test-strategy' }),
             );
         });
 
@@ -83,7 +83,7 @@ describe('CompletionManager', () => {
 
             expect(mockLogger.warn).toHaveBeenCalledWith(
                 'Completion strategy not found for unregistration',
-                expect.objectContaining({ strategyName: 'non-existent' })
+                expect.objectContaining({ strategyName: 'non-existent' }),
             );
         });
     });
@@ -142,7 +142,7 @@ describe('CompletionManager', () => {
             // 修改后使用 warn 而不是 error，因为超时或错误不应阻塞其他策略
             expect(mockLogger.warn).toHaveBeenCalledWith(
                 'Strategy activation check failed',
-                expect.objectContaining({ strategyName: 'error-strategy' })
+                expect.objectContaining({ strategyName: 'error-strategy' }),
             );
         });
     });
@@ -168,7 +168,7 @@ describe('CompletionManager', () => {
             completionManager.registerStrategy(strategy2);
 
             const chars = completionManager.getAllTriggerCharacters();
-            
+
             expect(chars).toHaveLength(3);
             expect(chars).toContain('.');
             expect(chars).toContain(':');
@@ -176,4 +176,3 @@ describe('CompletionManager', () => {
         });
     });
 });
-

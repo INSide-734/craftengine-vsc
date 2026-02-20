@@ -1,13 +1,15 @@
-import { IDependencyContainer } from '../../../core/interfaces/IDependencyContainer';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../core/interfaces/IConfiguration';
-import { IEventBus } from '../../../core/interfaces/IEventBus';
-import { IFileWatcher } from '../../../core/interfaces/IFileWatcher';
-import { IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
-import { IDataStoreService } from '../../../core/interfaces/IDataStoreService';
-import { IFileReader } from '../../../core/interfaces/IFileReader';
-import { IWorkspaceService } from '../../../core/interfaces/IWorkspaceService';
-import { IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
+import { type IDependencyContainer } from '../../../core/interfaces/IDependencyContainer';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../core/interfaces/IConfiguration';
+import { type IEventBus } from '../../../core/interfaces/IEventBus';
+import { type IFileWatcher } from '../../../core/interfaces/IFileWatcher';
+import { type IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
+import { type IDataStoreService } from '../../../core/interfaces/IDataStoreService';
+import { type IWorkspaceService } from '../../../core/interfaces/IWorkspaceService';
+import { type IFileWatcherFactory } from '../../../core/interfaces/IFileWatcherFactory';
+import { type IExtensionRegistry } from '../../../core/interfaces/IExtensionRegistry';
+import { type ISchemaFileLoader } from '../../../core/interfaces/ISchemaFileLoader';
+import { type IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
 import { initializeDiagnosticCodes } from '../../../core/constants/DiagnosticCodes';
 import { initializeDiagnosticSeverityRules } from '../../../core/constants/DiagnosticSeverityRules';
@@ -16,8 +18,8 @@ import { initializeMinecraftVersions } from '../../../domain/services/model/util
 import { initializeModelProperties } from '../../../domain/services/model/ModelPropertiesInit';
 import { initializeMiniMessagePatterns } from '../../../presentation/strategies/delegates/richtext/types';
 import { initializeTypeDisplayNames } from '../../../core/constants/DiagnosticMessages';
-import { ConfigurationManager } from '../../config/ConfigurationManager';
-import { ExtendedTypeService } from '../../../domain/services/ExtendedTypeService';
+import { type ConfigurationManager } from '../../config/ConfigurationManager';
+import { type ExtendedTypeService } from '../../../domain/services/ExtendedTypeService';
 import { ExtensionService } from '../../../application/services/ExtensionService';
 import { SchemaService } from '../../../application/services/SchemaService';
 import { ModelPreviewService } from '../../../application/services/ModelPreviewService';
@@ -37,33 +39,37 @@ export function registerApplicationServices(container: IDependencyContainer): vo
     registerServices(container, [
         {
             token: SERVICE_TOKENS.ExtensionService,
-            factory: (c) => new ExtensionService(
-                c.resolve<ILogger>(SERVICE_TOKENS.Logger),
-                c.resolve<IConfiguration>(SERVICE_TOKENS.Configuration),
-                c.resolve<IEventBus>(SERVICE_TOKENS.EventBus),
-                c.resolve<IDataStoreService>(SERVICE_TOKENS.DataStoreService),
-                c.resolve<IFileWatcher>(SERVICE_TOKENS.FileWatcher),
-                c.resolve<IPerformanceMonitor>(SERVICE_TOKENS.PerformanceMonitor)
-            )
+            factory: (c) =>
+                new ExtensionService(
+                    c.resolve<ILogger>(SERVICE_TOKENS.Logger),
+                    c.resolve<IConfiguration>(SERVICE_TOKENS.Configuration),
+                    c.resolve<IEventBus>(SERVICE_TOKENS.EventBus),
+                    c.resolve<IDataStoreService>(SERVICE_TOKENS.DataStoreService),
+                    c.resolve<IFileWatcher>(SERVICE_TOKENS.FileWatcher),
+                    c.resolve<IPerformanceMonitor>(SERVICE_TOKENS.PerformanceMonitor),
+                ),
         },
         {
             token: SERVICE_TOKENS.SchemaService,
-            factory: (c) => new SchemaService(
-                c.resolve<ILogger>(SERVICE_TOKENS.Logger),
-                c.resolve<IDataStoreService>(SERVICE_TOKENS.DataStoreService),
-                c.resolve<IEventBus>(SERVICE_TOKENS.EventBus),
-                c.resolve<IConfiguration>(SERVICE_TOKENS.Configuration),
-                c.resolve<IFileReader>(SERVICE_TOKENS.FileReader),
-                c.resolve<IWorkspaceService>(SERVICE_TOKENS.WorkspaceService),
-                c.tryResolve<IPerformanceMonitor>(SERVICE_TOKENS.PerformanceMonitor)
-            )
+            factory: (c) =>
+                new SchemaService(
+                    c.resolve<ILogger>(SERVICE_TOKENS.Logger),
+                    c.resolve<IDataStoreService>(SERVICE_TOKENS.DataStoreService),
+                    c.resolve<IEventBus>(SERVICE_TOKENS.EventBus),
+                    c.resolve<IConfiguration>(SERVICE_TOKENS.Configuration),
+                    c.resolve<IWorkspaceService>(SERVICE_TOKENS.WorkspaceService),
+                    c.resolve<IExtensionRegistry>(SERVICE_TOKENS.ExtensionRegistry),
+                    c.resolve<ISchemaFileLoader>(SERVICE_TOKENS.SchemaFileLoader),
+                    c.tryResolve<IFileWatcherFactory>(SERVICE_TOKENS.FileWatcherFactory),
+                    c.tryResolve<IPerformanceMonitor>(SERVICE_TOKENS.PerformanceMonitor),
+                ),
         },
         {
             token: SERVICE_TOKENS.ModelPreviewService,
             factory: (c) => {
                 // 创建资源包发现适配器，包装静态类为实例接口
                 const resourcePackDiscovery = {
-                    discoverInWorkspace: () => ResourcePackDiscovery.discoverInWorkspace()
+                    discoverInWorkspace: () => ResourcePackDiscovery.discoverInWorkspace(),
                 };
                 return new ModelPreviewService(
                     c.resolve<ILogger>(SERVICE_TOKENS.Logger),
@@ -74,10 +80,10 @@ export function registerApplicationServices(container: IDependencyContainer): vo
                     c.resolve(SERVICE_TOKENS.YamlParser),
                     c.resolve(SERVICE_TOKENS.TemplateExpander),
                     c.resolve<IWorkspaceService>(SERVICE_TOKENS.WorkspaceService),
-                    resourcePackDiscovery
+                    resourcePackDiscovery,
                 );
-            }
-        }
+            },
+        },
     ]);
 
     container.resolve<ILogger>(SERVICE_TOKENS.Logger).info('Application services registered');
@@ -97,9 +103,7 @@ export async function initializeServices(container: IDependencyContainer): Promi
         await (configuration as ConfigurationManager).initialize();
 
         // 预加载数据配置文件到缓存
-        const dataConfigLoader = container.resolve<IDataConfigLoader>(
-            SERVICE_TOKENS.DataConfigLoader
-        );
+        const dataConfigLoader = container.resolve<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
         await dataConfigLoader.preloadAllConfigs();
 
         // 从 JSON 配置初始化核心常量模块
@@ -146,7 +150,6 @@ export async function initializeServices(container: IDependencyContainer): Promi
         await extendedTypeService.initialize();
 
         logger.info('Core services initialized');
-
     } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         logger.error('Failed to initialize services', err);

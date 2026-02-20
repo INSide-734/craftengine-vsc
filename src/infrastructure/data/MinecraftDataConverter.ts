@@ -1,16 +1,16 @@
 import {
-    IEnchantment,
-    IEntity,
-    IParticle,
-    IPotionEffect,
-    IBiome,
-    IBlock,
-    IBlockState,
-    IMinecraftItem,
-    IAttribute,
-    IDamageType,
-    IGameEvent,
-    IMinecraftTag
+    type IEnchantment,
+    type IEntity,
+    type IParticle,
+    type IPotionEffect,
+    type IBiome,
+    type IBlock,
+    type IBlockState,
+    type IMinecraftItem,
+    type IAttribute,
+    type IDamageType,
+    type IGameEvent,
+    type IMinecraftTag,
 } from '../../core/interfaces/IMinecraftDataService';
 
 /**
@@ -20,12 +20,13 @@ import {
  * 转换为类型安全的内部数据结构。所有方法均为纯函数，无副作用。
  */
 export class MinecraftDataConverter {
-
     /**
      * 转换附魔数据
      */
     convertEnchantments(raw: unknown[]): IEnchantment[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
@@ -38,7 +39,7 @@ export class MinecraftDataConverter {
                 treasureOnly: obj.treasureOnly as boolean,
                 curse: obj.curse as boolean,
                 weight: obj.weight as number | undefined,
-                exclude: obj.exclude as string[] | undefined
+                exclude: obj.exclude as string[] | undefined,
             };
         });
     }
@@ -47,7 +48,9 @@ export class MinecraftDataConverter {
      * 转换实体数据
      */
     convertEntities(raw: unknown[]): IEntity[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
@@ -58,7 +61,7 @@ export class MinecraftDataConverter {
                 type: obj.type as string,
                 category: obj.category as string | undefined,
                 width: obj.width as number | undefined,
-                height: obj.height as number | undefined
+                height: obj.height as number | undefined,
             };
         });
     }
@@ -67,13 +70,15 @@ export class MinecraftDataConverter {
      * 转换粒子数据
      */
     convertParticles(raw: unknown[]): IParticle[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
             return {
                 id: obj.id as number,
-                name: obj.name as string
+                name: obj.name as string,
             };
         });
     }
@@ -82,7 +87,9 @@ export class MinecraftDataConverter {
      * 转换药水效果数据
      */
     convertPotionEffects(raw: unknown[]): IPotionEffect[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
@@ -90,7 +97,7 @@ export class MinecraftDataConverter {
                 id: obj.id as number,
                 name: obj.name as string,
                 displayName: obj.displayName as string,
-                type: obj.type as 'good' | 'bad'
+                type: obj.type as 'good' | 'bad',
             };
         });
     }
@@ -99,7 +106,9 @@ export class MinecraftDataConverter {
      * 转换生物群系数据
      */
     convertBiomes(raw: unknown[]): IBiome[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
@@ -110,7 +119,7 @@ export class MinecraftDataConverter {
                 category: obj.category as string,
                 temperature: obj.temperature as number | undefined,
                 precipitation: obj.precipitation as string | undefined,
-                color: obj.color as number | undefined
+                color: obj.color as number | undefined,
             };
         });
     }
@@ -119,7 +128,9 @@ export class MinecraftDataConverter {
      * 转换方块数据
      */
     convertBlocks(raw: unknown[]): IBlock[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
@@ -140,7 +151,7 @@ export class MinecraftDataConverter {
                 maxStateId: obj.maxStateId as number | undefined,
                 states: this.convertBlockStates(obj.states as unknown[] | undefined),
                 drops: obj.drops as number[] | undefined,
-                material: obj.material as string | undefined
+                material: obj.material as string | undefined,
             };
         });
     }
@@ -149,7 +160,9 @@ export class MinecraftDataConverter {
      * 转换方块状态数据
      */
     convertBlockStates(raw: unknown[] | undefined): IBlockState[] | undefined {
-        if (!raw || !Array.isArray(raw)) { return undefined; }
+        if (!raw || !Array.isArray(raw)) {
+            return undefined;
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
@@ -157,7 +170,7 @@ export class MinecraftDataConverter {
                 name: obj.name as string,
                 type: obj.type as 'bool' | 'int' | 'enum',
                 values: obj.values as string[] | undefined,
-                num_values: obj.num_values as number | undefined
+                num_values: obj.num_values as number | undefined,
             };
         });
     }
@@ -166,7 +179,9 @@ export class MinecraftDataConverter {
      * 转换物品数据
      */
     convertItems(raw: unknown[]): IMinecraftItem[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
@@ -177,7 +192,7 @@ export class MinecraftDataConverter {
                 stackSize: obj.stackSize as number,
                 durability: obj.durability as number | undefined,
                 enchantCategories: obj.enchantCategories as string[] | undefined,
-                repairWith: obj.repairWith as string[] | undefined
+                repairWith: obj.repairWith as string[] | undefined,
             };
         });
     }
@@ -186,7 +201,9 @@ export class MinecraftDataConverter {
      * 转换属性数据
      */
     convertAttributes(raw: unknown[]): IAttribute[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
@@ -195,7 +212,7 @@ export class MinecraftDataConverter {
                 resource: obj.resource as string,
                 min: obj.min as number,
                 max: obj.max as number,
-                default: obj.default as number
+                default: obj.default as number,
             };
         });
     }
@@ -210,7 +227,7 @@ export class MinecraftDataConverter {
             tags.push({
                 name,
                 type,
-                values
+                values,
             });
         }
 
@@ -221,7 +238,9 @@ export class MinecraftDataConverter {
      * 转换伤害类型数据
      */
     convertDamageTypes(raw: unknown[]): IDamageType[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
@@ -230,7 +249,7 @@ export class MinecraftDataConverter {
                 scaling: obj.scaling as string,
                 exhaustion: obj.exhaustion as number,
                 effects: obj.effects as string | undefined,
-                message_id: obj.message_id as string | undefined
+                message_id: obj.message_id as string | undefined,
             };
         });
     }
@@ -239,13 +258,15 @@ export class MinecraftDataConverter {
      * 转换游戏事件数据
      */
     convertGameEvents(raw: unknown[]): IGameEvent[] {
-        if (!Array.isArray(raw)) { return []; }
+        if (!Array.isArray(raw)) {
+            return [];
+        }
 
         return raw.map((item) => {
             const obj = item as Record<string, unknown>;
             return {
                 id: obj.id as number,
-                name: obj.name as string
+                name: obj.name as string,
             };
         });
     }

@@ -1,6 +1,6 @@
-import { TextDocument, Range, Position } from 'vscode';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IValidationError } from '../../../infrastructure/schema/SchemaValidator';
+import { type TextDocument, Range, type Position } from 'vscode';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IValidationError } from '../../../infrastructure/schema/SchemaValidator';
 
 /**
  * 从文档范围中提取文本
@@ -46,7 +46,7 @@ export enum RangeType {
     /** 第一行范围 */
     FirstLine = 'firstLine',
     /** Token 范围 */
-    Token = 'token'
+    Token = 'token',
 }
 
 /**
@@ -80,16 +80,12 @@ export class DiagnosticRangeHelper {
      * - additionalProperties: 只标记未知属性的键名
      * - 其他: 智能缩小范围
      */
-    getErrorRange(
-        error: IValidationError,
-        document: TextDocument,
-        positionMap?: Map<string, IPositionInfo>
-    ): Range {
+    getErrorRange(error: IValidationError, document: TextDocument, positionMap?: Map<string, IPositionInfo>): Range {
         // 尝试从位置映射中获取精确位置
         if (error.path && positionMap) {
             // Ajv 返回的路径格式是 /items/my-item，需要转换为 items.my-item
             let normalizedPath = error.path
-                .replace(/^\//, '')  // 移除开头的 /
+                .replace(/^\//, '') // 移除开头的 /
                 .replace(/\//g, '.'); // 将 / 替换为 .
 
             // 修复路径中可能被错误格式化的版本号
@@ -99,7 +95,7 @@ export class DiagnosticRangeHelper {
                 originalPath: error.path,
                 normalizedPath,
                 errorCode: error.code,
-                availablePaths: Array.from(positionMap.keys()).slice(0, 10)
+                availablePaths: Array.from(positionMap.keys()).slice(0, 10),
             });
 
             // 直接查找路径
@@ -124,7 +120,7 @@ export class DiagnosticRangeHelper {
                 if (position) {
                     this.logger.debug('Found parent position', {
                         path: normalizedPath,
-                        parentPath
+                        parentPath,
                     });
                     return this.refineErrorRange(error, position, document);
                 }
@@ -134,7 +130,7 @@ export class DiagnosticRangeHelper {
             this.logger.warn('No position found for error path', {
                 path: error.path,
                 normalizedPath,
-                message: error.message
+                message: error.message,
             });
         }
 
@@ -164,12 +160,7 @@ export class DiagnosticRangeHelper {
         const trimmedEnd = lineText.search(/\S\s*$/);
 
         if (trimmedStart !== -1 && trimmedEnd !== -1) {
-            return new Range(
-                startPos.line,
-                trimmedStart,
-                startPos.line,
-                trimmedEnd + 1
-            );
+            return new Range(startPos.line, trimmedStart, startPos.line, trimmedEnd + 1);
         }
 
         // 兜底：返回从起始位置到行尾
@@ -182,10 +173,7 @@ export class DiagnosticRangeHelper {
      * 当路径中包含特殊字符（如 $, #, :）时，可能无法精确匹配
      * 尝试通过部分匹配来查找位置
      */
-    private findFuzzyPosition(
-        targetPath: string,
-        positionMap: Map<string, IPositionInfo>
-    ): IPositionInfo | undefined {
+    private findFuzzyPosition(targetPath: string, positionMap: Map<string, IPositionInfo>): IPositionInfo | undefined {
         const pathParts = targetPath.split('.');
 
         for (const [key, value] of positionMap.entries()) {
@@ -240,11 +228,7 @@ export class DiagnosticRangeHelper {
      *
      * 根据错误类型和上下文，返回更精确的范围
      */
-    private refineErrorRange(
-        error: IValidationError,
-        position: IPositionInfo,
-        document: TextDocument
-    ): Range {
+    private refineErrorRange(error: IValidationError, position: IPositionInfo, document: TextDocument): Range {
         switch (error.code) {
             case 'required':
                 // 必需字段错误：只标记父对象的键名
@@ -311,12 +295,7 @@ export class DiagnosticRangeHelper {
         const trimmed = text.trim();
         if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
             const startChar = text.indexOf(trimmed[0]) + range.start.character;
-            return new Range(
-                range.start.line,
-                startChar,
-                range.start.line,
-                startChar + 1
-            );
+            return new Range(range.start.line, startChar, range.start.line, startChar + 1);
         }
 
         // 检查是否是 YAML 多行对象（冒号后换行）
@@ -327,7 +306,7 @@ export class DiagnosticRangeHelper {
                     range.start.line,
                     range.start.character + colonIndex,
                     range.start.line,
-                    range.start.character + colonIndex + 1
+                    range.start.character + colonIndex + 1,
                 );
             }
             return this.getFirstLineRange(range, document);
@@ -349,11 +328,7 @@ export class DiagnosticRangeHelper {
      * @param positionMap 位置映射
      * @returns 键名的精确范围
      */
-    getKeyRange(
-        document: TextDocument,
-        path: string,
-        positionMap: Map<string, IPositionInfo>
-    ): Range | undefined {
+    getKeyRange(document: TextDocument, path: string, positionMap: Map<string, IPositionInfo>): Range | undefined {
         const position = positionMap.get(path);
         if (!position) {
             return undefined;
@@ -379,7 +354,7 @@ export class DiagnosticRangeHelper {
     getValueRangeByPath(
         document: TextDocument,
         path: string,
-        positionMap: Map<string, IPositionInfo>
+        positionMap: Map<string, IPositionInfo>,
     ): Range | undefined {
         const position = positionMap.get(path);
         if (!position) {
@@ -397,11 +372,7 @@ export class DiagnosticRangeHelper {
      * @param substring 要查找的子串
      * @returns 子串的范围，如果未找到则返回 undefined
      */
-    getSubstringRange(
-        document: TextDocument,
-        baseRange: Range,
-        substring: string
-    ): Range | undefined {
+    getSubstringRange(document: TextDocument, baseRange: Range, substring: string): Range | undefined {
         const text = document.getText(baseRange);
         const index = text.indexOf(substring);
 
@@ -413,10 +384,7 @@ export class DiagnosticRangeHelper {
         const startOffset = document.offsetAt(baseRange.start) + index;
         const endOffset = startOffset + substring.length;
 
-        return new Range(
-            document.positionAt(startOffset),
-            document.positionAt(endOffset)
-        );
+        return new Range(document.positionAt(startOffset), document.positionAt(endOffset));
     }
 
     /**
@@ -429,12 +397,12 @@ export class DiagnosticRangeHelper {
     expandToToken(document: TextDocument, position: Position): Range {
         // 尝试多种 token 模式
         const patterns = [
-            /[\w\-._]+/,           // 标识符
-            /"[^"]*"/,             // 双引号字符串
-            /'[^']*'/,             // 单引号字符串
-            /\$\$[^\s:]+/,         // 版本条件
+            /[\w\-._]+/, // 标识符
+            /"[^"]*"/, // 双引号字符串
+            /'[^']*'/, // 单引号字符串
+            /\$\$[^\s:]+/, // 版本条件
             /\$[a-zA-Z_][a-zA-Z0-9_]*/, // 模板参数
-            /[^\s:,\[\]{}]+/       // 通用 token
+            /[^\s:,\[\]{}]+/, // 通用 token
         ];
 
         for (const pattern of patterns) {
@@ -472,12 +440,7 @@ export class DiagnosticRangeHelper {
         const keyStart = keyPart.indexOf(keyMatch[1]);
         const keyEnd = keyStart + keyMatch[1].length;
 
-        return new Range(
-            position.line,
-            keyStart,
-            position.line,
-            keyEnd
-        );
+        return new Range(position.line, keyStart, position.line, keyEnd);
     }
 
     /**
@@ -493,7 +456,7 @@ export class DiagnosticRangeHelper {
         document: TextDocument,
         path: string,
         positionMap: Map<string, IPositionInfo>,
-        rangeType: RangeType
+        rangeType: RangeType,
     ): Range | undefined {
         const position = positionMap.get(path);
         if (!position) {

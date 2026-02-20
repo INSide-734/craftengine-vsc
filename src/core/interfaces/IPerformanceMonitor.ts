@@ -114,7 +114,10 @@ export interface IPerformanceMonitor {
     /**
      * 获取所有操作的统计信息（按操作名称索引）
      */
-    getAllOperationStatistics(): Record<string, { count: number; totalTime: number; minTime: number; maxTime: number; errors: number }>;
+    getAllOperationStatistics(): Record<
+        string,
+        { count: number; totalTime: number; minTime: number; maxTime: number; errors: number }
+    >;
 
     /**
      * 清除统计数据

@@ -1,7 +1,7 @@
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../core/interfaces/IConfiguration';
-import { IDataStoreService } from '../../../core/interfaces/IDataStoreService';
-import { IFileWatcher } from '../../../core/interfaces/IFileWatcher';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../core/interfaces/IConfiguration';
+import { type IDataStoreService } from '../../../core/interfaces/IDataStoreService';
+import { type IFileWatcher } from '../../../core/interfaces/IFileWatcher';
 import { ExtensionState } from '../../../core/interfaces/IExtensionService';
 
 /**
@@ -16,7 +16,7 @@ export class ExtensionHealthChecker {
         private readonly logger: ILogger,
         private readonly configuration: IConfiguration,
         private readonly dataStoreService: IDataStoreService,
-        private readonly fileWatcher: IFileWatcher
+        private readonly fileWatcher: IFileWatcher,
     ) {}
 
     /**
@@ -49,7 +49,6 @@ export class ExtensionHealthChecker {
 
             this.logger.debug('Health check passed');
             return true;
-
         } catch (error) {
             this.logger.error('Health check failed', error as Error);
             return false;
@@ -70,7 +69,7 @@ export class ExtensionHealthChecker {
     private checkState(currentState: ExtensionState): boolean {
         if (currentState !== ExtensionState.Active) {
             this.logger.warn('Health check failed: extension not active', {
-                currentState
+                currentState,
             });
             return false;
         }
@@ -84,13 +83,13 @@ export class ExtensionHealthChecker {
         const services = [
             { name: 'dataStoreService', instance: this.dataStoreService },
             { name: 'fileWatcher', instance: this.fileWatcher },
-            { name: 'configuration', instance: this.configuration }
+            { name: 'configuration', instance: this.configuration },
         ];
 
         for (const service of services) {
             if (!service.instance) {
                 this.logger.warn('Health check failed: service not available', {
-                    service: service.name
+                    service: service.name,
                 });
                 return false;
             }
@@ -113,7 +112,7 @@ export class ExtensionHealthChecker {
                 templateCount: stats.templateCount,
                 translationKeyCount: stats.translationKeyCount,
                 indexedFileCount: stats.indexedFileCount,
-                languageCount: stats.languageCount
+                languageCount: stats.languageCount,
             });
         }
     }
@@ -126,7 +125,7 @@ export class ExtensionHealthChecker {
 
         if (validationErrors.length > 0) {
             this.logger.warn('Health check warning: configuration validation errors', {
-                errors: validationErrors
+                errors: validationErrors,
             });
         }
     }

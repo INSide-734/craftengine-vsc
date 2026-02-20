@@ -1,4 +1,4 @@
-import { EditorPosition, EditorRange, EditorTextDocument } from '../types/EditorTypes';
+import { type EditorPosition, type EditorRange, type EditorTextDocument } from '../types/EditorTypes';
 
 /**
  * 位置信息接口

@@ -12,20 +12,20 @@
  */
 
 import { Uri } from 'vscode';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IConfiguration } from '../../core/interfaces/IConfiguration';
-import { IDataStoreService } from '../../core/interfaces/IDataStoreService';
-import { IModelGenerator, IMinecraftModelJson } from '../../core/interfaces/IModelGenerator';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../core/interfaces/IConfiguration';
+import { type IDataStoreService } from '../../core/interfaces/IDataStoreService';
+import { type IModelGenerator, type IMinecraftModelJson } from '../../core/interfaces/IModelGenerator';
 import {
-    IModelPreviewService,
-    PreviewOptions,
-    PreviewResult,
+    type IModelPreviewService,
+    type PreviewOptions,
+    type PreviewResult,
 } from '../../core/interfaces/IModelPreviewService';
-import { ITemplateExpander } from '../../core/interfaces/ITemplateExpander';
-import { IRendererAdapter } from '../../core/interfaces/IRendererAdapter';
-import { IYamlParser } from '../../core/interfaces/IYamlParser';
-import { IResourcePackDiscovery } from '../../core/interfaces/IResourcePackDiscovery';
-import { IWorkspaceService } from '../../core/interfaces/IWorkspaceService';
+import { type ITemplateExpander } from '../../core/interfaces/ITemplateExpander';
+import { type IRendererAdapter } from '../../core/interfaces/IRendererAdapter';
+import { type IYamlParser } from '../../core/interfaces/IYamlParser';
+import { type IResourcePackDiscovery } from '../../core/interfaces/IResourcePackDiscovery';
+import { type IWorkspaceService } from '../../core/interfaces/IWorkspaceService';
 import { ITEM_SECTION_KEYS } from '../../core/constants/ExtensionConstants';
 
 // ============================================
@@ -57,7 +57,7 @@ export class ModelPreviewService implements IModelPreviewService {
         yamlParser: IYamlParser,
         templateExpander: ITemplateExpander,
         workspaceService: IWorkspaceService,
-        resourcePackDiscovery?: IResourcePackDiscovery
+        resourcePackDiscovery?: IResourcePackDiscovery,
     ) {
         this.logger = logger.createChild('ModelPreviewService');
         this.configuration = configuration;
@@ -196,10 +196,7 @@ export class ModelPreviewService implements IModelPreviewService {
     /**
      * 预览自定义模型 JSON
      */
-    async previewCustomModel(
-        modelJson: IMinecraftModelJson,
-        options?: PreviewOptions
-    ): Promise<PreviewResult> {
+    async previewCustomModel(modelJson: IMinecraftModelJson, options?: PreviewOptions): Promise<PreviewResult> {
         try {
             this.logger.info('Starting custom model preview', {
                 parent: modelJson.parent,
@@ -265,7 +262,7 @@ export class ModelPreviewService implements IModelPreviewService {
         this.logger.info('Initializing renderer with options', {
             resourcePacks: mergedOptions.resourcePacks,
             useInternalResources: mergedOptions.useInternalResources,
-            renderSize: mergedOptions.renderSize
+            renderSize: mergedOptions.renderSize,
         });
 
         await this.rendererAdapter.initialize(mergedOptions);
@@ -276,18 +273,9 @@ export class ModelPreviewService implements IModelPreviewService {
      */
     private getMergedOptions(options?: PreviewOptions): PreviewOptions {
         // 从配置中读取默认值
-        const configResourcePacks = this.configuration.get<string[]>(
-            'craftengine.preview.resourcePacks',
-            []
-        );
-        const configUseInternal = this.configuration.get<boolean>(
-            'craftengine.preview.useInternalResources',
-            true
-        );
-        const configRenderSize = this.configuration.get<number>(
-            'craftengine.preview.renderSize',
-            256
-        );
+        const configResourcePacks = this.configuration.get<string[]>('craftengine.preview.resourcePacks', []);
+        const configUseInternal = this.configuration.get<boolean>('craftengine.preview.useInternalResources', true);
+        const configRenderSize = this.configuration.get<number>('craftengine.preview.renderSize', 256);
 
         // 解析资源包路径（支持相对路径）
         let resourcePacks = options?.resourcePacks ?? configResourcePacks;
@@ -317,7 +305,7 @@ export class ModelPreviewService implements IModelPreviewService {
         }
 
         const packs = this.resourcePackDiscovery.discoverInWorkspace();
-        const discovered = packs.map(pack => pack.path);
+        const discovered = packs.map((pack) => pack.path);
 
         if (discovered.length > 0) {
             this.logger.info('Discovered resource packs', {
@@ -358,10 +346,7 @@ export class ModelPreviewService implements IModelPreviewService {
      * @param itemId - 物品 ID（命名空间:物品名）
      * @returns 物品配置对象
      */
-    private async loadItemConfig(
-        sourceFile: string,
-        itemId: string
-    ): Promise<unknown | undefined> {
+    private async loadItemConfig(sourceFile: string, itemId: string): Promise<unknown | undefined> {
         try {
             const uri = Uri.file(sourceFile);
             const document = await this.workspaceService.openTextDocument(uri);
@@ -390,7 +375,7 @@ export class ModelPreviewService implements IModelPreviewService {
                     if (itemConfig && typeof itemConfig === 'object') {
                         this.logger.debug('Found item config', {
                             itemId,
-                            section: sectionKey
+                            section: sectionKey,
                         });
 
                         // blocks 节点的模型配置在 state.model 下
@@ -420,7 +405,7 @@ export class ModelPreviewService implements IModelPreviewService {
             this.logger.warn('Item config not found in any section', {
                 itemId,
                 sourceFile,
-                availableSections: Object.keys(root).filter(k => sectionKeys.includes(k))
+                availableSections: Object.keys(root).filter((k) => sectionKeys.includes(k)),
             });
             return undefined;
         } catch (error) {
@@ -447,19 +432,19 @@ export class ModelPreviewService implements IModelPreviewService {
             const modelObj = configObj.model as Record<string, unknown>;
             if (modelObj.template) {
                 this.logger.debug('Expanding model template', {
-                    template: modelObj.template
+                    template: modelObj.template,
                 });
 
                 // 使用 TemplateExpander 展开模板
                 const expansionResult = await this.templateExpander.expandObject(modelObj);
                 if (expansionResult.success) {
                     this.logger.debug('Template expanded successfully', {
-                        usedTemplates: expansionResult.usedTemplates
+                        usedTemplates: expansionResult.usedTemplates,
                     });
                     return { ...configObj, model: expansionResult.expanded };
                 } else {
                     this.logger.warn('Template expansion failed', {
-                        errors: expansionResult.errors.map(e => e.message)
+                        errors: expansionResult.errors.map((e) => e.message),
                     });
                     // 展开失败时返回原始配置
                     return config;

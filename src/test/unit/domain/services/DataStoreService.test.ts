@@ -12,15 +12,15 @@
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { DataStoreService } from '../../../../domain/services/DataStoreService';
-import { ITemplate, ITemplateParameter } from '../../../../core/interfaces/ITemplate';
-import { ITranslationKey } from '../../../../core/interfaces/ITranslation';
-import { IItemId, ItemType } from '../../../../core/interfaces/IItemId';
-import { ICategory } from '../../../../core/interfaces/ICategory';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../../core/interfaces/IEventBus';
-import { IYamlScanner, IYamlScanResult } from '../../../../core/interfaces/IYamlScanner';
-import { IYamlParser } from '../../../../core/interfaces/IYamlParser';
-import { IFileReader } from '../../../../core/interfaces/IFileReader';
+import { type ITemplate, type ITemplateParameter } from '../../../../core/interfaces/ITemplate';
+import { type ITranslationKey } from '../../../../core/interfaces/ITranslation';
+import { type IItemId, type ItemType } from '../../../../core/interfaces/IItemId';
+import { type ICategory } from '../../../../core/interfaces/ICategory';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../../core/interfaces/IEventBus';
+import { type IYamlScanner, type IYamlScanResult } from '../../../../core/interfaces/IYamlScanner';
+import { type IYamlParser } from '../../../../core/interfaces/IYamlParser';
+import { type IFileReader } from '../../../../core/interfaces/IFileReader';
 import { Uri, Position } from 'vscode';
 import { Template } from '../../../../domain/entities/Template';
 
@@ -33,31 +33,33 @@ describe('DataStoreService', () => {
     let mockFileReader: IFileReader;
 
     // 辅助函数：创建测试模板
-    const createTestTemplate = (overrides: Partial<{
-        id: string;
-        name: string;
-        parameters: ITemplateParameter[];
-        sourceFile: Uri;
-    }> = {}): ITemplate => {
+    const createTestTemplate = (
+        overrides: Partial<{
+            id: string;
+            name: string;
+            parameters: ITemplateParameter[];
+            sourceFile: Uri;
+        }> = {},
+    ): ITemplate => {
         return new Template({
             id: overrides.id ?? `tpl-${Date.now()}-${Math.random()}`,
             name: overrides.name ?? 'test:template',
-            parameters: overrides.parameters ?? [
-                { name: 'param1', required: true },
-            ],
+            parameters: overrides.parameters ?? [{ name: 'param1', required: true }],
             sourceFile: overrides.sourceFile ?? Uri.file('/test/templates.yaml'),
             definitionPosition: new Position(0, 0),
         });
     };
 
     // 辅助函数：创建测试翻译键
-    const createTestTranslationKey = (overrides: Partial<{
-        key: string;
-        fullPath: string;
-        languageCode: string;
-        value: string;
-        sourceFile: string;
-    }> = {}): ITranslationKey => {
+    const createTestTranslationKey = (
+        overrides: Partial<{
+            key: string;
+            fullPath: string;
+            languageCode: string;
+            value: string;
+            sourceFile: string;
+        }> = {},
+    ): ITranslationKey => {
         const key = overrides.key ?? 'test.key';
         const languageCode = overrides.languageCode ?? 'en';
         return {
@@ -70,13 +72,15 @@ describe('DataStoreService', () => {
     };
 
     // 辅助函数：创建测试物品 ID
-    const createTestItem = (overrides: Partial<{
-        id: string;
-        namespace: string;
-        name: string;
-        type: ItemType;
-        sourceFile: string;
-    }> = {}): IItemId => {
+    const createTestItem = (
+        overrides: Partial<{
+            id: string;
+            namespace: string;
+            name: string;
+            type: ItemType;
+            sourceFile: string;
+        }> = {},
+    ): IItemId => {
         const namespace = overrides.namespace ?? 'mypack';
         const name = overrides.name ?? 'test_item';
         return {
@@ -89,12 +93,14 @@ describe('DataStoreService', () => {
     };
 
     // 辅助函数：创建测试分类
-    const createTestCategory = (overrides: Partial<{
-        id: string;
-        namespace: string;
-        name: string;
-        sourceFile: string;
-    }> = {}): ICategory => {
+    const createTestCategory = (
+        overrides: Partial<{
+            id: string;
+            namespace: string;
+            name: string;
+            sourceFile: string;
+        }> = {},
+    ): ICategory => {
         const namespace = overrides.namespace ?? 'mypack';
         const name = overrides.name ?? 'test_category';
         return {
@@ -129,19 +135,23 @@ describe('DataStoreService', () => {
         } as unknown as IEventBus;
 
         mockYamlScanner = {
-            scanWorkspace: vi.fn(() => Promise.resolve({
-                files: [],
-                documents: [],
-                failed: [],
-                statistics: { totalFiles: 0, successCount: 0, failureCount: 0, successRate: 1, duration: 0 }
-            } as IYamlScanResult)),
+            scanWorkspace: vi.fn(() =>
+                Promise.resolve({
+                    files: [],
+                    documents: [],
+                    failed: [],
+                    statistics: { totalFiles: 0, successCount: 0, failureCount: 0, successRate: 1, duration: 0 },
+                } as IYamlScanResult),
+            ),
         } as unknown as IYamlScanner;
 
         mockYamlParser = {
-            parseText: vi.fn(() => Promise.resolve({
-                result: {},
-                errors: [],
-            })),
+            parseText: vi.fn(() =>
+                Promise.resolve({
+                    result: {},
+                    errors: [],
+                }),
+            ),
             parseDocument: vi.fn(),
         } as unknown as IYamlParser;
 
@@ -178,13 +188,8 @@ describe('DataStoreService', () => {
             it('should log initialization info', async () => {
                 await service.initialize();
 
-                expect(mockLogger.info).toHaveBeenCalledWith(
-                    'Initializing data store service...'
-                );
-                expect(mockLogger.info).toHaveBeenCalledWith(
-                    'Data store initialized',
-                    expect.any(Object)
-                );
+                expect(mockLogger.info).toHaveBeenCalledWith('Initializing data store service...');
+                expect(mockLogger.info).toHaveBeenCalledWith('Data store initialized', expect.any(Object));
             });
         });
 
@@ -358,16 +363,20 @@ describe('DataStoreService', () => {
         describe('removeTemplatesByFile', () => {
             it('should remove all templates from file', async () => {
                 const file = Uri.file('/test/batch.yaml');
-                await service.addTemplate(createTestTemplate({
-                    id: 'tpl-1',
-                    name: 'test:template1',
-                    sourceFile: file
-                }));
-                await service.addTemplate(createTestTemplate({
-                    id: 'tpl-2',
-                    name: 'test:template2',
-                    sourceFile: file
-                }));
+                await service.addTemplate(
+                    createTestTemplate({
+                        id: 'tpl-1',
+                        name: 'test:template1',
+                        sourceFile: file,
+                    }),
+                );
+                await service.addTemplate(
+                    createTestTemplate({
+                        id: 'tpl-2',
+                        name: 'test:template2',
+                        sourceFile: file,
+                    }),
+                );
 
                 await service.removeTemplatesByFile(file);
 
@@ -422,14 +431,18 @@ describe('DataStoreService', () => {
 
         describe('getTranslationKeysByLanguage', () => {
             it('should return keys by language', async () => {
-                await service.addTranslationKey(createTestTranslationKey({
-                    languageCode: 'en',
-                    fullPath: 'en.key1'
-                }));
-                await service.addTranslationKey(createTestTranslationKey({
-                    languageCode: 'zh_cn',
-                    fullPath: 'zh_cn.key1'
-                }));
+                await service.addTranslationKey(
+                    createTestTranslationKey({
+                        languageCode: 'en',
+                        fullPath: 'en.key1',
+                    }),
+                );
+                await service.addTranslationKey(
+                    createTestTranslationKey({
+                        languageCode: 'zh_cn',
+                        fullPath: 'zh_cn.key1',
+                    }),
+                );
 
                 const enKeys = await service.getTranslationKeysByLanguage('en');
 
@@ -440,18 +453,24 @@ describe('DataStoreService', () => {
 
         describe('searchTranslationKeys', () => {
             it('should search by prefix', async () => {
-                await service.addTranslationKey(createTestTranslationKey({
-                    key: 'item.sword',
-                    fullPath: 'en.item.sword'
-                }));
-                await service.addTranslationKey(createTestTranslationKey({
-                    key: 'item.shield',
-                    fullPath: 'en.item.shield'
-                }));
-                await service.addTranslationKey(createTestTranslationKey({
-                    key: 'message.welcome',
-                    fullPath: 'en.message.welcome'
-                }));
+                await service.addTranslationKey(
+                    createTestTranslationKey({
+                        key: 'item.sword',
+                        fullPath: 'en.item.sword',
+                    }),
+                );
+                await service.addTranslationKey(
+                    createTestTranslationKey({
+                        key: 'item.shield',
+                        fullPath: 'en.item.shield',
+                    }),
+                );
+                await service.addTranslationKey(
+                    createTestTranslationKey({
+                        key: 'message.welcome',
+                        fullPath: 'en.message.welcome',
+                    }),
+                );
 
                 const results = await service.searchTranslationKeys('item.');
 
@@ -461,9 +480,11 @@ describe('DataStoreService', () => {
 
         describe('removeTranslationKey', () => {
             it('should remove key by fullPath', async () => {
-                await service.addTranslationKey(createTestTranslationKey({
-                    fullPath: 'en.item.sword'
-                }));
+                await service.addTranslationKey(
+                    createTestTranslationKey({
+                        fullPath: 'en.item.sword',
+                    }),
+                );
 
                 await service.removeTranslationKey('en.item.sword');
 
@@ -517,14 +538,18 @@ describe('DataStoreService', () => {
 
         describe('getItemsByNamespace', () => {
             it('should return items by namespace', async () => {
-                await service.addItem(createTestItem({
-                    id: 'mypack:sword',
-                    namespace: 'mypack'
-                }));
-                await service.addItem(createTestItem({
-                    id: 'other:item',
-                    namespace: 'other'
-                }));
+                await service.addItem(
+                    createTestItem({
+                        id: 'mypack:sword',
+                        namespace: 'mypack',
+                    }),
+                );
+                await service.addItem(
+                    createTestItem({
+                        id: 'other:item',
+                        namespace: 'other',
+                    }),
+                );
 
                 const items = await service.getItemsByNamespace('mypack');
 
@@ -601,14 +626,18 @@ describe('DataStoreService', () => {
 
         describe('getCategoriesByNamespace', () => {
             it('should return categories by namespace', async () => {
-                await service.addCategory(createTestCategory({
-                    id: '#mypack:weapons',
-                    namespace: 'mypack'
-                }));
-                await service.addCategory(createTestCategory({
-                    id: '#other:tools',
-                    namespace: 'other'
-                }));
+                await service.addCategory(
+                    createTestCategory({
+                        id: '#mypack:weapons',
+                        namespace: 'mypack',
+                    }),
+                );
+                await service.addCategory(
+                    createTestCategory({
+                        id: '#other:tools',
+                        namespace: 'other',
+                    }),
+                );
 
                 const categories = await service.getCategoriesByNamespace('mypack');
 
@@ -664,14 +693,18 @@ describe('DataStoreService', () => {
 
         describe('getSupportedLanguages', () => {
             it('should return list of languages', async () => {
-                await service.addTranslationKey(createTestTranslationKey({
-                    languageCode: 'en',
-                    fullPath: 'en.key1'
-                }));
-                await service.addTranslationKey(createTestTranslationKey({
-                    languageCode: 'zh_cn',
-                    fullPath: 'zh_cn.key1'
-                }));
+                await service.addTranslationKey(
+                    createTestTranslationKey({
+                        languageCode: 'en',
+                        fullPath: 'en.key1',
+                    }),
+                );
+                await service.addTranslationKey(
+                    createTestTranslationKey({
+                        languageCode: 'zh_cn',
+                        fullPath: 'zh_cn.key1',
+                    }),
+                );
 
                 const languages = await service.getSupportedLanguages();
 
@@ -750,10 +783,12 @@ describe('DataStoreService', () => {
         });
 
         it('should implement searchKeys', async () => {
-            await service.addKey(createTestTranslationKey({
-                key: 'item.sword',
-                fullPath: 'en.item.sword'
-            }));
+            await service.addKey(
+                createTestTranslationKey({
+                    key: 'item.sword',
+                    fullPath: 'en.item.sword',
+                }),
+            );
 
             const results = await service.searchKeys('item.');
 

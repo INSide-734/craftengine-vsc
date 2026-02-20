@@ -1,23 +1,31 @@
-import { EditorUri } from '../../core/types/EditorTypes';
+import { type EditorUri } from '../../core/types/EditorTypes';
 import {
-    IDataStoreService,
-    ITemplateQuery,
-    ITranslationQuery,
-    IQueryResult,
-    IDataStoreStatistics
+    type IDataStoreService,
+    type ITemplateQuery,
+    type ITranslationQuery,
+    type IQueryResult,
+    type IDataStoreStatistics,
 } from '../../core/interfaces/IDataStoreService';
-import { IDataStoreLifecycle } from '../../core/interfaces/IDataStoreLifecycle';
-import { ITemplate } from '../../core/interfaces/ITemplate';
-import { ITranslationKey, ITranslationRepository, ITranslationReference } from '../../core/interfaces/ITranslation';
-import { IItemId, IItemIdRepository, IBuiltinItemLoader } from '../../core/interfaces/IItemId';
-import { ICategory, ICategoryRepository } from '../../core/interfaces/ICategory';
-import { ITemplateRepository, ITemplateQueryResult, ITemplateStatistics } from '../../core/interfaces/ITemplateRepository';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IEventBus } from '../../core/interfaces/IEventBus';
-import { IFileReader } from '../../core/interfaces/IFileReader';
-import { IYamlScanner, IYamlScanResult } from '../../core/interfaces/IYamlScanner';
-import { IYamlParser } from '../../core/interfaces/IYamlParser';
-import { IYamlScanOptions } from '../../core/interfaces/IYamlScanner';
+import { type IDataStoreLifecycle } from '../../core/interfaces/IDataStoreLifecycle';
+import { type ITemplate } from '../../core/interfaces/ITemplate';
+import {
+    type ITranslationKey,
+    type ITranslationRepository,
+    type ITranslationReference,
+} from '../../core/interfaces/ITranslation';
+import { type IItemId, type IItemIdRepository, type IBuiltinItemLoader } from '../../core/interfaces/IItemId';
+import { type ICategory, type ICategoryRepository } from '../../core/interfaces/ICategory';
+import {
+    type ITemplateRepository,
+    type ITemplateQueryResult,
+    type ITemplateStatistics,
+} from '../../core/interfaces/ITemplateRepository';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IEventBus } from '../../core/interfaces/IEventBus';
+import { type IFileReader } from '../../core/interfaces/IFileReader';
+import { type IYamlScanner, type IYamlScanResult } from '../../core/interfaces/IYamlScanner';
+import { type IYamlParser } from '../../core/interfaces/IYamlParser';
+import { type IYamlScanOptions } from '../../core/interfaces/IYamlScanner';
 import { FileIndexingOrchestrator } from './stores/FileIndexingOrchestrator';
 import { DataStoreStatisticsCollector } from './stores/DataStoreStatisticsCollector';
 
@@ -28,7 +36,15 @@ import { DataStoreStatisticsCollector } from './stores/DataStoreStatisticsCollec
  * 将统计收集委托给 DataStoreStatisticsCollector，
  * 自身作为门面提供统一的查询和变更 API。
  */
-export class DataStoreService implements IDataStoreService, IDataStoreLifecycle, ITemplateRepository, ITranslationRepository, IItemIdRepository, ICategoryRepository {
+export class DataStoreService
+    implements
+        IDataStoreService,
+        IDataStoreLifecycle,
+        ITemplateRepository,
+        ITranslationRepository,
+        IItemIdRepository,
+        ICategoryRepository
+{
     private readonly orchestrator: FileIndexingOrchestrator;
     private readonly statistics: DataStoreStatisticsCollector;
 
@@ -39,19 +55,24 @@ export class DataStoreService implements IDataStoreService, IDataStoreLifecycle,
         yamlParser: IYamlParser,
         fileReader: IFileReader,
         scanResultProvider?: { getScanResult(options: IYamlScanOptions): Promise<IYamlScanResult> },
-        builtinItemLoader?: IBuiltinItemLoader
+        builtinItemLoader?: IBuiltinItemLoader,
     ) {
         const childLogger = logger.createChild('DataStoreService');
         this.orchestrator = new FileIndexingOrchestrator(
-            childLogger, yamlScanner, yamlParser, fileReader,
-            scanResultProvider, builtinItemLoader, eventBus
+            childLogger,
+            yamlScanner,
+            yamlParser,
+            fileReader,
+            scanResultProvider,
+            builtinItemLoader,
+            eventBus,
         );
         this.statistics = new DataStoreStatisticsCollector(
             this.orchestrator.templateStore,
             this.orchestrator.translationStore,
             this.orchestrator.itemStore,
             this.orchestrator.categoryStore,
-            () => this.orchestrator.isInitialized()
+            () => this.orchestrator.isInitialized(),
         );
     }
 

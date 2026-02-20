@@ -1,10 +1,10 @@
 import { BaseCompletionProvider } from './providers/BaseCompletionProvider';
-import { ILogger } from '../core/interfaces/ILogger';
-import { IDelegateStrategyRegistry } from '../core/interfaces/IDelegateStrategyRegistry';
-import { ICompletionStrategy } from '../core/interfaces/ICompletionStrategy';
+import { type ILogger } from '../core/interfaces/ILogger';
+import { type IDelegateStrategyRegistry } from '../core/interfaces/IDelegateStrategyRegistry';
+import { type ICompletionStrategy } from '../core/interfaces/ICompletionStrategy';
 import { SERVICE_TOKENS } from '../core/constants/ServiceTokens';
 import { ServiceContainer } from '../infrastructure/ServiceContainer';
-import { CompletionManager } from '../infrastructure/completion/CompletionManager';
+import { type CompletionManager } from '../infrastructure/completion/CompletionManager';
 import { ServiceNotInitializedError } from '../core/errors/ExtensionErrors';
 import { SchemaAwareCompletionStrategy } from './strategies/SchemaAwareCompletionStrategy';
 import { SchemaKeyCompletionStrategy } from './strategies/SchemaKeyCompletionStrategy';
@@ -44,8 +44,12 @@ export class UnifiedCompletionProvider {
 
     constructor() {
         this.completionManager = ServiceContainer.getService<CompletionManager>(SERVICE_TOKENS.CompletionManager);
-        this.delegateRegistry = ServiceContainer.getService<IDelegateStrategyRegistry>(SERVICE_TOKENS.DelegateStrategyRegistry);
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild('UnifiedCompletionProvider');
+        this.delegateRegistry = ServiceContainer.getService<IDelegateStrategyRegistry>(
+            SERVICE_TOKENS.DelegateStrategyRegistry,
+        );
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(
+            'UnifiedCompletionProvider',
+        );
     }
 
     /**
@@ -59,12 +63,12 @@ export class UnifiedCompletionProvider {
         this.completionProvider = new BaseCompletionProvider();
 
         this.logger.info('Unified completion system initialized', {
-            strategies: this.completionManager.getStrategies().map(s => ({
+            strategies: this.completionManager.getStrategies().map((s) => ({
                 name: s.name,
                 priority: s.priority,
-                triggers: s.triggerCharacters
+                triggers: s.triggerCharacters,
             })),
-            delegateProviders: this.delegateRegistry.listProviders()
+            delegateProviders: this.delegateRegistry.listProviders(),
         });
     }
 
@@ -87,8 +91,8 @@ export class UnifiedCompletionProvider {
      */
     private registerMainStrategies(): void {
         const strategies: ICompletionStrategy[] = [
-            new SchemaAwareCompletionStrategy(),  // 优先级 90
-            new SchemaKeyCompletionStrategy(),     // 优先级 85
+            new SchemaAwareCompletionStrategy(), // 优先级 90
+            new SchemaKeyCompletionStrategy(), // 优先级 85
         ];
 
         for (const strategy of strategies) {
@@ -96,7 +100,7 @@ export class UnifiedCompletionProvider {
             this.logger.info('Main completion strategy registered', {
                 name: strategy.name,
                 priority: strategy.priority,
-                triggerCharacters: strategy.triggerCharacters
+                triggerCharacters: strategy.triggerCharacters,
             });
         }
     }

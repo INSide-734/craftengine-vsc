@@ -2,7 +2,7 @@
  * 快速修复提供者接口
  */
 
-import { CodeAction, Diagnostic, TextDocument } from 'vscode';
+import { type CodeAction, type Diagnostic, type TextDocument } from 'vscode';
 
 /**
  * 快速修复提供者接口

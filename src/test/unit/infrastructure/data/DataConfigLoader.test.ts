@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
-import { ILogger } from '../../../../core/interfaces/ILogger.js';
+import { type ILogger } from '../../../../core/interfaces/ILogger.js';
 import { ServiceContainer } from '../../../../infrastructure/ServiceContainer.js';
 import { SERVICE_TOKENS } from '../../../../core/constants/ServiceTokens.js';
 
@@ -8,12 +8,12 @@ import { SERVICE_TOKENS } from '../../../../core/constants/ServiceTokens.js';
 vi.mock('fs', () => ({
     existsSync: vi.fn(),
     constants: {
-        R_OK: 4
+        R_OK: 4,
     },
     promises: {
         readFile: vi.fn(),
-        access: vi.fn()
-    }
+        access: vi.fn(),
+    },
 }));
 
 // Mock path 模块
@@ -22,7 +22,7 @@ vi.mock('path', async (importOriginal) => {
     return {
         ...actual,
         join: vi.fn((...args: string[]) => args.join('/')),
-        resolve: vi.fn((...args: string[]) => args.join('/'))
+        resolve: vi.fn((...args: string[]) => args.join('/')),
     };
 });
 
@@ -50,7 +50,7 @@ describe('DataConfigLoader', () => {
         network: {
             requestTimeout: 10000,
             retryAttempts: 3,
-            retryDelayMs: 1000
+            retryDelayMs: 1000,
         },
         sources: {
             minecraftAssets: {
@@ -59,14 +59,14 @@ describe('DataConfigLoader', () => {
                 mirrors: ['https://mirror1.com', 'https://mirror2.com'],
                 endpoints: {
                     builtinItems: '{version}/items.json',
-                    sounds: '{version}/sounds.json'
-                }
-            }
+                    sounds: '{version}/sounds.json',
+                },
+            },
         },
         builtinSource: {
             identifier: '<test:builtin>',
-            description: 'Test builtin'
-        }
+            description: 'Test builtin',
+        },
     };
 
     // Mock 补全优先级配置
@@ -77,18 +77,18 @@ describe('DataConfigLoader', () => {
         strategies: {
             main: {
                 schemaAware: { name: 'Schema Aware', priority: 90, description: '' },
-                schemaKey: { name: 'Schema Key', priority: 85, description: '' }
+                schemaKey: { name: 'Schema Key', priority: 85, description: '' },
             },
             delegates: {
                 filePath: { name: 'File Path', priority: 75, description: '' },
-                templateName: { name: 'Template Name', priority: 80, description: '' }
-            }
+                templateName: { name: 'Template Name', priority: 80, description: '' },
+            },
         },
         priorityCalculation: {
             baseValue: 100,
-            adjustments: { nonRequiredProperty: -50 }
+            adjustments: { nonRequiredProperty: -50 },
         },
-        sortOrder: { required: 0, optional: 1 }
+        sortOrder: { required: 0, optional: 1 },
     };
 
     // Mock 性能配置
@@ -100,28 +100,28 @@ describe('DataConfigLoader', () => {
             maxFileSize: 5242880,
             maxFileSizeDescription: '5MB',
             rotationStrategy: 'timestamp-based',
-            appendMode: true
+            appendMode: true,
         },
         network: {
             requestTimeout: 5000,
             retryAttempts: 2,
-            retryDelayMs: 500
+            retryDelayMs: 500,
         },
         completion: {
             debounceMs: 300,
             maxResultsPerStrategy: 50,
-            cacheHitRateTarget: 0.9
+            cacheHitRateTarget: 0.9,
         },
         performance: {
             activationTimeoutMs: 1500,
             completionResponseTimeMs: 80,
             hoverResponseTimeMs: 40,
-            diagnosticUpdateMs: 400
+            diagnosticUpdateMs: 400,
         },
         batch: {
             tagLoadBatchSize: 5,
-            maxConcurrentRequests: 3
-        }
+            maxConcurrentRequests: 3,
+        },
     };
 
     // Mock 扩展类型配置
@@ -136,17 +136,15 @@ describe('DataConfigLoader', () => {
                 requiredProperties: ['type', 'condition'],
                 optionalProperties: [],
                 propertyTypes: { type: 'string' },
-                example: 'type: condition'
-            }
+                example: 'type: condition',
+            },
         },
         propertyDefinitions: {
-            condition: [
-                { name: 'type', description: 'Type', type: 'string' }
-            ]
+            condition: [{ name: 'type', description: 'Type', type: 'string' }],
         },
         snippets: {
-            condition: 'type: condition'
-        }
+            condition: 'type: condition',
+        },
     };
 
     beforeEach(() => {
@@ -161,7 +159,7 @@ describe('DataConfigLoader', () => {
             fatal: vi.fn(),
             createChild: vi.fn().mockReturnThis(),
             setLevel: vi.fn(),
-            getLevel: vi.fn().mockReturnValue('INFO')
+            getLevel: vi.fn().mockReturnValue('INFO'),
         };
 
         // Mock ServiceContainer
@@ -180,14 +178,10 @@ describe('DataConfigLoader', () => {
     describe('loadDataSourcesConfig', () => {
         it('should load data sources config from file', async () => {
             // 动态导入以确保 mock 生效
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockDataSourcesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockDataSourcesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
             const config = await loader.loadDataSourcesConfig();
@@ -198,9 +192,8 @@ describe('DataConfigLoader', () => {
         });
 
         it('should throw error when file not found', async () => {
-            const { DataConfigLoader, ConfigLoadError } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader, ConfigLoadError } =
+                await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.readFile).mockRejectedValue(new Error('ENOENT'));
 
@@ -211,14 +204,10 @@ describe('DataConfigLoader', () => {
         });
 
         it('should cache config after first load', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockDataSourcesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockDataSourcesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
 
@@ -234,14 +223,10 @@ describe('DataConfigLoader', () => {
 
     describe('loadCompletionPrioritiesConfig', () => {
         it('should load completion priorities config', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockCompletionPrioritiesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockCompletionPrioritiesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
             const config = await loader.loadCompletionPrioritiesConfig();
@@ -253,14 +238,10 @@ describe('DataConfigLoader', () => {
 
     describe('loadPerformanceConfig', () => {
         it('should load performance config', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockPerformanceConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockPerformanceConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
             const config = await loader.loadPerformanceConfig();
@@ -272,14 +253,10 @@ describe('DataConfigLoader', () => {
 
     describe('loadExtendedTypesConfig', () => {
         it('should load extended types config', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockExtendedTypesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockExtendedTypesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
             const config = await loader.loadExtendedTypesConfig();
@@ -291,21 +268,13 @@ describe('DataConfigLoader', () => {
 
     describe('getDataSourceUrls', () => {
         it('should build URLs with version parameter', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockDataSourcesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockDataSourcesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
-            const urls = await loader.getDataSourceUrls(
-                'minecraftAssets',
-                'builtinItems',
-                { version: '1.21.4' }
-            );
+            const urls = await loader.getDataSourceUrls('minecraftAssets', 'builtinItems', { version: '1.21.4' });
 
             expect(urls).toHaveLength(3); // primary + 2 mirrors
             expect(urls[0]).toBe('https://example.com/primary/1.21.4/items.json');
@@ -314,14 +283,10 @@ describe('DataConfigLoader', () => {
         });
 
         it('should return empty array for unknown source', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockDataSourcesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockDataSourcesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
             const urls = await loader.getDataSourceUrls('unknownSource', 'endpoint');
@@ -333,14 +298,10 @@ describe('DataConfigLoader', () => {
 
     describe('getCompletionPriority', () => {
         it('should return priority for main strategy', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockCompletionPrioritiesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockCompletionPrioritiesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
             const priority = await loader.getCompletionPriority('schemaAware', false);
@@ -349,14 +310,10 @@ describe('DataConfigLoader', () => {
         });
 
         it('should return priority for delegate strategy', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockCompletionPrioritiesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockCompletionPrioritiesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
             const priority = await loader.getCompletionPriority('templateName', true);
@@ -365,14 +322,10 @@ describe('DataConfigLoader', () => {
         });
 
         it('should return default priority for unknown strategy', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockCompletionPrioritiesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockCompletionPrioritiesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
             const priority = await loader.getCompletionPriority('unknownStrategy', true);
@@ -383,14 +336,10 @@ describe('DataConfigLoader', () => {
 
     describe('getRequestTimeout', () => {
         it('should return request timeout from config', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockPerformanceConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockPerformanceConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
             const timeout = await loader.getRequestTimeout();
@@ -401,14 +350,10 @@ describe('DataConfigLoader', () => {
 
     describe('clearCache', () => {
         it('should clear all cached configs', async () => {
-            const { DataConfigLoader } = await import(
-                '../../../../infrastructure/data/DataConfigLoader.js'
-            );
+            const { DataConfigLoader } = await import('../../../../infrastructure/data/DataConfigLoader.js');
 
             vi.mocked(fs.promises.access).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readFile).mockResolvedValue(
-                JSON.stringify(mockDataSourcesConfig)
-            );
+            vi.mocked(fs.promises.readFile).mockResolvedValue(JSON.stringify(mockDataSourcesConfig));
 
             const loader = new DataConfigLoader(mockLogger as any, '/test/extension');
 

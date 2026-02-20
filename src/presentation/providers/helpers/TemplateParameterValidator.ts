@@ -4,17 +4,15 @@
  * 负责验证模板使用的正确性，包括模板存在性检查和参数验证
  */
 
+import { type TextDocument, Diagnostic, DiagnosticSeverity, DiagnosticRelatedInformation, Location } from 'vscode';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type ITemplateService } from '../../../core/interfaces/ITemplateService';
 import {
-    TextDocument,
-    Diagnostic,
-    DiagnosticSeverity,
-    DiagnosticRelatedInformation,
-    Location
-} from 'vscode';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { ITemplateService } from '../../../core/interfaces/ITemplateService';
-import { ITemplate, ITemplateParameter, TemplateParameterRecord } from '../../../core/interfaces/ITemplate';
-import { TemplateReferenceFinder, TemplateUsage } from './TemplateReferenceFinder';
+    type ITemplate,
+    type ITemplateParameter,
+    type TemplateParameterRecord,
+} from '../../../core/interfaces/ITemplate';
+import { type TemplateReferenceFinder, type TemplateUsage } from './TemplateReferenceFinder';
 
 /**
  * 模板参数验证器
@@ -29,11 +27,7 @@ export class TemplateParameterValidator {
     /** 诊断源标识 */
     private static readonly DIAGNOSTIC_SOURCE = 'CraftEngine Template';
 
-    constructor(
-        logger: ILogger,
-        templateService: ITemplateService,
-        referenceFinder: TemplateReferenceFinder
-    ) {
+    constructor(logger: ILogger, templateService: ITemplateService, referenceFinder: TemplateReferenceFinder) {
         this.logger = logger;
         this.templateService = templateService;
         this.referenceFinder = referenceFinder;
@@ -50,7 +44,7 @@ export class TemplateParameterValidator {
             if (usage.templateName.includes('${')) {
                 this.logger.debug('Skipping validation for dynamic template name', {
                     templateName: usage.templateName,
-                    line: usage.line
+                    line: usage.line,
                 });
                 return diagnostics;
             }
@@ -58,20 +52,20 @@ export class TemplateParameterValidator {
             this.logger.debug('Validating template usage', {
                 templateName: usage.templateName,
                 parameters: usage.parameters,
-                line: usage.line
+                line: usage.line,
             });
 
             // 先尝试搜索模板，使用与悬浮提示相同的方法
             const searchResults = await this.templateService.searchTemplates({
                 prefix: usage.templateName,
                 limit: 1,
-                fuzzy: false  // 精确匹配
+                fuzzy: false, // 精确匹配
             });
 
             this.logger.debug('Template search result', {
                 templateName: usage.templateName,
                 found: searchResults.length > 0,
-                exactMatch: searchResults.length > 0 && searchResults[0].template.name === usage.templateName
+                exactMatch: searchResults.length > 0 && searchResults[0].template.name === usage.templateName,
             });
 
             // 如果找不到精确匹配的模板
@@ -79,19 +73,23 @@ export class TemplateParameterValidator {
                 this.logger.warn('Template not found', {
                     templateName: usage.templateName,
                     searchResultCount: searchResults.length,
-                    firstResult: searchResults.length > 0 ? searchResults[0].template.name : 'none'
+                    firstResult: searchResults.length > 0 ? searchResults[0].template.name : 'none',
                 });
 
                 const diagnostic = new Diagnostic(
                     usage.range,
                     `Template '${usage.templateName}' not found`,
-                    DiagnosticSeverity.Error
+                    DiagnosticSeverity.Error,
                 );
                 diagnostic.source = TemplateParameterValidator.DIAGNOSTIC_SOURCE;
                 diagnostic.code = 'unknown_template';
 
                 // 添加可能的建议
-                diagnostic.relatedInformation = await this.referenceFinder.findSimilarTemplatesSuggestions(usage.templateName, document, usage.range);
+                diagnostic.relatedInformation = await this.referenceFinder.findSimilarTemplatesSuggestions(
+                    usage.templateName,
+                    document,
+                    usage.range,
+                );
 
                 diagnostics.push(diagnostic);
                 return diagnostics;
@@ -103,7 +101,7 @@ export class TemplateParameterValidator {
                 templateName: usage.templateName,
                 templateId: template.id,
                 providedParams: Object.keys(usage.parameters),
-                requiredParams: template.getRequiredParameters().map(p => p.name)
+                requiredParams: template.getRequiredParameters().map((p) => p.name),
             });
 
             // 验证模板参数
@@ -111,28 +109,30 @@ export class TemplateParameterValidator {
                 template,
                 usage.parameters,
                 usage,
-                document
+                document,
             );
             diagnostics.push(...parameterValidationResult);
-
-
         } catch (error) {
             // 只有在真正发生异常时才记录
             this.logger.error('Exception during template validation', error as Error, {
-                templateName: usage.templateName
+                templateName: usage.templateName,
             });
 
             // 模板不存在或其他错误
             const diagnostic = new Diagnostic(
                 usage.range,
                 `Unknown template: ${usage.templateName}\n💡 Hint: Check template name or press Ctrl+Space to view available templates`,
-                DiagnosticSeverity.Error
+                DiagnosticSeverity.Error,
             );
             diagnostic.source = TemplateParameterValidator.DIAGNOSTIC_SOURCE;
             diagnostic.code = 'unknown_template';
 
             // 添加可能的建议
-            diagnostic.relatedInformation = await this.referenceFinder.findSimilarTemplatesSuggestions(usage.templateName, document, usage.range);
+            diagnostic.relatedInformation = await this.referenceFinder.findSimilarTemplatesSuggestions(
+                usage.templateName,
+                document,
+                usage.range,
+            );
 
             diagnostics.push(diagnostic);
         }
@@ -147,7 +147,7 @@ export class TemplateParameterValidator {
         template: ITemplate,
         providedParameters: TemplateParameterRecord,
         usage: TemplateUsage,
-        document: TextDocument
+        document: TextDocument,
     ): Promise<Diagnostic[]> {
         const diagnostics: Diagnostic[] = [];
 
@@ -159,16 +159,12 @@ export class TemplateParameterValidator {
                 templateName: template.name,
                 isValid: validationResult.isValid,
                 errorCount: validationResult.errors.length,
-                warningCount: validationResult.warnings.length
+                warningCount: validationResult.warnings.length,
             });
 
             // 处理验证错误
             for (const error of validationResult.errors) {
-                const diagnostic = new Diagnostic(
-                    usage.range,
-                    error.message,
-                    DiagnosticSeverity.Error
-                );
+                const diagnostic = new Diagnostic(usage.range, error.message, DiagnosticSeverity.Error);
                 diagnostic.source = TemplateParameterValidator.DIAGNOSTIC_SOURCE;
                 diagnostic.code = `parameter_${error.type}`;
 
@@ -178,12 +174,9 @@ export class TemplateParameterValidator {
                     if (paramInfo) {
                         diagnostic.relatedInformation = [
                             new DiagnosticRelatedInformation(
-                                new Location(
-                                    document.uri,
-                                    usage.range
-                                ),
-                                `Parameter '${error.parameter}' is ${paramInfo.required ? 'required' : 'optional'}`
-                            )
+                                new Location(document.uri, usage.range),
+                                `Parameter '${error.parameter}' is ${paramInfo.required ? 'required' : 'optional'}`,
+                            ),
                         ];
                     }
                 }
@@ -193,11 +186,7 @@ export class TemplateParameterValidator {
 
             // 处理验证警告
             for (const warning of validationResult.warnings) {
-                const diagnostic = new Diagnostic(
-                    usage.range,
-                    warning.message,
-                    DiagnosticSeverity.Warning
-                );
+                const diagnostic = new Diagnostic(usage.range, warning.message, DiagnosticSeverity.Warning);
                 diagnostic.source = TemplateParameterValidator.DIAGNOSTIC_SOURCE;
                 diagnostic.code = `parameter_${warning.type}`;
 
@@ -205,12 +194,9 @@ export class TemplateParameterValidator {
                 if (warning.suggestion) {
                     diagnostic.relatedInformation = [
                         new DiagnosticRelatedInformation(
-                            new Location(
-                                document.uri,
-                                usage.range
-                            ),
-                            `💡 Suggestion: ${warning.suggestion}`
-                        )
+                            new Location(document.uri, usage.range),
+                            `💡 Suggestion: ${warning.suggestion}`,
+                        ),
                     ];
                 }
 
@@ -221,43 +207,42 @@ export class TemplateParameterValidator {
             if (validationResult.isValid && validationResult.warnings.length === 0) {
                 const optionalParams = template.getOptionalParameters();
                 const providedParamNames = new Set(Object.keys(providedParameters));
-                const unusedOptionalParams = optionalParams.filter((p: ITemplateParameter) => !providedParamNames.has(p.name));
+                const unusedOptionalParams = optionalParams.filter(
+                    (p: ITemplateParameter) => !providedParamNames.has(p.name),
+                );
 
                 if (unusedOptionalParams.length > 0 && unusedOptionalParams.length <= 3) {
                     const diagnostic = new Diagnostic(
                         usage.range,
                         `Available optional parameters: ${unusedOptionalParams.map((p: ITemplateParameter) => p.name).join(', ')}`,
-                        DiagnosticSeverity.Information
+                        DiagnosticSeverity.Information,
                     );
                     diagnostic.source = TemplateParameterValidator.DIAGNOSTIC_SOURCE;
                     diagnostic.code = 'optional_parameters_available';
 
                     // 添加每个参数的详细信息
-                    diagnostic.relatedInformation = unusedOptionalParams.map((param: ITemplateParameter) =>
-                        new DiagnosticRelatedInformation(
-                            new Location(
-                                document.uri,
-                                usage.range
+                    diagnostic.relatedInformation = unusedOptionalParams.map(
+                        (param: ITemplateParameter) =>
+                            new DiagnosticRelatedInformation(
+                                new Location(document.uri, usage.range),
+                                `${param.name}${param.description ? `: ${param.description}` : ''}${param.defaultValue !== undefined ? ` [default: ${param.defaultValue}]` : ''}`,
                             ),
-                            `${param.name}${param.description ? `: ${param.description}` : ''}${param.defaultValue !== undefined ? ` [default: ${param.defaultValue}]` : ''}`
-                        )
                     );
 
                     diagnostics.push(diagnostic);
                 }
             }
-
         } catch (error) {
             this.logger.error('Error validating template parameters', error as Error, {
                 templateName: template.name,
-                providedParameters: Object.keys(providedParameters)
+                providedParameters: Object.keys(providedParameters),
             });
 
             // 添加通用验证错误
             const diagnostic = new Diagnostic(
                 usage.range,
                 `Failed to validate parameters for template '${template.name}': ${(error as Error).message}`,
-                DiagnosticSeverity.Error
+                DiagnosticSeverity.Error,
             );
             diagnostic.source = 'CraftEngine Parameter Validator';
             diagnostic.code = 'validation_error';

@@ -8,8 +8,8 @@
  */
 
 import {
-    IExtendedParameterTypeDefinition,
-    IExtendedPropertyDefinition
+    type IExtendedParameterTypeDefinition,
+    type IExtendedPropertyDefinition,
 } from '../interfaces/IExtendedParameterType';
 
 /**

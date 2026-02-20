@@ -4,26 +4,19 @@
  * 测试扩展参数类型的快速修复功能
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-    TextDocument,
-    Uri,
-    Range,
-    Diagnostic,
-    DiagnosticSeverity,
-    CodeActionKind
-} from '../../../__mocks__/vscode';
+import { TextDocument, Uri, Range, Diagnostic, DiagnosticSeverity, CodeActionKind } from '../../../__mocks__/vscode';
 import type { TextDocument as VscodeTextDocument, Range as VscodeRange, CodeActionContext } from 'vscode';
 import { ExtendedTypeCodeActionProvider } from '../../../../presentation/providers/ExtendedTypeCodeActionProvider';
 import { ServiceContainer } from '../../../../infrastructure/ServiceContainer';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IExtendedTypeService } from '../../../../core/interfaces/IExtendedParameterType';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IExtendedTypeService } from '../../../../core/interfaces/IExtendedParameterType';
 import { SERVICE_TOKENS } from '../../../../core/constants/ServiceTokens';
 
 // Mock ServiceContainer
 vi.mock('../../../../infrastructure/ServiceContainer', () => ({
     ServiceContainer: {
-        getService: vi.fn()
-    }
+        getService: vi.fn(),
+    },
 }));
 
 describe('ExtendedTypeCodeActionProvider', () => {
@@ -42,9 +35,11 @@ describe('ExtendedTypeCodeActionProvider', () => {
 
         mockExtendedTypeService = {
             getTypeNames: vi.fn().mockReturnValue(['self_increase_int', 'condition', 'expression', 'when']),
-            isValidType: vi.fn().mockImplementation((name: string) =>
-                ['self_increase_int', 'condition', 'expression', 'when'].includes(name)
-            ),
+            isValidType: vi
+                .fn()
+                .mockImplementation((name: string) =>
+                    ['self_increase_int', 'condition', 'expression', 'when'].includes(name),
+                ),
             getTypeDefinition: vi.fn().mockImplementation((name: string) => {
                 if (name === 'self_increase_int') {
                     return {
@@ -55,9 +50,9 @@ describe('ExtendedTypeCodeActionProvider', () => {
                         propertyTypes: {
                             from: 'integer',
                             to: 'integer',
-                            step: 'integer'
+                            step: 'integer',
                         },
-                        example: 'type: self_increase_int\nfrom: 0\nto: 10'
+                        example: 'type: self_increase_int\nfrom: 0\nto: 10',
                     };
                 }
                 if (name === 'expression') {
@@ -68,9 +63,9 @@ describe('ExtendedTypeCodeActionProvider', () => {
                         optionalProperties: ['value-type'],
                         propertyTypes: {
                             expression: 'string',
-                            'value-type': 'enum:double,int,long'
+                            'value-type': 'enum:double,int,long',
                         },
-                        example: 'type: expression\nexpression: "${value}"'
+                        example: 'type: expression\nexpression: "${value}"',
                     };
                 }
                 return undefined;
@@ -80,20 +75,20 @@ describe('ExtendedTypeCodeActionProvider', () => {
                     return [
                         { name: 'from', type: 'integer', required: true },
                         { name: 'to', type: 'integer', required: true },
-                        { name: 'step', type: 'integer', required: false }
+                        { name: 'step', type: 'integer', required: false },
                     ];
                 }
                 if (name === 'expression') {
                     return [
                         { name: 'expression', type: 'string', required: true },
-                        { name: 'value-type', type: 'enum:double,int,long', required: false }
+                        { name: 'value-type', type: 'enum:double,int,long', required: false },
                     ];
                 }
                 return [];
             }),
             getTypeSnippet: vi.fn().mockReturnValue(undefined),
             initialize: vi.fn().mockResolvedValue(undefined),
-            clearCache: vi.fn()
+            clearCache: vi.fn(),
         } as unknown as IExtendedTypeService;
 
         vi.mocked(ServiceContainer.getService).mockImplementation((token: string | symbol) => {
@@ -124,13 +119,9 @@ describe('ExtendedTypeCodeActionProvider', () => {
         startChar: number,
         endChar: number,
         message: string,
-        code: string
+        code: string,
     ): Diagnostic {
-        const diagnostic = new Diagnostic(
-            new Range(line, startChar, line, endChar),
-            message,
-            DiagnosticSeverity.Error
-        );
+        const diagnostic = new Diagnostic(new Range(line, startChar, line, endChar), message, DiagnosticSeverity.Error);
         diagnostic.source = 'CraftEngine Extended Type';
         diagnostic.code = code;
         return diagnostic;
@@ -139,17 +130,13 @@ describe('ExtendedTypeCodeActionProvider', () => {
     describe('provideCodeActions', () => {
         it('should return empty array for non-extended-type diagnostics', async () => {
             const document = createDocument('type: self_increase_int\nfrom: 0\nto: 10');
-            const diagnostic = new Diagnostic(
-                new Range(0, 0, 0, 10),
-                'Some other error',
-                DiagnosticSeverity.Error
-            );
+            const diagnostic = new Diagnostic(new Range(0, 0, 0, 10), 'Some other error', DiagnosticSeverity.Error);
             diagnostic.source = 'Other Source';
 
             const actions = await provider.provideCodeActions(
                 document,
                 new Range(0, 0, 0, 10) as unknown as VscodeRange,
-                { diagnostics: [diagnostic] } as unknown as CodeActionContext
+                { diagnostics: [diagnostic] } as unknown as CodeActionContext,
             );
 
             expect(actions).toHaveLength(0);
@@ -160,15 +147,17 @@ describe('ExtendedTypeCodeActionProvider', () => {
 to: 10`;
             const document = createDocument(content);
             const diagnostic = createDiagnostic(
-                0, 6, 22,
+                0,
+                6,
+                22,
                 "Missing required property 'from' for extended type 'self_increase_int'",
-                'missing_required_property'
+                'missing_required_property',
             );
 
             const actions = await provider.provideCodeActions(
                 document,
                 new Range(0, 6, 0, 22) as unknown as VscodeRange,
-                { diagnostics: [diagnostic] } as unknown as CodeActionContext
+                { diagnostics: [diagnostic] } as unknown as CodeActionContext,
             );
 
             expect(actions.length).toBeGreaterThan(0);
@@ -184,20 +173,22 @@ to: 10
 unknownProp: value`;
             const document = createDocument(content);
             const diagnostic = createDiagnostic(
-                3, 0, 11,
+                3,
+                0,
+                11,
                 "Unknown property 'unknownProp' for extended type 'self_increase_int'",
-                'unknown_property'
+                'unknown_property',
             );
 
             const actions = await provider.provideCodeActions(
                 document,
                 new Range(3, 0, 3, 11) as unknown as VscodeRange,
-                { diagnostics: [diagnostic] } as unknown as CodeActionContext
+                { diagnostics: [diagnostic] } as unknown as CodeActionContext,
             );
 
             expect(actions.length).toBeGreaterThan(0);
             // 应该有删除选项
-            const deleteAction = actions.find(a => a.title.includes('Remove'));
+            const deleteAction = actions.find((a) => a.title.includes('Remove'));
             expect(deleteAction).toBeDefined();
         });
 
@@ -207,20 +198,22 @@ expression: "\${value}"
 value-type: invalid`;
             const document = createDocument(content);
             const diagnostic = createDiagnostic(
-                2, 0, 10,
+                2,
+                0,
+                10,
                 "Invalid value 'invalid' for property 'value-type'. Expected one of: double, int, long",
-                'invalid_property_type'
+                'invalid_property_type',
             );
 
             const actions = await provider.provideCodeActions(
                 document,
                 new Range(2, 0, 2, 10) as unknown as VscodeRange,
-                { diagnostics: [diagnostic] } as unknown as CodeActionContext
+                { diagnostics: [diagnostic] } as unknown as CodeActionContext,
             );
 
             expect(actions.length).toBeGreaterThan(0);
             // 应该有替换为有效枚举值的选项
-            const doubleAction = actions.find(a => a.title.includes('double'));
+            const doubleAction = actions.find((a) => a.title.includes('double'));
             expect(doubleAction).toBeDefined();
         });
 
@@ -232,20 +225,22 @@ step: 0`;
             const document = createDocument(content);
             // 消息格式需要匹配 createInvalidStepActions 中的检查: 'step cannot be 0'
             const diagnostic = createDiagnostic(
-                3, 0, 4,
-                "step cannot be 0 - this would cause an infinite loop",
-                'invalid_step'
+                3,
+                0,
+                4,
+                'step cannot be 0 - this would cause an infinite loop',
+                'invalid_step',
             );
 
             const actions = await provider.provideCodeActions(
                 document,
                 new Range(3, 0, 3, 4) as unknown as VscodeRange,
-                { diagnostics: [diagnostic] } as unknown as CodeActionContext
+                { diagnostics: [diagnostic] } as unknown as CodeActionContext,
             );
 
             expect(actions.length).toBeGreaterThan(0);
             // 应该有设置为 1 或 -1 的选项
-            const setToOneAction = actions.find(a => a.title.includes('Set step to 1'));
+            const setToOneAction = actions.find((a) => a.title.includes('Set step to 1'));
             expect(setToOneAction).toBeDefined();
         });
 
@@ -256,20 +251,22 @@ to: 10
 step: -1`;
             const document = createDocument(content);
             const diagnostic = createDiagnostic(
-                3, 0, 4,
+                3,
+                0,
+                4,
                 "When 'from' (0) < 'to' (10), 'step' should be positive, got -1",
-                'invalid_step'
+                'invalid_step',
             );
 
             const actions = await provider.provideCodeActions(
                 document,
                 new Range(3, 0, 3, 4) as unknown as VscodeRange,
-                { diagnostics: [diagnostic] } as unknown as CodeActionContext
+                { diagnostics: [diagnostic] } as unknown as CodeActionContext,
             );
 
             expect(actions.length).toBeGreaterThan(0);
             // 应该有反转步长的选项
-            const fixAction = actions.find(a => a.title.includes('Change step to 1'));
+            const fixAction = actions.find((a) => a.title.includes('Change step to 1'));
             expect(fixAction).toBeDefined();
         });
     });

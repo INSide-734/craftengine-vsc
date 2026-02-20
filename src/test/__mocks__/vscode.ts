@@ -1,6 +1,6 @@
 /**
  * VSCode API Mock
- * 
+ *
  * 提供 VSCode API 的模拟实现，用于单元测试。
  * 只 Mock 项目中实际使用的 API，按需扩展。
  */
@@ -22,22 +22,14 @@ export class Uri {
     readonly fragment: string;
     readonly fsPath: string;
 
-    private constructor(
-        scheme: string,
-        authority: string,
-        path: string,
-        query: string,
-        fragment: string
-    ) {
+    private constructor(scheme: string, authority: string, path: string, query: string, fragment: string) {
         this.scheme = scheme;
         this.authority = authority;
         this.path = path;
         this.query = query;
         this.fragment = fragment;
         // 在 Windows 上转换路径
-        this.fsPath = path.startsWith('/') && path[2] === ':' 
-            ? path.substring(1).replace(/\//g, '\\')
-            : path;
+        this.fsPath = path.startsWith('/') && path[2] === ':' ? path.substring(1).replace(/\//g, '\\') : path;
     }
 
     toString(): string {
@@ -51,7 +43,7 @@ export class Uri {
             path: this.path,
             query: this.query,
             fragment: this.fragment,
-            fsPath: this.fsPath
+            fsPath: this.fsPath,
         };
     }
 
@@ -61,19 +53,13 @@ export class Uri {
             change.authority ?? this.authority,
             change.path ?? this.path,
             change.query ?? this.query,
-            change.fragment ?? this.fragment
+            change.fragment ?? this.fragment,
         );
     }
 
     static parse(value: string): Uri {
         const url = new URL(value);
-        return new Uri(
-            url.protocol.replace(':', ''),
-            url.hostname,
-            url.pathname,
-            url.search,
-            url.hash
-        );
+        return new Uri(url.protocol.replace(':', ''), url.hostname, url.pathname, url.search, url.hash);
     }
 
     static file(path: string): Uri {
@@ -111,14 +97,22 @@ export class Position {
     }
 
     isBefore(other: Position): boolean {
-        if (this.line < other.line) {return true;}
-        if (this.line > other.line) {return false;}
+        if (this.line < other.line) {
+            return true;
+        }
+        if (this.line > other.line) {
+            return false;
+        }
         return this.character < other.character;
     }
 
     isAfter(other: Position): boolean {
-        if (this.line > other.line) {return true;}
-        if (this.line < other.line) {return false;}
+        if (this.line > other.line) {
+            return true;
+        }
+        if (this.line < other.line) {
+            return false;
+        }
         return this.character > other.character;
     }
 
@@ -134,27 +128,29 @@ export class Position {
         if (typeof lineDelta === 'object') {
             return new Position(
                 this.line + (lineDelta.lineDelta ?? 0),
-                this.character + (lineDelta.characterDelta ?? 0)
+                this.character + (lineDelta.characterDelta ?? 0),
             );
         }
-        return new Position(
-            this.line + (lineDelta ?? 0),
-            this.character + (characterDelta ?? 0)
-        );
+        return new Position(this.line + (lineDelta ?? 0), this.character + (characterDelta ?? 0));
     }
 
     with(line?: number, character?: number): Position {
-        return new Position(
-            line ?? this.line,
-            character ?? this.character
-        );
+        return new Position(line ?? this.line, character ?? this.character);
     }
 
     compareTo(other: Position): number {
-        if (this.line < other.line) {return -1;}
-        if (this.line > other.line) {return 1;}
-        if (this.character < other.character) {return -1;}
-        if (this.character > other.character) {return 1;}
+        if (this.line < other.line) {
+            return -1;
+        }
+        if (this.line > other.line) {
+            return 1;
+        }
+        if (this.character < other.character) {
+            return -1;
+        }
+        if (this.character > other.character) {
+            return 1;
+        }
         return 0;
     }
 }
@@ -173,7 +169,7 @@ export class Range {
         startOrStartLine: Position | number,
         endOrStartCharacter: Position | number,
         endLine?: number,
-        endCharacter?: number
+        endCharacter?: number,
     ) {
         if (typeof startOrStartLine === 'number') {
             this.start = new Position(startOrStartLine, endOrStartCharacter as number);
@@ -194,10 +190,7 @@ export class Range {
 
     contains(positionOrRange: Position | Range): boolean {
         if (positionOrRange instanceof Position) {
-            return (
-                positionOrRange.isAfterOrEqual(this.start) &&
-                positionOrRange.isBeforeOrEqual(this.end)
-            );
+            return positionOrRange.isAfterOrEqual(this.start) && positionOrRange.isBeforeOrEqual(this.end);
         }
         return this.contains(positionOrRange.start) && this.contains(positionOrRange.end);
     }
@@ -209,7 +202,9 @@ export class Range {
     intersection(range: Range): Range | undefined {
         const start = this.start.isBefore(range.start) ? range.start : this.start;
         const end = this.end.isAfter(range.end) ? range.end : this.end;
-        if (start.isAfter(end)) {return undefined;}
+        if (start.isAfter(end)) {
+            return undefined;
+        }
         return new Range(start, end);
     }
 
@@ -246,12 +241,7 @@ export class TextDocument {
     private readonly _content: string;
     private readonly _lines: string[];
 
-    constructor(
-        uri: Uri,
-        content: string,
-        languageId: string = 'yaml',
-        version: number = 1
-    ) {
+    constructor(uri: Uri, content: string, languageId: string = 'yaml', version: number = 1) {
         this.uri = uri;
         this.fileName = uri.fsPath;
         this.languageId = languageId;
@@ -267,8 +257,10 @@ export class TextDocument {
     }
 
     getText(range?: Range): string {
-        if (!range) {return this._content;}
-        
+        if (!range) {
+            return this._content;
+        }
+
         const startOffset = this.offsetAt(range.start);
         const endOffset = this.offsetAt(range.end);
         return this._content.substring(startOffset, endOffset);
@@ -282,9 +274,10 @@ export class TextDocument {
             text,
             range: new Range(lineNumber, 0, lineNumber, text.length),
             rangeIncludingLineBreak: new Range(
-                lineNumber, 0,
+                lineNumber,
+                0,
                 lineNumber + 1 < this._lines.length ? lineNumber + 1 : lineNumber,
-                lineNumber + 1 < this._lines.length ? 0 : text.length
+                lineNumber + 1 < this._lines.length ? 0 : text.length,
             ),
             firstNonWhitespaceCharacterIndex: text.search(/\S/),
             isEmptyOrWhitespace: text.trim().length === 0,
@@ -303,7 +296,7 @@ export class TextDocument {
     positionAt(offset: number): Position {
         let line = 0;
         let currentOffset = 0;
-        
+
         while (line < this._lines.length) {
             const lineLength = this._lines[line].length + 1;
             if (currentOffset + lineLength > offset) {
@@ -312,33 +305,34 @@ export class TextDocument {
             currentOffset += lineLength;
             line++;
         }
-        
+
         return new Position(this._lines.length - 1, this._lines[this._lines.length - 1].length);
     }
 
     getWordRangeAtPosition(position: Position, regex?: RegExp): Range | undefined {
         const line = this._lines[position.line];
-        if (!line) {return undefined;}
+        if (!line) {
+            return undefined;
+        }
 
         const wordPattern = regex || /\w+/g;
         let match: RegExpExecArray | null;
-        
+
         while ((match = wordPattern.exec(line)) !== null) {
             if (match.index <= position.character && match.index + match[0].length >= position.character) {
-                return new Range(
-                    position.line, match.index,
-                    position.line, match.index + match[0].length
-                );
+                return new Range(position.line, match.index, position.line, match.index + match[0].length);
             }
         }
-        
+
         return undefined;
     }
 
     validateRange(range: Range): Range {
         const start = this.validatePosition(range.start);
         const end = this.validatePosition(range.end);
-        if (start === range.start && end === range.end) {return range;}
+        if (start === range.start && end === range.end) {
+            return range;
+        }
         return new Range(start, end);
     }
 
@@ -346,7 +340,9 @@ export class TextDocument {
         const line = Math.max(0, Math.min(position.line, this._lines.length - 1));
         const maxChar = (this._lines[line] || '').length;
         const character = Math.max(0, Math.min(position.character, maxChar));
-        if (line === position.line && character === position.character) {return position;}
+        if (line === position.line && character === position.character) {
+            return position;
+        }
         return new Position(line, character);
     }
 
@@ -583,9 +579,8 @@ export class Location {
 
     constructor(uri: Uri, rangeOrPosition: Range | Position) {
         this.uri = uri;
-        this.range = rangeOrPosition instanceof Position
-            ? new Range(rangeOrPosition, rangeOrPosition)
-            : rangeOrPosition;
+        this.range =
+            rangeOrPosition instanceof Position ? new Range(rangeOrPosition, rangeOrPosition) : rangeOrPosition;
     }
 }
 
@@ -619,10 +614,7 @@ export class WorkspaceEdit {
     }
 
     entries(): [Uri, TextEdit[]][] {
-        return Array.from(this._edits.entries()).map(([uriStr, edits]) => [
-            Uri.parse(uriStr),
-            edits,
-        ]);
+        return Array.from(this._edits.entries()).map(([uriStr, edits]) => [Uri.parse(uriStr), edits]);
     }
 
     replace(uri: Uri, range: Range, newText: string): void {
@@ -908,25 +900,29 @@ export const window = {
     showErrorMessage: vi.fn(() => Promise.resolve(undefined)),
     showQuickPick: vi.fn(() => Promise.resolve(undefined)),
     showInputBox: vi.fn(() => Promise.resolve(undefined)),
-    
-    createOutputChannel: vi.fn((name: string): OutputChannel => ({
-        name,
-        append: vi.fn(),
-        appendLine: vi.fn(),
-        clear: vi.fn(),
-        show: vi.fn(),
-        hide: vi.fn(),
-        dispose: vi.fn(),
-    })),
 
-    createStatusBarItem: vi.fn((alignment?: StatusBarAlignment, priority?: number): StatusBarItem => ({
-        alignment: alignment ?? StatusBarAlignment.Left,
-        priority,
-        text: '',
-        show: vi.fn(),
-        hide: vi.fn(),
-        dispose: vi.fn(),
-    })),
+    createOutputChannel: vi.fn(
+        (name: string): OutputChannel => ({
+            name,
+            append: vi.fn(),
+            appendLine: vi.fn(),
+            clear: vi.fn(),
+            show: vi.fn(),
+            hide: vi.fn(),
+            dispose: vi.fn(),
+        }),
+    ),
+
+    createStatusBarItem: vi.fn(
+        (alignment?: StatusBarAlignment, priority?: number): StatusBarItem => ({
+            alignment: alignment ?? StatusBarAlignment.Left,
+            priority,
+            text: '',
+            show: vi.fn(),
+            hide: vi.fn(),
+            dispose: vi.fn(),
+        }),
+    ),
 
     activeTextEditor: undefined as TextEditor | undefined,
     visibleTextEditors: [] as TextEditor[],
@@ -992,7 +988,7 @@ export class Selection extends Range {
         anchorOrAnchorLine: Position | number,
         activeOrAnchorCharacter: Position | number,
         activeLine?: number,
-        activeCharacter?: number
+        activeCharacter?: number,
     ) {
         if (typeof anchorOrAnchorLine === 'number') {
             const anchor = new Position(anchorOrAnchorLine, activeOrAnchorCharacter as number);
@@ -1018,7 +1014,9 @@ export class Selection extends Range {
 
 export const commands = {
     registerCommand: vi.fn((_command: string, _callback: (...args: any[]) => any) => new Disposable(() => {})),
-    executeCommand: vi.fn(<T>(_command: string, ..._args: any[]): Thenable<T | undefined> => Promise.resolve(undefined)),
+    executeCommand: vi.fn(
+        <T>(_command: string, ..._args: any[]): Thenable<T | undefined> => Promise.resolve(undefined),
+    ),
     getCommands: vi.fn(() => Promise.resolve([])),
 };
 
@@ -1117,4 +1115,3 @@ export default {
     extensions,
     debug,
 };
-

@@ -10,10 +10,10 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DataCacheInitializer } from '../../../../../application/services/extension/DataCacheInitializer';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../../../core/interfaces/IEventBus';
-import { IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
-import { IPerformanceMonitor } from '../../../../../core/interfaces/IPerformanceMonitor';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../../../core/interfaces/IEventBus';
+import { type IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
+import { type IPerformanceMonitor } from '../../../../../core/interfaces/IPerformanceMonitor';
 
 describe('DataCacheInitializer', () => {
     let initializer: DataCacheInitializer;
@@ -59,17 +59,19 @@ describe('DataCacheInitializer', () => {
 
         mockDataStoreService = {
             initialize: vi.fn(() => Promise.resolve()),
-            getStatistics: vi.fn(() => Promise.resolve({
-                templateCount: 10,
-                translationKeyCount: 20,
-                itemCount: 5,
-                categoryCount: 3,
-                indexedFileCount: 15,
-                languageCount: 2,
-                namespaceCount: 1,
-                lastUpdated: new Date(),
-                isInitialized: true,
-            })),
+            getStatistics: vi.fn(() =>
+                Promise.resolve({
+                    templateCount: 10,
+                    translationKeyCount: 20,
+                    itemCount: 5,
+                    categoryCount: 3,
+                    indexedFileCount: 15,
+                    languageCount: 2,
+                    namespaceCount: 1,
+                    lastUpdated: new Date(),
+                    isInitialized: true,
+                }),
+            ),
         } as unknown as IDataStoreService;
 
         mockGenerateEventId = vi.fn(() => 'test-event-id');
@@ -79,7 +81,7 @@ describe('DataCacheInitializer', () => {
             mockEventBus,
             mockDataStoreService,
             mockPerformanceMonitor,
-            mockGenerateEventId as unknown as () => string
+            mockGenerateEventId as unknown as () => string,
         );
     });
 
@@ -101,17 +103,12 @@ describe('DataCacheInitializer', () => {
         });
 
         it('should resolve even when dataStoreService.initialize fails', async () => {
-            vi.mocked(mockDataStoreService.initialize).mockRejectedValue(
-                new Error('Init failed')
-            );
+            vi.mocked(mockDataStoreService.initialize).mockRejectedValue(new Error('Init failed'));
 
             await initializer.initialize();
             // 即使初始化失败，Promise 也应该解析（finally 块）
             await initializer.initialScanCompleted;
-            expect(mockLogger.error).toHaveBeenCalledWith(
-                'Initial data scan failed',
-                expect.any(Error)
-            );
+            expect(mockLogger.error).toHaveBeenCalledWith('Initial data scan failed', expect.any(Error));
         });
     });
 
@@ -152,7 +149,7 @@ describe('DataCacheInitializer', () => {
                     templatesFound: 10,
                     translationKeysFound: 20,
                     languageCount: 2,
-                })
+                }),
             );
         });
 
@@ -167,7 +164,7 @@ describe('DataCacheInitializer', () => {
                     templateCount: 10,
                     translationKeyCount: 20,
                     languageCount: 2,
-                })
+                }),
             );
         });
     });

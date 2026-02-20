@@ -12,7 +12,7 @@ import {
     isEmpty,
     getAllPaths,
     unflatten,
-    flatten
+    flatten,
 } from '../../../../infrastructure/utils/ObjectUtils';
 
 describe('ObjectUtils', () => {
@@ -124,7 +124,9 @@ describe('ObjectUtils', () => {
 
         it('should skip null/undefined sources', () => {
             const obj = { a: 1 };
-            expect(deepMerge(obj, null as unknown as Partial<typeof obj>, undefined as unknown as Partial<typeof obj>)).toEqual({ a: 1 });
+            expect(
+                deepMerge(obj, null as unknown as Partial<typeof obj>, undefined as unknown as Partial<typeof obj>),
+            ).toEqual({ a: 1 });
         });
 
         it('should overwrite arrays', () => {

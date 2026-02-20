@@ -25,16 +25,7 @@ export interface IResourcePackDiscoveryOptions {
 /**
  * 默认跳过的目录
  */
-let DEFAULT_SKIP_DIRECTORIES = [
-    'node_modules',
-    '.git',
-    'out',
-    'dist',
-    '.vscode',
-    '.idea',
-    'build',
-    'target',
-];
+let DEFAULT_SKIP_DIRECTORIES = ['node_modules', '.git', 'out', 'dist', '.vscode', '.idea', 'build', 'target'];
 
 /**
  * 有效命名空间的正则表达式
@@ -209,10 +200,10 @@ export class ResourcePackDiscovery {
                 const checks = await Promise.all([
                     this.directoryExistsAsync(path.join(namespacePath, 'models')),
                     this.directoryExistsAsync(path.join(namespacePath, 'textures')),
-                    this.directoryExistsAsync(path.join(namespacePath, 'items'))
+                    this.directoryExistsAsync(path.join(namespacePath, 'items')),
                 ]);
 
-                if (checks.some(exists => exists)) {
+                if (checks.some((exists) => exists)) {
                     return true;
                 }
             }
@@ -326,7 +317,7 @@ export class ResourcePackDiscovery {
         depth: number,
         maxDepth: number,
         results: string[],
-        skipDirectories: string[]
+        skipDirectories: string[],
     ): Promise<void> {
         if (depth > maxDepth) {
             return;
@@ -355,10 +346,7 @@ export class ResourcePackDiscovery {
                 }
 
                 // 跳过指定的目录
-                if (
-                    skipDirectories.includes(entry.name) ||
-                    entry.name.startsWith('.')
-                ) {
+                if (skipDirectories.includes(entry.name) || entry.name.startsWith('.')) {
                     continue;
                 }
 
@@ -370,9 +358,9 @@ export class ResourcePackDiscovery {
             for (let i = 0; i < subdirs.length; i += CONCURRENCY_LIMIT) {
                 const batch = subdirs.slice(i, i + CONCURRENCY_LIMIT);
                 await Promise.all(
-                    batch.map(subdir =>
-                        this.findResourcePackDirsAsync(subdir, depth + 1, maxDepth, results, skipDirectories)
-                    )
+                    batch.map((subdir) =>
+                        this.findResourcePackDirsAsync(subdir, depth + 1, maxDepth, results, skipDirectories),
+                    ),
                 );
             }
         } catch {

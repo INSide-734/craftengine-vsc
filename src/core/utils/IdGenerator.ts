@@ -25,5 +25,7 @@ export function generateEventId(prefix: string = 'evt'): string {
  * @returns 随机 ID 字符串
  */
 export function generateRandomId(length: number = 9): string {
-    return Math.random().toString(36).substring(2, 2 + length);
+    return Math.random()
+        .toString(36)
+        .substring(2, 2 + length);
 }

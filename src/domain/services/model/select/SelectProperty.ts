@@ -8,15 +8,15 @@
 
 import { Key } from '../utils/Key';
 import {
-    Property,
-    PropertyFactory,
-    PropertyReader,
+    type Property,
+    type PropertyFactory,
+    type PropertyReader,
     SimpleProperty,
     SimplePropertyFactory,
     SimplePropertyReader,
     PropertyRegistry,
 } from '../property/PropertyBase';
-import { IModelPropertyDefinition } from '../../../../core/types/ConfigTypes';
+import { type IModelPropertyDefinition } from '../../../../core/types/ConfigTypes';
 
 // ============================================
 // 选择属性接口（保持向后兼容）
@@ -47,21 +47,18 @@ let selectPropertyTypesData: Record<string, Key> | null = null;
  *
  * 通过 Proxy 延迟访问，未初始化时抛出错误。
  */
-export const SELECT_PROPERTY_TYPES: Record<string, Key> = new Proxy(
-    {} as Record<string, Key>,
-    {
-        get(_target, prop: string): Key {
-            if (!selectPropertyTypesData) {
-                throw new Error('SELECT_PROPERTY_TYPES not initialized. Call initializeSelectProperties() first.');
-            }
-            const val = selectPropertyTypesData[prop];
-            if (!val) {
-                throw new Error(`Unknown SELECT_PROPERTY_TYPES key: ${prop}`);
-            }
-            return val;
-        },
-    }
-);
+export const SELECT_PROPERTY_TYPES: Record<string, Key> = new Proxy({} as Record<string, Key>, {
+    get(_target, prop: string): Key {
+        if (!selectPropertyTypesData) {
+            throw new Error('SELECT_PROPERTY_TYPES not initialized. Call initializeSelectProperties() first.');
+        }
+        const val = selectPropertyTypesData[prop];
+        if (!val) {
+            throw new Error(`Unknown SELECT_PROPERTY_TYPES key: ${prop}`);
+        }
+        return val;
+    },
+});
 
 // ============================================
 // 注册表（延迟初始化）
@@ -87,18 +84,14 @@ export function initializeSelectProperties(definitions: IModelPropertyDefinition
         selectPropertyTypesData[def.name] = Key.of(def.key);
     }
 
-    const simpleFactory = new SimplePropertyFactory<SelectProperty>(
-        (type) => new SimpleSelectProperty(type)
-    );
-    const simpleReader = new SimplePropertyReader<SelectProperty>(
-        (type) => new SimpleSelectProperty(type)
-    );
+    const simpleFactory = new SimplePropertyFactory<SelectProperty>((type) => new SimpleSelectProperty(type));
+    const simpleReader = new SimplePropertyReader<SelectProperty>((type) => new SimpleSelectProperty(type));
 
     registry = new PropertyRegistry<SelectProperty>('select property');
     registry.registerSimpleTypes(
-        definitions.map(d => Key.of(d.key)),
+        definitions.map((d) => Key.of(d.key)),
         simpleFactory,
-        simpleReader
+        simpleReader,
     );
 }
 

@@ -1,20 +1,13 @@
-import {
-    TextDocument,
-    Diagnostic,
-    Range,
-    Position,
-    DiagnosticRelatedInformation,
-    Location
-} from 'vscode';
+import { type TextDocument, type Diagnostic, Range, Position, DiagnosticRelatedInformation, Location } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { IDataStoreService } from '../../core/interfaces/IDataStoreService';
-import { ITranslationKey } from '../../core/interfaces/ITranslation';
-import { IEventBus } from '../../core/interfaces/IEventBus';
-import { ISchemaService } from '../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
-import { IYamlParser } from '../../core/interfaces/IYamlParser';
-import { IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
-import { IYamlNode } from '../../core/interfaces/IYamlDocument';
+import { type IDataStoreService } from '../../core/interfaces/IDataStoreService';
+import { type ITranslationKey } from '../../core/interfaces/ITranslation';
+import { type IEventBus } from '../../core/interfaces/IEventBus';
+import { type ISchemaService } from '../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
+import { type IYamlParser } from '../../core/interfaces/IYamlParser';
+import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
+import { type IYamlNode } from '../../core/interfaces/IYamlDocument';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { YamlHelper } from '../../infrastructure/yaml/YamlHelper';
 import { generateEventId } from '../../infrastructure/utils';
@@ -22,7 +15,7 @@ import {
     TRANSLATION_NOT_FOUND,
     TRANSLATION_EMPTY_VALUE,
     TRANSLATION_DUPLICATE_KEY,
-    TRANSLATION_MISSING_LANGUAGE
+    TRANSLATION_MISSING_LANGUAGE,
 } from '../../core/constants/DiagnosticCodes';
 import { REFERENCE_MESSAGES } from '../../core/constants/DiagnosticMessages';
 import { BaseDiagnosticProvider } from './BaseDiagnosticProvider';
@@ -61,7 +54,7 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
             'craftengine-translation',
             'CraftEngine Translation',
             'translation-diagnostics.update',
-            'TranslationDiagnosticProvider'
+            'TranslationDiagnosticProvider',
         );
         this.dataStoreService = ServiceContainer.getService<IDataStoreService>(SERVICE_TOKENS.DataStoreService);
         this.eventBus = ServiceContainer.getService<IEventBus>(SERVICE_TOKENS.EventBus);
@@ -72,8 +65,17 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
         // 从 MiniMessage 常量配置加载常用语言列表
         const configLoader = ServiceContainer.getService<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
         const miniMessageConfig = configLoader.getMiniMessageConstantsConfigSync();
-        this.commonLanguages = miniMessageConfig?.commonLanguages
-            ?? ['en', 'zh_cn', 'ja', 'ko', 'de', 'fr', 'es', 'ru', 'pt_br'];
+        this.commonLanguages = miniMessageConfig?.commonLanguages ?? [
+            'en',
+            'zh_cn',
+            'ja',
+            'ko',
+            'de',
+            'fr',
+            'es',
+            'ru',
+            'pt_br',
+        ];
     }
 
     /**
@@ -81,12 +83,11 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
      */
     protected async doUpdateDiagnostics(document: TextDocument): Promise<Diagnostic[]> {
         // 并行执行三个检查
-        const [schemaBasedDiagnostics, inlineDiagnostics, translationSectionDiagnostics] =
-            await Promise.all([
-                this.checkSchemaBasedTranslationReferences(document),
-                this.checkInlineTranslationReferences(document),
-                this.checkTranslationsSection(document)
-            ]);
+        const [schemaBasedDiagnostics, inlineDiagnostics, translationSectionDiagnostics] = await Promise.all([
+            this.checkSchemaBasedTranslationReferences(document),
+            this.checkInlineTranslationReferences(document),
+            this.checkTranslationsSection(document),
+        ]);
 
         const diagnostics = [...schemaBasedDiagnostics, ...inlineDiagnostics, ...translationSectionDiagnostics];
 
@@ -97,7 +98,7 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
             timestamp: new Date(),
             source: 'TranslationDiagnosticProvider',
             uri: document.uri,
-            diagnosticCount: diagnostics.length
+            diagnosticCount: diagnostics.length,
         });
 
         return diagnostics;
@@ -113,26 +114,36 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
 
         for (let lineNum = 0; lineNum < lines.length; lineNum++) {
             const extracted = this.extractTranslationValueFromLine(lines[lineNum], lineNum);
-            if (!extracted) { continue; }
+            if (!extracted) {
+                continue;
+            }
 
             // 基于 Schema 检查此位置是否期望翻译键
             const position = new Position(lineNum, extracted.colonIndex + 1);
             const isTranslationField = await this.fieldIdentifier.isFieldOfType(
-                document, position, TranslationDiagnosticProvider.TRANSLATION_KEY_PROVIDER
+                document,
+                position,
+                TranslationDiagnosticProvider.TRANSLATION_KEY_PROVIDER,
             );
-            if (!isTranslationField) { continue; }
+            if (!isTranslationField) {
+                continue;
+            }
 
             // 验证翻译键是否存在
             const keys = await this.dataStoreService.getTranslationKeysByName(extracted.cleanValue);
 
             if (keys.length === 0) {
-                const diagnostic = this.createDiagnostic(extracted.range, REFERENCE_MESSAGES.translationNotFound(extracted.cleanValue), TRANSLATION_NOT_FOUND);
+                const diagnostic = this.createDiagnostic(
+                    extracted.range,
+                    REFERENCE_MESSAGES.translationNotFound(extracted.cleanValue),
+                    TRANSLATION_NOT_FOUND,
+                );
                 if (diagnostic) {
                     diagnostic.relatedInformation = [
                         new DiagnosticRelatedInformation(
                             new Location(document.uri, extracted.range),
-                            'Create this translation key in the translations section'
-                        )
+                            'Create this translation key in the translations section',
+                        ),
                     ];
                     diagnostics.push(diagnostic);
                 }
@@ -140,7 +151,11 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
                 const emptyLanguages = keys.filter((k: ITranslationKey) => !k.value || k.value.trim() === '');
                 if (emptyLanguages.length > 0) {
                     const langCodes = emptyLanguages.map((l: ITranslationKey) => l.languageCode);
-                    const diagnostic = this.createDiagnostic(extracted.range, REFERENCE_MESSAGES.translationEmptyValue(extracted.cleanValue, langCodes), TRANSLATION_EMPTY_VALUE);
+                    const diagnostic = this.createDiagnostic(
+                        extracted.range,
+                        REFERENCE_MESSAGES.translationEmptyValue(extracted.cleanValue, langCodes),
+                        TRANSLATION_EMPTY_VALUE,
+                    );
                     if (diagnostic) {
                         diagnostics.push(diagnostic);
                     }
@@ -158,24 +173,37 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
      */
     private extractTranslationValueFromLine(
         line: string,
-        lineNum: number
+        lineNum: number,
     ): { cleanValue: string; range: Range; colonIndex: number } | undefined {
         const trimmedLine = line.trim();
-        if (!trimmedLine || trimmedLine.startsWith('#')) { return undefined; }
+        if (!trimmedLine || trimmedLine.startsWith('#')) {
+            return undefined;
+        }
 
         const colonIndex = line.indexOf(':');
-        if (colonIndex === -1) { return undefined; }
+        if (colonIndex === -1) {
+            return undefined;
+        }
 
         const value = line.substring(colonIndex + 1).trim();
-        if (!value) { return undefined; }
+        if (!value) {
+            return undefined;
+        }
 
-        if (YamlHelper.isInComment(line, colonIndex + 1)) { return undefined; }
+        if (YamlHelper.isInComment(line, colonIndex + 1)) {
+            return undefined;
+        }
 
         const cleanValue = value.replace(/^["']|["']$/g, '');
         const translationKeyPattern = /^[a-z][a-z0-9._-]*$/i;
-        if (!translationKeyPattern.test(cleanValue)) { return undefined; }
+        if (!translationKeyPattern.test(cleanValue)) {
+            return undefined;
+        }
 
-        const valueStart = colonIndex + 1 + (line.substring(colonIndex + 1).length - line.substring(colonIndex + 1).trimStart().length);
+        const valueStart =
+            colonIndex +
+            1 +
+            (line.substring(colonIndex + 1).length - line.substring(colonIndex + 1).trimStart().length);
         const valueEnd = valueStart + value.length;
         const range = new Range(lineNum, valueStart, lineNum, valueEnd);
 
@@ -190,15 +218,11 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
         const text = document.getText();
 
         // 检查 i18n 引用
-        const i18nDiags = await this.checkInlinePattern(
-            TranslationDiagnosticProvider.I18N_PATTERN, text, document
-        );
+        const i18nDiags = await this.checkInlinePattern(TranslationDiagnosticProvider.I18N_PATTERN, text, document);
         diagnostics.push(...i18nDiags);
 
         // 检查 l10n 引用
-        const l10nDiags = await this.checkInlinePattern(
-            TranslationDiagnosticProvider.L10N_PATTERN, text, document
-        );
+        const l10nDiags = await this.checkInlinePattern(TranslationDiagnosticProvider.L10N_PATTERN, text, document);
         diagnostics.push(...l10nDiags);
 
         return diagnostics;
@@ -207,11 +231,7 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
     /**
      * 检查内联翻译模式
      */
-    private async checkInlinePattern(
-        pattern: RegExp,
-        text: string,
-        document: TextDocument
-    ): Promise<Diagnostic[]> {
+    private async checkInlinePattern(pattern: RegExp, text: string, document: TextDocument): Promise<Diagnostic[]> {
         const diagnostics: Diagnostic[] = [];
         pattern.lastIndex = 0;
 
@@ -225,13 +245,17 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
             const keys = await this.dataStoreService.getTranslationKeysByName(keyName);
 
             if (keys.length === 0) {
-                const diagnostic = this.createDiagnostic(range, REFERENCE_MESSAGES.translationNotFound(keyName), TRANSLATION_NOT_FOUND);
+                const diagnostic = this.createDiagnostic(
+                    range,
+                    REFERENCE_MESSAGES.translationNotFound(keyName),
+                    TRANSLATION_NOT_FOUND,
+                );
                 if (diagnostic) {
                     diagnostic.relatedInformation = [
                         new DiagnosticRelatedInformation(
                             new Location(document.uri, range),
-                            'Create this translation key in the translations section'
-                        )
+                            'Create this translation key in the translations section',
+                        ),
                     ];
                     diagnostics.push(diagnostic);
                 }
@@ -239,7 +263,11 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
                 const emptyLanguages = keys.filter((k: ITranslationKey) => !k.value || k.value.trim() === '');
                 if (emptyLanguages.length > 0) {
                     const langCodes = emptyLanguages.map((l: ITranslationKey) => l.languageCode);
-                    const diagnostic = this.createDiagnostic(range, REFERENCE_MESSAGES.translationEmptyValue(keyName, langCodes), TRANSLATION_EMPTY_VALUE);
+                    const diagnostic = this.createDiagnostic(
+                        range,
+                        REFERENCE_MESSAGES.translationEmptyValue(keyName, langCodes),
+                        TRANSLATION_EMPTY_VALUE,
+                    );
                     if (diagnostic) {
                         diagnostics.push(diagnostic);
                     }
@@ -278,7 +306,7 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
                 const diagnostic = this.createDiagnostic(
                     range,
                     REFERENCE_MESSAGES.translationMissingLanguage(missing.key, missing.languages),
-                    TRANSLATION_MISSING_LANGUAGE
+                    TRANSLATION_MISSING_LANGUAGE,
                 );
                 if (diagnostic) {
                     diagnostics.push(diagnostic);
@@ -294,15 +322,18 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
     /**
      * 从 translations AST 节点收集翻译键，同时生成重复键和空值诊断
      */
-    private collectTranslationKeys(
-        translationsNode: IYamlNode
-    ): { translationKeys: Map<string, { languages: Set<string> }>; keyDiagnostics: Diagnostic[] } {
+    private collectTranslationKeys(translationsNode: IYamlNode): {
+        translationKeys: Map<string, { languages: Set<string> }>;
+        keyDiagnostics: Diagnostic[];
+    } {
         const translationKeys = new Map<string, { languages: Set<string> }>();
         const keyDiagnostics: Diagnostic[] = [];
 
         for (const [langKey, langNode] of translationsNode.children!) {
             const currentLanguage = String(langKey);
-            if (langNode.type !== 'object' || !langNode.children) { continue; }
+            if (langNode.type !== 'object' || !langNode.children) {
+                continue;
+            }
 
             for (const [keyName, keyNode] of langNode.children) {
                 const key = String(keyName);
@@ -316,9 +347,11 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
                         const diagnostic = this.createDiagnostic(
                             keyNode.position.range,
                             REFERENCE_MESSAGES.translationDuplicateKey(key, currentLanguage),
-                            TRANSLATION_DUPLICATE_KEY
+                            TRANSLATION_DUPLICATE_KEY,
                         );
-                        if (diagnostic) { keyDiagnostics.push(diagnostic); }
+                        if (diagnostic) {
+                            keyDiagnostics.push(diagnostic);
+                        }
                     }
                 } else {
                     existing.languages.add(currentLanguage);
@@ -328,9 +361,11 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
                     const diagnostic = this.createDiagnostic(
                         keyNode.position.range,
                         REFERENCE_MESSAGES.translationEmptyValue(key, [currentLanguage]),
-                        TRANSLATION_EMPTY_VALUE
+                        TRANSLATION_EMPTY_VALUE,
                     );
-                    if (diagnostic) { keyDiagnostics.push(diagnostic); }
+                    if (diagnostic) {
+                        keyDiagnostics.push(diagnostic);
+                    }
                 }
             }
         }
@@ -342,14 +377,12 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
      * 检查缺失的常用语言翻译
      */
     private checkMissingLanguages(
-        translationKeys: Map<string, { languages: Set<string> }>
+        translationKeys: Map<string, { languages: Set<string> }>,
     ): Array<{ key: string; languages: string[] }> {
         const missing: Array<{ key: string; languages: string[] }> = [];
 
         for (const [keyName, keyInfo] of translationKeys.entries()) {
-            const missingLanguages = this.commonLanguages.filter(
-                lang => !keyInfo.languages.has(lang)
-            );
+            const missingLanguages = this.commonLanguages.filter((lang) => !keyInfo.languages.has(lang));
 
             if (missingLanguages.length > 0) {
                 missing.push({ key: keyName, languages: missingLanguages });

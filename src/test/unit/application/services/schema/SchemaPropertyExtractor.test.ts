@@ -9,8 +9,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SchemaPropertyExtractor } from '../../../../../application/services/schema/SchemaPropertyExtractor';
-import { SchemaReferenceResolver } from '../../../../../application/services/schema/SchemaReferenceResolver';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
+import { type SchemaReferenceResolver } from '../../../../../application/services/schema/SchemaReferenceResolver';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
 
 describe('SchemaPropertyExtractor', () => {
     let extractor: SchemaPropertyExtractor;
@@ -30,7 +30,7 @@ describe('SchemaPropertyExtractor', () => {
         } as unknown as ILogger;
 
         mockResolver = {
-            resolveReferences: vi.fn((schema) => Promise.resolve(schema))
+            resolveReferences: vi.fn((schema) => Promise.resolve(schema)),
         } as unknown as SchemaReferenceResolver;
 
         extractor = new SchemaPropertyExtractor(mockResolver, mockLogger);
@@ -46,23 +46,23 @@ describe('SchemaPropertyExtractor', () => {
                 type: 'object',
                 properties: {
                     name: { type: 'string', description: 'Item name' },
-                    amount: { type: 'number', description: 'Item amount' }
-                }
+                    amount: { type: 'number', description: 'Item amount' },
+                },
             };
 
             const result = await extractor.extractProperties(schema);
 
             expect(result).toHaveLength(2);
-            expect(result.find(p => p.key === 'name')).toBeDefined();
-            expect(result.find(p => p.key === 'amount')).toBeDefined();
+            expect(result.find((p) => p.key === 'name')).toBeDefined();
+            expect(result.find((p) => p.key === 'amount')).toBeDefined();
         });
 
         it('should extract patternProperties', async () => {
             const schema = {
                 type: 'object',
                 patternProperties: {
-                    '^item_[0-9]+$': { type: 'object', description: 'Dynamic item' }
-                }
+                    '^item_[0-9]+$': { type: 'object', description: 'Dynamic item' },
+                },
             };
 
             const result = await extractor.extractProperties(schema);
@@ -74,25 +74,22 @@ describe('SchemaPropertyExtractor', () => {
 
         it('should extract from allOf', async () => {
             const schema = {
-                allOf: [
-                    { properties: { name: { type: 'string' } } },
-                    { properties: { age: { type: 'number' } } }
-                ]
+                allOf: [{ properties: { name: { type: 'string' } } }, { properties: { age: { type: 'number' } } }],
             };
 
             const result = await extractor.extractProperties(schema);
 
             expect(result).toHaveLength(2);
-            expect(result.find(p => p.key === 'name')).toBeDefined();
-            expect(result.find(p => p.key === 'age')).toBeDefined();
+            expect(result.find((p) => p.key === 'name')).toBeDefined();
+            expect(result.find((p) => p.key === 'age')).toBeDefined();
         });
 
         it('should extract from oneOf with conditional marker', async () => {
             const schema = {
                 oneOf: [
                     { properties: { optionA: { type: 'string' } } },
-                    { properties: { optionB: { type: 'number' } } }
-                ]
+                    { properties: { optionB: { type: 'number' } } },
+                ],
             };
 
             const result = await extractor.extractProperties(schema);
@@ -104,10 +101,7 @@ describe('SchemaPropertyExtractor', () => {
 
         it('should extract from anyOf with conditional marker', async () => {
             const schema = {
-                anyOf: [
-                    { properties: { fieldA: { type: 'string' } } },
-                    { properties: { fieldB: { type: 'number' } } }
-                ]
+                anyOf: [{ properties: { fieldA: { type: 'string' } } }, { properties: { fieldB: { type: 'number' } } }],
             };
 
             const result = await extractor.extractProperties(schema);
@@ -120,41 +114,37 @@ describe('SchemaPropertyExtractor', () => {
         it('should not duplicate properties', async () => {
             const schema = {
                 properties: {
-                    name: { type: 'string' }
+                    name: { type: 'string' },
                 },
-                allOf: [
-                    { properties: { name: { type: 'string', description: 'From allOf' } } }
-                ]
+                allOf: [{ properties: { name: { type: 'string', description: 'From allOf' } } }],
             };
 
             const result = await extractor.extractProperties(schema);
 
             // 应该只有一个 name 属性
-            const nameProps = result.filter(p => p.key === 'name');
+            const nameProps = result.filter((p) => p.key === 'name');
             expect(nameProps).toHaveLength(1);
         });
 
         it('should resolve $ref in allOf', async () => {
             const resolvedSchema = {
                 properties: {
-                    refProp: { type: 'boolean' }
-                }
+                    refProp: { type: 'boolean' },
+                },
             };
 
             vi.mocked(mockResolver.resolveReferences).mockResolvedValue(resolvedSchema);
 
             const schema = {
-                allOf: [
-                    { $ref: '#/$defs/SomeType' }
-                ],
+                allOf: [{ $ref: '#/$defs/SomeType' }],
                 $defs: {
-                    SomeType: resolvedSchema
-                }
+                    SomeType: resolvedSchema,
+                },
             };
 
             const result = await extractor.extractProperties(schema);
 
-            expect(result.find(p => p.key === 'refProp')).toBeDefined();
+            expect(result.find((p) => p.key === 'refProp')).toBeDefined();
         });
 
         it('should handle empty schema', async () => {
@@ -167,8 +157,8 @@ describe('SchemaPropertyExtractor', () => {
             const schema = {
                 patternProperties: {
                     '^valid$': { type: 'string' },
-                    '^null$': null
-                }
+                    '^null$': null,
+                },
             };
 
             const result = await extractor.extractProperties(schema);
@@ -183,16 +173,16 @@ describe('SchemaPropertyExtractor', () => {
                 allOf: [
                     {
                         patternProperties: {
-                            '^inherited$': { type: 'string' }
-                        }
-                    }
-                ]
+                            '^inherited$': { type: 'string' },
+                        },
+                    },
+                ],
             };
 
             const result = await extractor.extractProperties(schema);
 
             // 不应该从 allOf 中继承 patternProperties
-            expect(result.find(p => p.key.includes('inherited'))).toBeUndefined();
+            expect(result.find((p) => p.key.includes('inherited'))).toBeUndefined();
         });
     });
 
@@ -204,8 +194,8 @@ describe('SchemaPropertyExtractor', () => {
         it('should find property from properties', async () => {
             const parentSchema = {
                 properties: {
-                    name: { type: 'string', description: 'Item name' }
-                }
+                    name: { type: 'string', description: 'Item name' },
+                },
             };
 
             const result = await extractor.findPropertySchema(parentSchema, 'name');
@@ -217,8 +207,8 @@ describe('SchemaPropertyExtractor', () => {
         it('should find property from patternProperties', async () => {
             const parentSchema = {
                 patternProperties: {
-                    '^item_[0-9]+$': { type: 'object', description: 'Dynamic item' }
-                }
+                    '^item_[0-9]+$': { type: 'object', description: 'Dynamic item' },
+                },
             };
 
             const result = await extractor.findPropertySchema(parentSchema, 'item_123');
@@ -228,9 +218,7 @@ describe('SchemaPropertyExtractor', () => {
 
         it('should find property from allOf', async () => {
             const parentSchema = {
-                allOf: [
-                    { properties: { inherited: { type: 'boolean' } } }
-                ]
+                allOf: [{ properties: { inherited: { type: 'boolean' } } }],
             };
 
             const result = await extractor.findPropertySchema(parentSchema, 'inherited');
@@ -241,8 +229,8 @@ describe('SchemaPropertyExtractor', () => {
         it('should return undefined for non-existent property', async () => {
             const parentSchema = {
                 properties: {
-                    name: { type: 'string' }
-                }
+                    name: { type: 'string' },
+                },
             };
 
             const result = await extractor.findPropertySchema(parentSchema, 'nonexistent');
@@ -256,11 +244,11 @@ describe('SchemaPropertyExtractor', () => {
 
             const parentSchema = {
                 properties: {
-                    amount: { $ref: '#/$defs/PositiveNumber' }
+                    amount: { $ref: '#/$defs/PositiveNumber' },
                 },
                 $defs: {
-                    PositiveNumber: resolvedSchema
-                }
+                    PositiveNumber: resolvedSchema,
+                },
             };
 
             const result = await extractor.findPropertySchema(parentSchema, 'amount');
@@ -272,34 +260,31 @@ describe('SchemaPropertyExtractor', () => {
         it('should handle invalid regex in patternProperties', async () => {
             const parentSchema = {
                 patternProperties: {
-                    '[invalid': { type: 'string' }  // 无效的正则
-                }
+                    '[invalid': { type: 'string' }, // 无效的正则
+                },
             };
 
             const result = await extractor.findPropertySchema(parentSchema, 'test');
 
+            // safeCompileRegex 对无效正则返回 null，静默跳过
             expect(result).toBeUndefined();
-            expect(mockLogger.debug).toHaveBeenCalledWith(
-                'Invalid regex pattern',
-                expect.objectContaining({ pattern: '[invalid' })
-            );
         });
 
         it('should use contextSchema for reference resolution', async () => {
             const contextSchema = {
                 $defs: {
-                    SharedType: { type: 'string', format: 'email' }
-                }
+                    SharedType: { type: 'string', format: 'email' },
+                },
             };
 
-            vi.mocked(mockResolver.resolveReferences).mockImplementation(
-                async (schema) => schema.$ref ? contextSchema.$defs.SharedType : schema
+            vi.mocked(mockResolver.resolveReferences).mockImplementation(async (schema) =>
+                schema.$ref ? contextSchema.$defs.SharedType : schema,
             );
 
             const parentSchema = {
                 properties: {
-                    email: { $ref: '#/$defs/SharedType' }
-                }
+                    email: { $ref: '#/$defs/SharedType' },
+                },
             };
 
             await extractor.findPropertySchema(parentSchema, 'email', contextSchema);
@@ -307,7 +292,7 @@ describe('SchemaPropertyExtractor', () => {
             expect(mockResolver.resolveReferences).toHaveBeenCalledWith(
                 expect.objectContaining({ $ref: '#/$defs/SharedType' }),
                 5,
-                contextSchema
+                contextSchema,
             );
         });
     });
@@ -324,11 +309,11 @@ describe('SchemaPropertyExtractor', () => {
                 examples: ['user@example.com'],
                 pattern: '^[a-z]+@[a-z]+\\.[a-z]+$',
                 default: 'default@example.com',
-                deprecated: true
+                deprecated: true,
             };
 
             const parentSchema = {
-                required: ['email']
+                required: ['email'],
             };
 
             const result = extractor.extractPropertyDetails(propertySchema, parentSchema, 'email');
@@ -345,7 +330,7 @@ describe('SchemaPropertyExtractor', () => {
         it('should handle enum property', () => {
             const propertySchema = {
                 type: 'string',
-                enum: ['option1', 'option2', 'option3']
+                enum: ['option1', 'option2', 'option3'],
             };
 
             const result = extractor.extractPropertyDetails(propertySchema, {}, 'choice');
@@ -356,7 +341,7 @@ describe('SchemaPropertyExtractor', () => {
         it('should detect required property', () => {
             const propertySchema = { type: 'string' };
             const parentSchema = {
-                required: ['name', 'email']
+                required: ['name', 'email'],
             };
 
             const result = extractor.extractPropertyDetails(propertySchema, parentSchema, 'name');
@@ -367,7 +352,7 @@ describe('SchemaPropertyExtractor', () => {
         it('should detect non-required property', () => {
             const propertySchema = { type: 'string' };
             const parentSchema = {
-                required: ['email']
+                required: ['email'],
             };
 
             const result = extractor.extractPropertyDetails(propertySchema, parentSchema, 'name');
@@ -393,7 +378,7 @@ describe('SchemaPropertyExtractor', () => {
         it('should handle array type', () => {
             const propertySchema = {
                 type: ['string', 'null'],
-                description: 'Nullable string'
+                description: 'Nullable string',
             };
 
             const result = extractor.extractPropertyDetails(propertySchema, {}, 'nullable');
@@ -404,7 +389,7 @@ describe('SchemaPropertyExtractor', () => {
         it('should handle default value of false', () => {
             const propertySchema = {
                 type: 'boolean',
-                default: false
+                default: false,
             };
 
             const result = extractor.extractPropertyDetails(propertySchema, {}, 'enabled');
@@ -415,7 +400,7 @@ describe('SchemaPropertyExtractor', () => {
         it('should handle default value of 0', () => {
             const propertySchema = {
                 type: 'number',
-                default: 0
+                default: 0,
             };
 
             const result = extractor.extractPropertyDetails(propertySchema, {}, 'count');
@@ -426,7 +411,7 @@ describe('SchemaPropertyExtractor', () => {
         it('should handle default value of empty string', () => {
             const propertySchema = {
                 type: 'string',
-                default: ''
+                default: '',
             };
 
             const result = extractor.extractPropertyDetails(propertySchema, {}, 'prefix');
@@ -444,8 +429,8 @@ describe('SchemaPropertyExtractor', () => {
             const schema = {
                 type: 'object',
                 patternProperties: {
-                    '^[a-z]+$': { type: 'string' }
-                }
+                    '^[a-z]+$': { type: 'string' },
+                },
             };
 
             const result = await extractor.extractProperties(schema);
@@ -457,25 +442,20 @@ describe('SchemaPropertyExtractor', () => {
             const schema = {
                 allOf: [
                     {
-                        allOf: [
-                            { properties: { deep: { type: 'string' } } }
-                        ]
-                    }
-                ]
+                        allOf: [{ properties: { deep: { type: 'string' } } }],
+                    },
+                ],
             };
 
             const result = await extractor.extractProperties(schema);
 
             // 只解析一层 allOf
-            expect(result.find(p => p.key === 'deep')).toBeUndefined();
+            expect(result.find((p) => p.key === 'deep')).toBeUndefined();
         });
 
         it('should handle oneOf with no properties', async () => {
             const schema = {
-                oneOf: [
-                    { type: 'string' },
-                    { type: 'number' }
-                ]
+                oneOf: [{ type: 'string' }, { type: 'number' }],
             };
 
             const result = await extractor.extractProperties(schema);
@@ -487,8 +467,8 @@ describe('SchemaPropertyExtractor', () => {
             const schema = {
                 anyOf: [
                     { properties: { a: { type: 'string' } } },
-                    { type: 'null' }  // 没有 properties
-                ]
+                    { type: 'null' }, // 没有 properties
+                ],
             };
 
             const result = await extractor.extractProperties(schema);
@@ -501,8 +481,8 @@ describe('SchemaPropertyExtractor', () => {
             const schema = {
                 properties: {
                     valid: { type: 'string' },
-                    invalid: 'not an object'  // 非法的属性定义
-                }
+                    invalid: 'not an object', // 非法的属性定义
+                },
             };
 
             const result = await extractor.extractProperties(schema);
@@ -515,7 +495,7 @@ describe('SchemaPropertyExtractor', () => {
         it('should handle circular reference in resolver', async () => {
             const circularSchema = {
                 __circularRef__: '#/$defs/A',
-                type: 'object'
+                type: 'object',
             };
 
             // 模拟 isCircularRef 返回 true 的情况
@@ -527,12 +507,10 @@ describe('SchemaPropertyExtractor', () => {
             });
 
             const schema = {
-                allOf: [
-                    { $ref: '#/$defs/A' }
-                ],
+                allOf: [{ $ref: '#/$defs/A' }],
                 $defs: {
-                    A: { $ref: '#/$defs/A' }
-                }
+                    A: { $ref: '#/$defs/A' },
+                },
             };
 
             // 应该不抛出错误
@@ -546,9 +524,9 @@ describe('SchemaPropertyExtractor', () => {
                 patternProperties: {
                     '^item_[0-9]+$': {
                         type: 'object',
-                        description: 'A numbered item'
-                    }
-                }
+                        description: 'A numbered item',
+                    },
+                },
             };
 
             const result = await extractor.extractProperties(schema);
@@ -560,10 +538,10 @@ describe('SchemaPropertyExtractor', () => {
             const schema = {
                 patternProperties: {
                     '^item_[0-9]+$': {
-                        type: 'object'
+                        type: 'object',
                         // 没有 description
-                    }
-                }
+                    },
+                },
             };
 
             const result = await extractor.extractProperties(schema);

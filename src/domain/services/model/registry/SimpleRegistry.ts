@@ -4,8 +4,8 @@
  * 移植自 craft-engine 的 ConstantBoundRegistry
  */
 
-import { ResourceKey } from './ResourceKey';
-import { Registry } from './Registry';
+import { type ResourceKey } from './ResourceKey';
+import { type Registry } from './Registry';
 import { AbstractMappedRegistry } from './MappedRegistry';
 import { HolderReference } from './HolderReference';
 

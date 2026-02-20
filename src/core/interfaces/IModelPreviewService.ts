@@ -7,7 +7,7 @@
  * 该服务负责编排模型生成和渲染流程，提供完整的预览功能。
  */
 
-import { IMinecraftModelJson } from './IModelGenerator';
+import { type IMinecraftModelJson } from './IModelGenerator';
 
 // ============================================
 // 预览选项
@@ -87,10 +87,7 @@ export interface IModelPreviewService {
      * @param options - 预览选项
      * @returns 预览结果
      */
-    previewCustomModel(
-        modelJson: IMinecraftModelJson,
-        options?: PreviewOptions
-    ): Promise<PreviewResult>;
+    previewCustomModel(modelJson: IMinecraftModelJson, options?: PreviewOptions): Promise<PreviewResult>;
 
     /**
      * 检查预览服务是否可用

@@ -1,5 +1,5 @@
-import { EditorTextDocument, EditorPosition, EditorTextEdit } from '../types/EditorTypes';
-import { ITemplate } from './ITemplate';
+import { type EditorTextDocument, type EditorPosition, type EditorTextEdit } from '../types/EditorTypes';
+import { type ITemplate } from './ITemplate';
 
 /**
  * 模板搜索结果

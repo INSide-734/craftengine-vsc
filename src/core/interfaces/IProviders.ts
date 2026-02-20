@@ -1,12 +1,12 @@
-import { 
-    CompletionItem, 
-    CompletionList, 
-    TextDocument, 
-    Position, 
-    Hover,
-    Location,
-    CancellationToken,
-    CompletionContext
+import {
+    type CompletionItem,
+    type CompletionList,
+    type TextDocument,
+    type Position,
+    type Hover,
+    type Location,
+    type CancellationToken,
+    type CompletionContext,
 } from 'vscode';
 
 /**
@@ -34,16 +34,13 @@ export interface ITemplateCompletionProvider {
         document: TextDocument,
         position: Position,
         token?: CancellationToken,
-        context?: CompletionContext
+        context?: CompletionContext,
     ): Promise<CompletionList | CompletionItem[] | undefined>;
-    
+
     /**
      * 解析补全项
      */
-    resolveCompletionItem(
-        item: CompletionItem,
-        token?: CancellationToken
-    ): Promise<CompletionItem | undefined>;
+    resolveCompletionItem(item: CompletionItem, token?: CancellationToken): Promise<CompletionItem | undefined>;
 }
 
 /**
@@ -53,11 +50,7 @@ export interface ITemplateHoverProvider {
     /**
      * 提供悬停信息
      */
-    provideHover(
-        document: TextDocument,
-        position: Position,
-        token?: CancellationToken
-    ): Promise<Hover | undefined>;
+    provideHover(document: TextDocument, position: Position, token?: CancellationToken): Promise<Hover | undefined>;
 }
 
 /**
@@ -70,7 +63,7 @@ export interface ITemplateDefinitionProvider {
     provideDefinition(
         document: TextDocument,
         position: Position,
-        token?: CancellationToken
+        token?: CancellationToken,
     ): Promise<Location | Location[] | undefined>;
 }
 
@@ -110,12 +103,12 @@ export interface ITemplateDiagnosticProvider {
      * 提供诊断信息
      */
     provideDiagnostics(document: TextDocument): Promise<ITemplateDiagnostic[]>;
-    
+
     /**
      * 更新文档的诊断信息
      */
     updateDiagnostics(document: TextDocument): Promise<void>;
-    
+
     /**
      * 清除文档的诊断信息
      */

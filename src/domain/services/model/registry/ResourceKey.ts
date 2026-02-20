@@ -62,10 +62,7 @@ export class ResourceKey<_T> {
      * 比较两个资源键是否相等
      */
     equals(other: ResourceKey<unknown>): boolean {
-        return (
-            this.registryName.equals(other.registryName) &&
-            this.location.equals(other.location)
-        );
+        return this.registryName.equals(other.registryName) && this.location.equals(other.location);
     }
 
     /**
@@ -77,5 +74,5 @@ export class ResourceKey<_T> {
 }
 
 // 前向声明，避免循环依赖
- 
+
 interface Registry<_T> {}

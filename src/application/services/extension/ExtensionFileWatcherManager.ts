@@ -1,7 +1,7 @@
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../core/interfaces/IConfiguration';
-import { IFileWatcher } from '../../../core/interfaces/IFileWatcher';
-import { DataFileHandler } from './DataFileHandler';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../core/interfaces/IConfiguration';
+import { type IFileWatcher } from '../../../core/interfaces/IFileWatcher';
+import { type DataFileHandler } from './DataFileHandler';
 
 /**
  * 扩展文件监控管理器
@@ -16,7 +16,7 @@ export class ExtensionFileWatcherManager {
         private readonly logger: ILogger,
         private readonly configuration: IConfiguration,
         private readonly fileWatcher: IFileWatcher,
-        private readonly fileHandler: DataFileHandler
+        private readonly fileHandler: DataFileHandler,
     ) {}
 
     /**
@@ -30,14 +30,13 @@ export class ExtensionFileWatcherManager {
             this.fileWatcher.watch('**/*.{yml,yaml}', {
                 exclude: excludePattern,
                 recursive: true,
-                debounceDelay: 300
+                debounceDelay: 300,
             });
 
             // 设置文件变更处理器
             this.setupFileChangeHandler();
 
             this.logger.debug('File watching setup completed');
-
         } catch (error) {
             this.logger.error('Failed to setup file watching', error as Error);
             throw error;
@@ -60,7 +59,7 @@ export class ExtensionFileWatcherManager {
         this.fileChangeUnsubscribe = this.fileWatcher.onFileChange(async (event) => {
             this.logger.debug('File change detected', {
                 file: event.uri.fsPath,
-                type: event.type
+                type: event.type,
             });
 
             try {
@@ -77,7 +76,7 @@ export class ExtensionFileWatcherManager {
             } catch (error) {
                 this.logger.error('Error handling file change', error as Error, {
                     file: event.uri.fsPath,
-                    type: event.type
+                    type: event.type,
                 });
             }
         });

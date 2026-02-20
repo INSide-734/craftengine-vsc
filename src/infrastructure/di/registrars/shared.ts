@@ -1,7 +1,4 @@
-import {
-    IDependencyContainer,
-    ServiceLifetime
-} from '../../../core/interfaces/IDependencyContainer';
+import { type IDependencyContainer, ServiceLifetime } from '../../../core/interfaces/IDependencyContainer';
 
 /**
  * 服务工厂函数类型
@@ -30,10 +27,7 @@ export function dynamicImport<T>(modulePath: string): T {
 /**
  * 批量注册服务到容器
  */
-export function registerServices(
-    container: IDependencyContainer,
-    registrations: ServiceRegistration[]
-): void {
+export function registerServices(container: IDependencyContainer, registrations: ServiceRegistration[]): void {
     for (const { token, factory, lifetime = ServiceLifetime.Singleton } of registrations) {
         container.registerFactory(token, factory, lifetime);
     }

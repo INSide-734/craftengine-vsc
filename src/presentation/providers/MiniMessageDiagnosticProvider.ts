@@ -1,18 +1,11 @@
-import {
-    TextDocument,
-    Diagnostic,
-    Range,
-    languages,
-    DiagnosticRelatedInformation,
-    Location
-} from 'vscode';
+import { type TextDocument, type Diagnostic, Range, languages, DiagnosticRelatedInformation, Location } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { IEventBus } from '../../core/interfaces/IEventBus';
+import { type IEventBus } from '../../core/interfaces/IEventBus';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { MiniMessageDataLoader } from '../../infrastructure/schema/data-loaders';
 import { generateEventId } from '../../infrastructure/utils';
 import { BaseDiagnosticProvider } from './BaseDiagnosticProvider';
-import { MiniMessageParser, MiniMessageValidationError } from '../../domain/services/minimessage';
+import { MiniMessageParser, type MiniMessageValidationError } from '../../domain/services/minimessage';
 
 /**
  * MiniMessage 诊断提供者
@@ -31,7 +24,7 @@ export class MiniMessageDiagnosticProvider extends BaseDiagnosticProvider {
             'craftengine-minimessage',
             'CraftEngine MiniMessage',
             'minimessage-diagnostics.update',
-            'MiniMessageDiagnosticProvider'
+            'MiniMessageDiagnosticProvider',
         );
         this.eventBus = ServiceContainer.getService<IEventBus>(SERVICE_TOKENS.EventBus);
         this.parser = new MiniMessageParser(MiniMessageDataLoader.getInstance());
@@ -65,9 +58,7 @@ export class MiniMessageDiagnosticProvider extends BaseDiagnosticProvider {
 
         // 合并到现有诊断而不是替换
         const existingDiagnostics = [...(languages.getDiagnostics(document.uri) || [])];
-        const otherDiagnostics = existingDiagnostics.filter(d =>
-            !d.source?.includes('MiniMessage')
-        );
+        const otherDiagnostics = existingDiagnostics.filter((d) => !d.source?.includes('MiniMessage'));
 
         // 发布诊断更新事件
         await this.eventBus.publish('minimessage.diagnostics.updated', {
@@ -76,7 +67,7 @@ export class MiniMessageDiagnosticProvider extends BaseDiagnosticProvider {
             timestamp: new Date(),
             source: 'MiniMessageDiagnosticProvider',
             uri: document.uri,
-            diagnosticCount: diagnostics.length
+            diagnosticCount: diagnostics.length,
         });
 
         return [...otherDiagnostics, ...diagnostics];
@@ -85,14 +76,8 @@ export class MiniMessageDiagnosticProvider extends BaseDiagnosticProvider {
     /**
      * 将领域层验证错误转换为 VS Code Diagnostic
      */
-    private convertToDiagnostic(
-        error: MiniMessageValidationError,
-        document: TextDocument
-    ): Diagnostic | null {
-        const range = new Range(
-            error.startLine, error.startCharacter,
-            error.endLine, error.endCharacter
-        );
+    private convertToDiagnostic(error: MiniMessageValidationError, document: TextDocument): Diagnostic | null {
+        const range = new Range(error.startLine, error.startCharacter, error.endLine, error.endCharacter);
 
         const diagnostic = this.createDiagnostic(range, error.message, error.codeInfo);
         if (!diagnostic) {
@@ -101,14 +86,15 @@ export class MiniMessageDiagnosticProvider extends BaseDiagnosticProvider {
 
         // 添加关联信息
         if (error.relatedInfo && error.relatedInfo.length > 0) {
-            diagnostic.relatedInformation = error.relatedInfo.map(info =>
-                new DiagnosticRelatedInformation(
-                    new Location(
-                        document.uri,
-                        new Range(info.startLine, info.startCharacter, info.endLine, info.endCharacter)
+            diagnostic.relatedInformation = error.relatedInfo.map(
+                (info) =>
+                    new DiagnosticRelatedInformation(
+                        new Location(
+                            document.uri,
+                            new Range(info.startLine, info.startCharacter, info.endLine, info.endCharacter),
+                        ),
+                        info.message,
                     ),
-                    info.message
-                )
             );
         }
 

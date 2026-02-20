@@ -4,8 +4,8 @@
  * 移植自 craft-engine 的 Holder
  */
 
-import { Key } from '../utils/Key';
-import { ResourceKey } from './ResourceKey';
+import { type Key } from '../utils/Key';
+import { type ResourceKey } from './ResourceKey';
 
 /**
  * 持有者类型

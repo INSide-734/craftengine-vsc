@@ -5,26 +5,20 @@
  */
 
 import {
-    CodeAction,
-    CodeActionContext,
+    type CodeAction,
+    type CodeActionContext,
     CodeActionKind,
-    CodeActionProvider,
-    Diagnostic,
-    Disposable,
+    type CodeActionProvider,
+    type Diagnostic,
+    type Disposable,
     languages,
-    Range,
-    TextDocument
+    type Range,
+    type TextDocument,
 } from 'vscode';
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type ILogger } from '../../core/interfaces/ILogger';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
-import {
-    IQuickFixProvider,
-    RequiredFieldFix,
-    UnknownPropertyFix,
-    EnumValueFix,
-    TypeMismatchFix
-} from './fixes';
+import { type IQuickFixProvider, RequiredFieldFix, UnknownPropertyFix, EnumValueFix, TypeMismatchFix } from './fixes';
 
 /**
  * 诊断代码操作提供者
@@ -39,13 +33,12 @@ export class DiagnosticCodeActionProvider implements CodeActionProvider, Disposa
     /**
      * 支持的代码操作类型
      */
-    static readonly providedCodeActionKinds = [
-        CodeActionKind.QuickFix
-    ];
+    static readonly providedCodeActionKinds = [CodeActionKind.QuickFix];
 
     constructor() {
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild('DiagnosticCodeActionProvider');
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(
+            'DiagnosticCodeActionProvider',
+        );
 
         // 注册内置的快速修复提供者
         this.registerBuiltinProviders();
@@ -70,7 +63,7 @@ export class DiagnosticCodeActionProvider implements CodeActionProvider, Disposa
         this.registerFixProvider(new TypeMismatchFix());
 
         this.logger.debug('Built-in fix providers registered', {
-            count: this.fixProviders.size
+            count: this.fixProviders.size,
         });
     }
 
@@ -92,13 +85,9 @@ export class DiagnosticCodeActionProvider implements CodeActionProvider, Disposa
      * @returns Disposable
      */
     register(): Disposable {
-        const registration = languages.registerCodeActionsProvider(
-            { language: 'yaml', scheme: 'file' },
-            this,
-            {
-                providedCodeActionKinds: DiagnosticCodeActionProvider.providedCodeActionKinds
-            }
-        );
+        const registration = languages.registerCodeActionsProvider({ language: 'yaml', scheme: 'file' }, this, {
+            providedCodeActionKinds: DiagnosticCodeActionProvider.providedCodeActionKinds,
+        });
 
         this.disposables.push(registration);
         return registration;
@@ -107,17 +96,11 @@ export class DiagnosticCodeActionProvider implements CodeActionProvider, Disposa
     /**
      * 提供代码操作
      */
-    provideCodeActions(
-        document: TextDocument,
-        _range: Range,
-        context: CodeActionContext
-    ): CodeAction[] {
+    provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 只处理 CraftEngine 的诊断
-        const craftEngineDiagnostics = context.diagnostics.filter(d =>
-            d.source?.startsWith('CraftEngine')
-        );
+        const craftEngineDiagnostics = context.diagnostics.filter((d) => d.source?.startsWith('CraftEngine'));
 
         if (craftEngineDiagnostics.length === 0) {
             return actions;
@@ -125,7 +108,7 @@ export class DiagnosticCodeActionProvider implements CodeActionProvider, Disposa
 
         this.logger.debug('Providing code actions', {
             file: document.fileName,
-            diagnosticsCount: craftEngineDiagnostics.length
+            diagnosticsCount: craftEngineDiagnostics.length,
         });
 
         // 为每个诊断提供修复
@@ -159,7 +142,7 @@ export class DiagnosticCodeActionProvider implements CodeActionProvider, Disposa
             const fixes = provider.provideFixes(diagnostic, document);
             this.logger.debug('Generated fixes', {
                 code,
-                fixCount: fixes.length
+                fixCount: fixes.length,
             });
             return fixes;
         } catch (error) {

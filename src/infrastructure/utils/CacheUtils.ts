@@ -32,7 +32,7 @@ export type { CacheStats } from './StatsCache';
 export async function getOrSet<K, V>(
     cache: { get(key: K): V | undefined; set(key: K, value: V): void },
     key: K,
-    factory: () => V | Promise<V>
+    factory: () => V | Promise<V>,
 ): Promise<V> {
     const cached = cache.get(key);
     if (cached !== undefined) {
@@ -55,7 +55,7 @@ export async function getOrSet<K, V>(
 export function getOrSetSync<K, V>(
     cache: { get(key: K): V | undefined; set(key: K, value: V): void },
     key: K,
-    factory: () => V
+    factory: () => V,
 ): V {
     const cached = cache.get(key);
     if (cached !== undefined) {

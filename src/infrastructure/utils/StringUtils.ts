@@ -187,8 +187,8 @@ export function toKebabCase(str: string): string {
  */
 export function toCamelCase(str: string): string {
     return str
-        .replace(/[-_\s]+(.)?/g, (_, char) => char ? char.toUpperCase() : '')
-        .replace(/^[A-Z]/, char => char.toLowerCase());
+        .replace(/[-_\s]+(.)?/g, (_, char) => (char ? char.toUpperCase() : ''))
+        .replace(/^[A-Z]/, (char) => char.toLowerCase());
 }
 
 /**
@@ -288,8 +288,7 @@ export function createIndent(level: number, indentChar: string = '  '): string {
  */
 export function removeQuotes(str: string): string {
     const trimmed = str.trim();
-    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-        (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
         return trimmed.slice(1, -1);
     }
     return trimmed;

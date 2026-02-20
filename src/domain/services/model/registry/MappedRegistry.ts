@@ -5,11 +5,11 @@
  */
 
 import { Key } from '../utils/Key';
-import { ResourceKey } from './ResourceKey';
-import { Registry } from './Registry';
-import { WritableRegistry } from './WritableRegistry';
-import { HolderOwner } from './Holder';
-import { HolderReference } from './HolderReference';
+import { type ResourceKey } from './ResourceKey';
+import { type Registry } from './Registry';
+import { type WritableRegistry } from './WritableRegistry';
+import { type HolderOwner } from './Holder';
+import { type HolderReference } from './HolderReference';
 
 /**
  * 抽象映射注册表
@@ -46,7 +46,9 @@ export abstract class AbstractMappedRegistry<T> implements WritableRegistry<T> {
     }
 
     getValueById(id: number): T | undefined {
-        if (id < 0 || id >= this.byId.length) {return undefined;}
+        if (id < 0 || id >= this.byId.length) {
+            return undefined;
+        }
         const ref = this.byId[id];
         return ref?.isBound() ? ref.value() : undefined;
     }
@@ -79,7 +81,9 @@ export abstract class AbstractMappedRegistry<T> implements WritableRegistry<T> {
         const keys = new Set<ResourceKey<T>>();
         for (const ref of this.byResourceKey.values()) {
             const key = ref.keyOptional();
-            if (key) {keys.add(key);}
+            if (key) {
+                keys.add(key);
+            }
         }
         return keys;
     }
@@ -115,7 +119,9 @@ export abstract class AbstractMappedRegistry<T> implements WritableRegistry<T> {
 
     getOrRegisterForHolder(key: ResourceKey<T>): HolderReference<T> {
         const existing = this.getByResourceKey(key);
-        if (existing) {return existing;}
+        if (existing) {
+            return existing;
+        }
         return this.registerForHolder(key);
     }
 

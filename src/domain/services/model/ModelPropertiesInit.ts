@@ -5,7 +5,7 @@
  * 必须在使用任何模型属性常量或注册表之前调用 initializeModelProperties()。
  */
 
-import { IModelPropertiesConfig } from '../../../core/types/ConfigTypes';
+import { type IModelPropertiesConfig } from '../../../core/types/ConfigTypes';
 import { initializeModelTypes } from './ItemModelTypes';
 import { initializeItemModelTypes } from './ItemModels';
 import { initializeConditionProperties } from './condition/ConditionProperty';

@@ -31,7 +31,7 @@ export class Throttler {
         key: string,
         fn: () => void | Promise<void>,
         interval: number,
-        options: { leading?: boolean; trailing?: boolean } = {}
+        options: { leading?: boolean; trailing?: boolean } = {},
     ): void {
         const { leading = true, trailing = true } = options;
         const now = Date.now();

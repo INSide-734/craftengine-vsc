@@ -6,15 +6,15 @@
  */
 
 import {
-    TextDocument,
+    type TextDocument,
     Diagnostic,
     DiagnosticSeverity,
     Range,
     DiagnosticRelatedInformation,
-    Location
+    Location,
 } from 'vscode';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IExtendedTypeService } from '../../../core/interfaces/IExtendedParameterType';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IExtendedTypeService } from '../../../core/interfaces/IExtendedParameterType';
 import { getIndentLevel } from '../../../infrastructure/utils';
 
 /**
@@ -61,11 +61,11 @@ export class ExtendedTypeValidator {
             this.logger.debug('Extended parameter type validation completed', {
                 file: document.fileName,
                 usageCount: extendedTypeUsages.length,
-                diagnosticCount: diagnostics.length
+                diagnosticCount: diagnostics.length,
             });
         } catch (error) {
             this.logger.error('Error validating extended parameter types', error as Error, {
-                file: document.fileName
+                file: document.fileName,
             });
         }
 
@@ -118,7 +118,7 @@ export class ExtendedTypeValidator {
                 typeRange,
                 properties,
                 blockStartLine: i,
-                blockIndent
+                blockIndent,
             });
         }
 
@@ -131,7 +131,7 @@ export class ExtendedTypeValidator {
     collectBlockProperties(
         lines: string[],
         startLine: number,
-        blockIndent: number
+        blockIndent: number,
     ): Map<string, { value: string; range: Range; lineNumber: number }> {
         const properties = new Map<string, { value: string; range: Range; lineNumber: number }>();
 
@@ -164,7 +164,7 @@ export class ExtendedTypeValidator {
                         properties.set(propName, {
                             value: propValue,
                             range: new Range(i, propStart, i, propEnd),
-                            lineNumber: i
+                            lineNumber: i,
                         });
                     }
                 }
@@ -200,7 +200,7 @@ export class ExtendedTypeValidator {
                         properties.set(propName, {
                             value: propValue,
                             range: new Range(i, propStart, i, propEnd),
-                            lineNumber: i
+                            lineNumber: i,
                         });
                     }
                 }
@@ -227,7 +227,7 @@ export class ExtendedTypeValidator {
                 const diagnostic = new Diagnostic(
                     usage.typeRange,
                     `Missing required property '${requiredProp}' for extended type '${usage.typeName}'`,
-                    DiagnosticSeverity.Error
+                    DiagnosticSeverity.Error,
                 );
                 diagnostic.source = 'CraftEngine Extended Type';
                 diagnostic.code = 'missing_required_property';
@@ -236,8 +236,8 @@ export class ExtendedTypeValidator {
                 diagnostic.relatedInformation = [
                     new DiagnosticRelatedInformation(
                         new Location(document.uri, usage.typeRange),
-                        `Required properties for '${usage.typeName}': ${typeDef.requiredProperties.join(', ')}`
-                    )
+                        `Required properties for '${usage.typeName}': ${typeDef.requiredProperties.join(', ')}`,
+                    ),
                 ];
 
                 diagnostics.push(diagnostic);
@@ -255,7 +255,7 @@ export class ExtendedTypeValidator {
                     const diagnostic = new Diagnostic(
                         propInfo.range,
                         `Unknown property '${propName}' for extended type '${usage.typeName}'`,
-                        DiagnosticSeverity.Warning
+                        DiagnosticSeverity.Warning,
                     );
                     diagnostic.source = 'CraftEngine Extended Type';
                     diagnostic.code = 'unknown_property';
@@ -263,8 +263,8 @@ export class ExtendedTypeValidator {
                     diagnostic.relatedInformation = [
                         new DiagnosticRelatedInformation(
                             new Location(document.uri, usage.typeRange),
-                            `Valid properties: ${allKnownProps.join(', ')}`
-                        )
+                            `Valid properties: ${allKnownProps.join(', ')}`,
+                        ),
                     ];
 
                     diagnostics.push(diagnostic);
@@ -275,11 +275,7 @@ export class ExtendedTypeValidator {
             // 验证属性值类型
             const typeError = this.validatePropertyType(propName, propInfo.value, expectedType);
             if (typeError) {
-                const diagnostic = new Diagnostic(
-                    propInfo.range,
-                    typeError,
-                    DiagnosticSeverity.Error
-                );
+                const diagnostic = new Diagnostic(propInfo.range, typeError, DiagnosticSeverity.Error);
                 diagnostic.source = 'CraftEngine Extended Type';
                 diagnostic.code = 'invalid_property_type';
 
@@ -299,10 +295,7 @@ export class ExtendedTypeValidator {
      *
      * 针对不同类型进行深层次的语义验证
      */
-    validateExtendedTypeSemantics(
-        usage: ExtendedTypeUsage,
-        document: TextDocument
-    ): Diagnostic[] {
+    validateExtendedTypeSemantics(usage: ExtendedTypeUsage, document: TextDocument): Diagnostic[] {
         switch (usage.typeName) {
             case 'self_increase_int':
                 return this.validateSelfIncreaseIntSemantics(usage, document);
@@ -320,10 +313,7 @@ export class ExtendedTypeValidator {
     /**
      * 验证 self_increase_int 类型的语义
      */
-    private validateSelfIncreaseIntSemantics(
-        usage: ExtendedTypeUsage,
-        document: TextDocument
-    ): Diagnostic[] {
+    private validateSelfIncreaseIntSemantics(usage: ExtendedTypeUsage, document: TextDocument): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
 
         const fromProp = usage.properties.get('from');
@@ -345,7 +335,7 @@ export class ExtendedTypeValidator {
             const diagnostic = new Diagnostic(
                 stepProp.range,
                 `Property 'step' cannot be 0 - this would cause an infinite loop`,
-                DiagnosticSeverity.Error
+                DiagnosticSeverity.Error,
             );
             diagnostic.source = 'CraftEngine Extended Type';
             diagnostic.code = 'invalid_step';
@@ -359,15 +349,15 @@ export class ExtendedTypeValidator {
                 const diagnostic = new Diagnostic(
                     targetRange,
                     `When 'from' (${fromValue}) < 'to' (${toValue}), 'step' should be positive, got ${stepValue}`,
-                    DiagnosticSeverity.Error
+                    DiagnosticSeverity.Error,
                 );
                 diagnostic.source = 'CraftEngine Extended Type';
                 diagnostic.code = 'invalid_step';
                 diagnostic.relatedInformation = [
                     new DiagnosticRelatedInformation(
                         new Location(document.uri, usage.typeRange),
-                        'Tip: Either change step to a positive value, or swap from and to values'
-                    )
+                        'Tip: Either change step to a positive value, or swap from and to values',
+                    ),
                 ];
                 diagnostics.push(diagnostic);
             } else if (fromValue > toValue && stepValue > 0) {
@@ -375,15 +365,15 @@ export class ExtendedTypeValidator {
                 const diagnostic = new Diagnostic(
                     targetRange,
                     `When 'from' (${fromValue}) > 'to' (${toValue}), 'step' should be negative, got ${stepValue}`,
-                    DiagnosticSeverity.Error
+                    DiagnosticSeverity.Error,
                 );
                 diagnostic.source = 'CraftEngine Extended Type';
                 diagnostic.code = 'invalid_step';
                 diagnostic.relatedInformation = [
                     new DiagnosticRelatedInformation(
                         new Location(document.uri, usage.typeRange),
-                        'Tip: Either change step to a negative value, or swap from and to values'
-                    )
+                        'Tip: Either change step to a negative value, or swap from and to values',
+                    ),
                 ];
                 diagnostics.push(diagnostic);
             }
@@ -395,10 +385,7 @@ export class ExtendedTypeValidator {
     /**
      * 验证 condition 类型的语义
      */
-    private validateConditionSemantics(
-        usage: ExtendedTypeUsage,
-        _document: TextDocument
-    ): Diagnostic[] {
+    private validateConditionSemantics(usage: ExtendedTypeUsage, _document: TextDocument): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
 
         const conditionProp = usage.properties.get('condition');
@@ -410,7 +397,7 @@ export class ExtendedTypeValidator {
                 const diagnostic = new Diagnostic(
                     conditionProp.range,
                     `Property 'condition' should contain a variable reference (\${...}) for dynamic evaluation`,
-                    DiagnosticSeverity.Warning
+                    DiagnosticSeverity.Warning,
                 );
                 diagnostic.source = 'CraftEngine Extended Type';
                 diagnostic.code = 'static_condition';
@@ -424,10 +411,7 @@ export class ExtendedTypeValidator {
     /**
      * 验证 when 类型的语义
      */
-    private validateWhenSemantics(
-        usage: ExtendedTypeUsage,
-        _document: TextDocument
-    ): Diagnostic[] {
+    private validateWhenSemantics(usage: ExtendedTypeUsage, _document: TextDocument): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
 
         const sourceProp = usage.properties.get('source');
@@ -440,7 +424,7 @@ export class ExtendedTypeValidator {
                 const diagnostic = new Diagnostic(
                     sourceProp.range,
                     `Property 'source' should contain a variable reference (\${...}) for dynamic matching`,
-                    DiagnosticSeverity.Warning
+                    DiagnosticSeverity.Warning,
                 );
                 diagnostic.source = 'CraftEngine Extended Type';
                 diagnostic.code = 'static_source';
@@ -461,10 +445,7 @@ export class ExtendedTypeValidator {
     /**
      * 验证 expression 类型的语义
      */
-    private validateExpressionSemantics(
-        usage: ExtendedTypeUsage,
-        _document: TextDocument
-    ): Diagnostic[] {
+    private validateExpressionSemantics(usage: ExtendedTypeUsage, _document: TextDocument): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
 
         const expressionProp = usage.properties.get('expression');
@@ -480,16 +461,22 @@ export class ExtendedTypeValidator {
             // 检查括号匹配
             let parenCount = 0;
             for (const char of value) {
-                if (char === '(') {parenCount++;}
-                if (char === ')') {parenCount--;}
-                if (parenCount < 0) {break;}
+                if (char === '(') {
+                    parenCount++;
+                }
+                if (char === ')') {
+                    parenCount--;
+                }
+                if (parenCount < 0) {
+                    break;
+                }
             }
 
             if (parenCount !== 0) {
                 const diagnostic = new Diagnostic(
                     expressionProp.range,
                     `Unbalanced parentheses in expression`,
-                    DiagnosticSeverity.Error
+                    DiagnosticSeverity.Error,
                 );
                 diagnostic.source = 'CraftEngine Extended Type';
                 diagnostic.code = 'invalid_expression';

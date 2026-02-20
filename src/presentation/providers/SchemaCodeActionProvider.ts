@@ -1,14 +1,14 @@
 import {
-    CodeActionProvider,
+    type CodeActionProvider,
     CodeActionKind,
     CodeAction,
-    TextDocument,
+    type TextDocument,
     Range,
-    Diagnostic,
+    type Diagnostic,
     WorkspaceEdit,
-    CodeActionContext,
-    CancellationToken,
-    Position
+    type CodeActionContext,
+    type CancellationToken,
+    Position,
 } from 'vscode';
 import { extractDiagnosticCode } from './helpers/DiagnosticCodeHelper';
 
@@ -29,13 +29,13 @@ export class SchemaCodeActionProvider implements CodeActionProvider {
         document: TextDocument,
         _range: Range,
         context: CodeActionContext,
-        token?: CancellationToken
+        token?: CancellationToken,
     ): Promise<CodeAction[]> {
         if (token?.isCancellationRequested) {
             return [];
         }
 
-        const schemaDiagnostics = context.diagnostics.filter(d => d.source === SCHEMA_DIAGNOSTIC_SOURCE);
+        const schemaDiagnostics = context.diagnostics.filter((d) => d.source === SCHEMA_DIAGNOSTIC_SOURCE);
         if (schemaDiagnostics.length === 0) {
             return [];
         }
@@ -77,7 +77,8 @@ export class SchemaCodeActionProvider implements CodeActionProvider {
         const propertyName = match[1];
         const insertInfo = this.findInsertPosition(diagnostic.range, document);
 
-        const needsNewline = insertInfo.position.line < document.lineCount &&
+        const needsNewline =
+            insertInfo.position.line < document.lineCount &&
             document.lineAt(insertInfo.position.line).text.trim() !== '';
 
         const edit = new WorkspaceEdit();
@@ -176,10 +177,7 @@ export class SchemaCodeActionProvider implements CodeActionProvider {
 
     private createDeleteLineAction(diagnostic: Diagnostic, document: TextDocument): CodeAction[] {
         const line = document.lineAt(diagnostic.range.start.line);
-        const deleteRange = new Range(
-            line.range.start,
-            new Position(line.range.end.line + 1, 0)
-        );
+        const deleteRange = new Range(line.range.start, new Position(line.range.end.line + 1, 0));
 
         const edit = new WorkspaceEdit();
         edit.delete(document.uri, deleteRange);
@@ -197,9 +195,9 @@ export class SchemaCodeActionProvider implements CodeActionProvider {
             return [];
         }
 
-        const allowedValues = match[1].split(',').map(v => v.trim());
+        const allowedValues = match[1].split(',').map((v) => v.trim());
 
-        return allowedValues.slice(0, 5).map(value => {
+        return allowedValues.slice(0, 5).map((value) => {
             const edit = new WorkspaceEdit();
             edit.replace(document.uri, diagnostic.range, value);
 
@@ -262,13 +260,13 @@ export class SchemaCodeActionProvider implements CodeActionProvider {
         if (childIndentation === '  ') {
             return {
                 position: new Position(startLine + 1, 0),
-                indentation: ' '.repeat(parentIndent + 2)
+                indentation: ' '.repeat(parentIndent + 2),
             };
         }
 
         return {
             position: new Position(lastChildLine + 1, 0),
-            indentation: childIndentation
+            indentation: childIndentation,
         };
     }
 
@@ -282,9 +280,8 @@ export class SchemaCodeActionProvider implements CodeActionProvider {
         const regex = new RegExp(`^(\\s*)${propertyName}\\s*:`);
 
         if (regex.test(line.text)) {
-            const endPos = line.lineNumber + 1 < document.lineCount
-                ? new Position(line.lineNumber + 1, 0)
-                : line.range.end;
+            const endPos =
+                line.lineNumber + 1 < document.lineCount ? new Position(line.lineNumber + 1, 0) : line.range.end;
 
             return new Range(new Position(line.lineNumber, 0), endPos);
         }
@@ -292,4 +289,3 @@ export class SchemaCodeActionProvider implements CodeActionProvider {
         return undefined;
     }
 }
-

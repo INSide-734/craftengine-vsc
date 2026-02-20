@@ -1,18 +1,14 @@
-import {
-    TextDocument,
-    Diagnostic,
-    Range
-} from 'vscode';
+import { type TextDocument, type Diagnostic, Range } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
-import { IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
+import { type IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
+import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { YamlHelper } from '../../infrastructure/yaml/YamlHelper';
 import {
     INVALID_VERSION_CONDITION,
     VERSION_TOO_OLD,
     VERSION_NOT_FOUND,
-    INVALID_VERSION_RANGE
+    INVALID_VERSION_RANGE,
 } from '../../core/constants/DiagnosticCodes';
 import { TYPE_VALIDATION_MESSAGES } from '../../core/constants/DiagnosticMessages';
 import { BaseDiagnosticProvider } from './BaseDiagnosticProvider';
@@ -64,9 +60,11 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
             'craftengine-versioncondition',
             'CraftEngine VersionCondition',
             'versionCondition.diagnostics.update',
-            'VersionConditionDiagnosticProvider'
+            'VersionConditionDiagnosticProvider',
         );
-        this.versionService = ServiceContainer.getService<IMinecraftVersionService>(SERVICE_TOKENS.MinecraftVersionService);
+        this.versionService = ServiceContainer.getService<IMinecraftVersionService>(
+            SERVICE_TOKENS.MinecraftVersionService,
+        );
         // 从版本要求配置读取最低支持版本
         const configLoader = ServiceContainer.getService<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
         const versionReqConfig = configLoader.getVersionRequirementsConfigSync();
@@ -127,7 +125,7 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
                     version: match[2],
                     endVersion: match[4],
                     range: new Range(lineNum, startCol, lineNum, endCol),
-                    line: lineNum
+                    line: lineNum,
                 });
             }
         }
@@ -161,11 +159,10 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
                     diagnostics.push(rangeDiagnostic);
                 }
             }
-
         } catch (error) {
             this.logger.debug('Error validating version condition', {
                 condition: ref.condition,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             });
         }
 
@@ -181,7 +178,7 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
             return this.createDiagnostic(
                 range,
                 TYPE_VALIDATION_MESSAGES.invalidVersionCondition(version, 'Expected format: X.Y or X.Y.Z'),
-                INVALID_VERSION_CONDITION
+                INVALID_VERSION_CONDITION,
             );
         }
 
@@ -190,18 +187,14 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
             return this.createDiagnostic(
                 range,
                 TYPE_VALIDATION_MESSAGES.versionTooOld(version, this.minSupportedVersion),
-                VERSION_TOO_OLD
+                VERSION_TOO_OLD,
             );
         }
 
         // 检查版本是否存在
         const isValid = await this.versionService.isValidVersion(version);
         if (!isValid) {
-            return this.createDiagnostic(
-                range,
-                TYPE_VALIDATION_MESSAGES.versionNotFound(version),
-                VERSION_NOT_FOUND
-            );
+            return this.createDiagnostic(range, TYPE_VALIDATION_MESSAGES.versionNotFound(version), VERSION_NOT_FOUND);
         }
 
         return null;
@@ -221,7 +214,7 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
             return this.createDiagnostic(
                 ref.range,
                 TYPE_VALIDATION_MESSAGES.invalidVersionRange(ref.version, ref.endVersion),
-                INVALID_VERSION_RANGE
+                INVALID_VERSION_RANGE,
             );
         }
 

@@ -7,4 +7,3 @@
 export * from './NewTemplateCommands';
 export * from './SchemaCommands';
 export * from './ModelPreviewCommands';
-

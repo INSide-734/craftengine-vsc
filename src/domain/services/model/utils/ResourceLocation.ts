@@ -58,10 +58,7 @@ export function isValidResourceLocation(resourceLocation: string): boolean {
     if (index === -1) {
         return isValidPath(resourceLocation);
     }
-    return (
-        isValidNamespace(resourceLocation.substring(0, index)) &&
-        isValidPath(resourceLocation.substring(index + 1))
-    );
+    return isValidNamespace(resourceLocation.substring(0, index)) && isValidPath(resourceLocation.substring(index + 1));
 }
 
 /**
@@ -104,7 +101,9 @@ export class ResourceLocation {
     }
 
     equals(other: ResourceLocation | null | undefined): boolean {
-        if (!other) {return false;}
+        if (!other) {
+            return false;
+        }
         return this.namespace === other.namespace && this.path === other.path;
     }
 }

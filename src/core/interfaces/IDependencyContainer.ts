@@ -7,7 +7,7 @@ export enum ServiceLifetime {
     /** 在同一作用域内共享实例 */
     Scoped = 'scoped',
     /** 全局单例（推荐） */
-    Singleton = 'singleton'
+    Singleton = 'singleton',
 }
 
 /**
@@ -49,7 +49,7 @@ export interface IDependencyContainer {
     register<T>(
         token: string | symbol,
         implementation: new (...args: unknown[]) => T,
-        lifetime?: ServiceLifetime
+        lifetime?: ServiceLifetime,
     ): void;
 
     /**
@@ -65,11 +65,7 @@ export interface IDependencyContainer {
      * @param factory - 工厂函数
      * @param lifetime - 服务生命周期，默认 Singleton
      */
-    registerFactory<T>(
-        token: string | symbol,
-        factory: ServiceFactory<T>,
-        lifetime?: ServiceLifetime
-    ): void;
+    registerFactory<T>(token: string | symbol, factory: ServiceFactory<T>, lifetime?: ServiceLifetime): void;
 
     /**
      * 解析服务实例

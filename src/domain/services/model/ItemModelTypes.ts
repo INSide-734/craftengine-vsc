@@ -6,17 +6,17 @@
  */
 
 import {
-    IItemModel,
-    IModelGeneration,
-    IModelGenerationConfig,
-    DisplayPosition,
-    IDisplayMeta,
-    IMinecraftVersionInfo,
-    IRevision,
-    ISelectCase,
-    IRangeDispatchEntry,
+    type IItemModel,
+    type IModelGeneration,
+    type IModelGenerationConfig,
+    type DisplayPosition,
+    type IDisplayMeta,
+    type IMinecraftVersionInfo,
+    type IRevision,
+    type ISelectCase,
+    type IRangeDispatchEntry,
 } from '../../../core/interfaces/IModelGenerator';
-import { Tint } from './Tint';
+import { type Tint } from './Tint';
 
 // ============================================
 // 模型类型常量（从 JSON 配置初始化）
@@ -39,21 +39,18 @@ export function initializeModelTypes(types: Record<string, string>): void {
  *
  * 通过 Proxy 延迟访问，未初始化时抛出错误。
  */
-export const MODEL_TYPES: Record<string, string> = new Proxy(
-    {} as Record<string, string>,
-    {
-        get(_target, prop: string): string {
-            if (!modelTypesData) {
-                throw new Error('MODEL_TYPES not initialized. Call initializeModelTypes() first.');
-            }
-            const val = modelTypesData[prop];
-            if (val === undefined) {
-                throw new Error(`Unknown MODEL_TYPES key: ${prop}`);
-            }
-            return val;
-        },
-    }
-);
+export const MODEL_TYPES: Record<string, string> = new Proxy({} as Record<string, string>, {
+    get(_target, prop: string): string {
+        if (!modelTypesData) {
+            throw new Error('MODEL_TYPES not initialized. Call initializeModelTypes() first.');
+        }
+        const val = modelTypesData[prop];
+        if (val === undefined) {
+            throw new Error(`Unknown MODEL_TYPES key: ${prop}`);
+        }
+        return val;
+    },
+});
 
 // ============================================
 // 辅助函数：收集子模型数据
@@ -63,14 +60,14 @@ export const MODEL_TYPES: Record<string, string> = new Proxy(
  * 从多个子模型收集 ModelGeneration
  */
 export function collectModelsToGenerate(models: IItemModel[]): IModelGeneration[] {
-    return models.flatMap(m => m.modelsToGenerate());
+    return models.flatMap((m) => m.modelsToGenerate());
 }
 
 /**
  * 从多个子模型收集 Revision
  */
 export function collectRevisions(models: IItemModel[]): IRevision[] {
-    return models.flatMap(m => m.revisions());
+    return models.flatMap((m) => m.revisions());
 }
 
 // ============================================
@@ -106,10 +103,7 @@ export function normalizeModelPath(path: string, defaultNamespace = 'minecraft')
 /**
  * 从配置创建 ModelGeneration
  */
-export function createModelGeneration(
-    path: string,
-    config: IModelGenerationConfig
-): IModelGeneration {
+export function createModelGeneration(path: string, config: IModelGenerationConfig): IModelGeneration {
     const displays: Partial<Record<DisplayPosition, IDisplayMeta>> = {};
 
     if (config.display) {
@@ -166,11 +160,7 @@ export class BaseItemModel implements IItemModel {
     private readonly tints: Tint[];
     private readonly modelGeneration?: IModelGeneration;
 
-    constructor(
-        path: string,
-        tints: Tint[] = [],
-        modelGeneration?: IModelGeneration
-    ) {
+    constructor(path: string, tints: Tint[] = [], modelGeneration?: IModelGeneration) {
         this.path = path;
         this.tints = tints;
         this.modelGeneration = modelGeneration;
@@ -186,7 +176,7 @@ export class BaseItemModel implements IItemModel {
             model: this.path,
         };
         if (this.tints.length > 0) {
-            json['tints'] = this.tints.map(t => t.toJson());
+            json['tints'] = this.tints.map((t) => t.toJson());
         }
         return json;
     }
@@ -214,14 +204,14 @@ export class CompositeItemModel implements IItemModel {
     apply(version?: IMinecraftVersionInfo): Record<string, unknown> {
         return {
             type: this.type,
-            models: this.models.map(m => m.apply(version)),
+            models: this.models.map((m) => m.apply(version)),
         };
     }
 
     toJson(): Record<string, unknown> {
         return {
             type: this.type,
-            models: this.models.map(m => m.toJson()),
+            models: this.models.map((m) => m.toJson()),
         };
     }
 
@@ -244,12 +234,7 @@ export class ConditionItemModel implements IItemModel {
     private readonly onTrue: IItemModel;
     private readonly onFalse: IItemModel;
 
-    constructor(
-        property: string,
-        propertyArgs: Record<string, unknown>,
-        onTrue: IItemModel,
-        onFalse: IItemModel
-    ) {
+    constructor(property: string, propertyArgs: Record<string, unknown>, onTrue: IItemModel, onFalse: IItemModel) {
         this.property = property;
         this.propertyArgs = propertyArgs;
         this.onTrue = onTrue;
@@ -295,12 +280,7 @@ export class SelectItemModel implements IItemModel {
     private readonly cases: ISelectCase[];
     private readonly fallback?: IItemModel;
 
-    constructor(
-        property: string,
-        propertyArgs: Record<string, unknown>,
-        cases: ISelectCase[],
-        fallback?: IItemModel
-    ) {
+    constructor(property: string, propertyArgs: Record<string, unknown>, cases: ISelectCase[], fallback?: IItemModel) {
         this.property = property;
         this.propertyArgs = propertyArgs;
         this.cases = cases;
@@ -312,7 +292,7 @@ export class SelectItemModel implements IItemModel {
             type: this.type,
             property: this.property,
             ...this.propertyArgs,
-            cases: this.cases.map(c => ({
+            cases: this.cases.map((c) => ({
                 when: c.when,
                 model: c.model.apply(version),
             })),
@@ -328,7 +308,7 @@ export class SelectItemModel implements IItemModel {
             type: this.type,
             property: this.property,
             ...this.propertyArgs,
-            cases: this.cases.map(c => ({
+            cases: this.cases.map((c) => ({
                 when: c.when,
                 model: c.model.toJson(),
             })),
@@ -340,7 +320,7 @@ export class SelectItemModel implements IItemModel {
     }
 
     modelsToGenerate(): IModelGeneration[] {
-        const models = this.cases.map(c => c.model);
+        const models = this.cases.map((c) => c.model);
         if (this.fallback) {
             models.push(this.fallback);
         }
@@ -348,7 +328,7 @@ export class SelectItemModel implements IItemModel {
     }
 
     revisions(): IRevision[] {
-        const models = this.cases.map(c => c.model);
+        const models = this.cases.map((c) => c.model);
         if (this.fallback) {
             models.push(this.fallback);
         }
@@ -372,7 +352,7 @@ export class RangeDispatchItemModel implements IItemModel {
         propertyArgs: Record<string, unknown>,
         scale: number,
         entries: IRangeDispatchEntry[],
-        fallback?: IItemModel
+        fallback?: IItemModel,
     ) {
         this.property = property;
         this.propertyArgs = propertyArgs;
@@ -386,7 +366,7 @@ export class RangeDispatchItemModel implements IItemModel {
             type: this.type,
             property: this.property,
             ...this.propertyArgs,
-            entries: this.entries.map(e => ({
+            entries: this.entries.map((e) => ({
                 threshold: e.threshold,
                 model: e.model.apply(version),
             })),
@@ -405,7 +385,7 @@ export class RangeDispatchItemModel implements IItemModel {
             type: this.type,
             property: this.property,
             ...this.propertyArgs,
-            entries: this.entries.map(e => ({
+            entries: this.entries.map((e) => ({
                 threshold: e.threshold,
                 model: e.model.toJson(),
             })),
@@ -420,7 +400,7 @@ export class RangeDispatchItemModel implements IItemModel {
     }
 
     modelsToGenerate(): IModelGeneration[] {
-        const models = this.entries.map(e => e.model);
+        const models = this.entries.map((e) => e.model);
         if (this.fallback) {
             models.push(this.fallback);
         }
@@ -428,7 +408,7 @@ export class RangeDispatchItemModel implements IItemModel {
     }
 
     revisions(): IRevision[] {
-        const models = this.entries.map(e => e.model);
+        const models = this.entries.map((e) => e.model);
         if (this.fallback) {
             models.push(this.fallback);
         }

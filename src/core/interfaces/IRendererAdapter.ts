@@ -1,4 +1,4 @@
-import { IMinecraftModelJson } from './IModelGenerator';
+import { type IMinecraftModelJson } from './IModelGenerator';
 
 /**
  * 渲染器初始化选项

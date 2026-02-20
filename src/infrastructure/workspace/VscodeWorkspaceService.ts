@@ -1,5 +1,5 @@
-import { Uri, workspace, TextDocument } from 'vscode';
-import { IWorkspaceService, IWorkspaceFolder } from '../../core/interfaces/IWorkspaceService';
+import { Uri, workspace, type TextDocument } from 'vscode';
+import { type IWorkspaceService, type IWorkspaceFolder } from '../../core/interfaces/IWorkspaceService';
 
 /**
  * VS Code 工作区服务实现
@@ -16,10 +16,10 @@ export class VscodeWorkspaceService implements IWorkspaceService {
             return [];
         }
 
-        return folders.map(folder => ({
+        return folders.map((folder) => ({
             uri: folder.uri,
             name: folder.name,
-            index: folder.index
+            index: folder.index,
         }));
     }
 

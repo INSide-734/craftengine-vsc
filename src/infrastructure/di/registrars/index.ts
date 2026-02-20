@@ -5,13 +5,7 @@ export {
     registerEventServices,
     registerPerformanceServices,
     registerInfrastructureServices,
-    registerDataServices
+    registerDataServices,
 } from './InfrastructureRegistrar';
-export {
-    registerDomainServices,
-    registerCompletionServices
-} from './DomainRegistrar';
-export {
-    registerApplicationServices,
-    initializeServices
-} from './ApplicationRegistrar';
+export { registerDomainServices, registerCompletionServices } from './DomainRegistrar';
+export { registerApplicationServices, initializeServices } from './ApplicationRegistrar';

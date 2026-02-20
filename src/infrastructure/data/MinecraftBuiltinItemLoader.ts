@@ -1,7 +1,7 @@
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
-import { IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
-import { IItemId, IBuiltinItemLoader } from '../../core/interfaces/IItemId';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
+import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
+import { type IItemId, type IBuiltinItemLoader } from '../../core/interfaces/IItemId';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { ServiceContainer } from '../ServiceContainer';
 import { HttpUtils } from '../utils/HttpUtils';
@@ -54,14 +54,13 @@ export class MinecraftBuiltinItemLoader implements IBuiltinItemLoader {
     private readonly configLoader: IDataConfigLoader;
 
     constructor() {
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild('MinecraftBuiltinItemLoader');
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(
+            'MinecraftBuiltinItemLoader',
+        );
         this.versionService = ServiceContainer.getService<IMinecraftVersionService>(
-            SERVICE_TOKENS.MinecraftVersionService
+            SERVICE_TOKENS.MinecraftVersionService,
         );
-        this.configLoader = ServiceContainer.getService<IDataConfigLoader>(
-            SERVICE_TOKENS.DataConfigLoader
-        );
+        this.configLoader = ServiceContainer.getService<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
 
         // 从预加载的配置中获取值
         const timingConfig = this.configLoader.getTimingConfigSync();
@@ -76,10 +75,10 @@ export class MinecraftBuiltinItemLoader implements IBuiltinItemLoader {
 
         this.logger.debug('MinecraftBuiltinItemLoader initialized', {
             requestTimeout: this.requestTimeout,
-            builtinSource: this.builtinSource
+            builtinSource: this.builtinSource,
         });
     }
-    
+
     /**
      * 加载 Minecraft 内置物品列表
      *
@@ -97,14 +96,16 @@ export class MinecraftBuiltinItemLoader implements IBuiltinItemLoader {
             this.logger.info('Loading Minecraft builtin items', { version: latestVersion });
 
             // 2. 从配置构建所有数据源 URL（主站 + 镜像站）
-            const urls = await this.configLoader.getDataSourceUrls(
-                'minecraftAssets',
-                'builtinItems',
-                { version: latestVersion }
-            );
+            const urls = await this.configLoader.getDataSourceUrls('minecraftAssets', 'builtinItems', {
+                version: latestVersion,
+            });
 
             // 3. 尝试从多个源获取数据
-            const response = await HttpUtils.fetchFromMultipleSources<MinecraftItemListResponse>(urls, this.requestTimeout, this.logger);
+            const response = await HttpUtils.fetchFromMultipleSources<MinecraftItemListResponse>(
+                urls,
+                this.requestTimeout,
+                this.logger,
+            );
 
             if (!response) {
                 this.logger.error('Failed to fetch from all data sources', new Error('All sources failed'));
@@ -116,11 +117,10 @@ export class MinecraftBuiltinItemLoader implements IBuiltinItemLoader {
 
             this.logger.info('Minecraft builtin items loaded successfully', {
                 version: latestVersion,
-                count: items.length
+                count: items.length,
             });
 
             return items;
-
         } catch (error) {
             this.logger.error('Failed to load Minecraft builtin items', error as Error);
             return [];
@@ -152,7 +152,7 @@ export class MinecraftBuiltinItemLoader implements IBuiltinItemLoader {
                 name: itemName,
                 type: 'item',
                 sourceFile: `${this.builtinSource}@${version}`,
-                lineNumber: 0
+                lineNumber: 0,
             };
 
             items.push(item);

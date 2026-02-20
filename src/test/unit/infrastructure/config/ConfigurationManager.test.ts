@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ConfigurationManager } from '../../../../infrastructure/config/ConfigurationManager';
-import { IConfigurationProvider } from '../../../../core/interfaces/IConfiguration';
+import { type IConfigurationProvider } from '../../../../core/interfaces/IConfiguration';
 
 describe('ConfigurationManager', () => {
     let configManager: ConfigurationManager;
@@ -9,13 +9,13 @@ describe('ConfigurationManager', () => {
 
     beforeEach(async () => {
         mockConfig = {
-            'simple': 'value',
-            'nested': {
-                'key': 'nestedValue'
+            simple: 'value',
+            nested: {
+                key: 'nestedValue',
             },
-            'logging': {
-                'level': 'INFO'
-            }
+            logging: {
+                level: 'INFO',
+            },
         };
 
         mockProvider = {
@@ -55,7 +55,7 @@ describe('ConfigurationManager', () => {
             await configManager.set('newKey', 'newValue');
 
             expect(configManager.get('newKey')).toBe('newValue');
-            expect(mockProvider.save).toHaveBeenCalledWith({ 'newKey': 'newValue' });
+            expect(mockProvider.save).toHaveBeenCalledWith({ newKey: 'newValue' });
         });
 
         it('should update nested value', async () => {
@@ -71,17 +71,19 @@ describe('ConfigurationManager', () => {
 
             await configManager.set('simple', 'newValue');
 
-            expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-                key: 'simple',
-                oldValue: 'value',
-                newValue: 'newValue'
-            }));
+            expect(listener).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    key: 'simple',
+                    oldValue: 'value',
+                    newValue: 'newValue',
+                }),
+            );
         });
     });
 
     describe('reload', () => {
         it('should reload config from provider', async () => {
-            const newConfig = { ...mockConfig, 'simple': 'updated' };
+            const newConfig = { ...mockConfig, simple: 'updated' };
             vi.mocked(mockProvider.load).mockResolvedValue(newConfig);
 
             await configManager.reload();
@@ -93,16 +95,18 @@ describe('ConfigurationManager', () => {
             const listener = vi.fn();
             configManager.onChange(listener);
 
-            const newConfig = { ...mockConfig, 'simple': 'updated' };
+            const newConfig = { ...mockConfig, simple: 'updated' };
             vi.mocked(mockProvider.load).mockResolvedValue(newConfig);
 
             await configManager.reload();
 
-            expect(listener).toHaveBeenCalledWith(expect.objectContaining({
-                key: 'simple',
-                oldValue: 'value',
-                newValue: 'updated'
-            }));
+            expect(listener).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    key: 'simple',
+                    oldValue: 'value',
+                    newValue: 'updated',
+                }),
+            );
         });
     });
 
@@ -111,7 +115,7 @@ describe('ConfigurationManager', () => {
             await configManager.set('logging.level', 123); // Invalid type, expected string
 
             const errors = await configManager.validate();
-            
+
             // Note: In real scenario set() doesn't validate, only validate() does.
             // But set() updates the internal state which validate() checks.
             expect(errors.length).toBeGreaterThan(0);
@@ -128,4 +132,3 @@ describe('ConfigurationManager', () => {
         });
     });
 });
-

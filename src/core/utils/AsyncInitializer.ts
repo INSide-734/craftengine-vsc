@@ -39,18 +39,20 @@ export function createAsyncInitializer(loadFn: () => Promise<void>): AsyncInitia
             if (loadPromise) {
                 return loadPromise;
             }
-            loadPromise = loadFn().then(() => {
-                loaded = true;
-            }).catch((err) => {
-                loadPromise = null; // 允许重试
-                throw err;
-            });
+            loadPromise = loadFn()
+                .then(() => {
+                    loaded = true;
+                })
+                .catch((err) => {
+                    loadPromise = null; // 允许重试
+                    throw err;
+                });
             await loadPromise;
         },
         reset: () => {
             loaded = false;
             loadPromise = null;
         },
-        isLoaded: () => loaded
+        isLoaded: () => loaded,
     };
 }

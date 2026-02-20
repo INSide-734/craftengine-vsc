@@ -59,6 +59,18 @@ export class LRUCache<K, V> {
     }
 
     /**
+     * 读取缓存项但不更新访问顺序
+     *
+     * 适用于遍历场景（如清理过期条目），避免在迭代 Map 时触发重排序。
+     *
+     * @param key - 缓存键
+     * @returns 缓存值，如果不存在返回 undefined
+     */
+    peek(key: K): V | undefined {
+        return this.cache.get(key);
+    }
+
+    /**
      * 获取缓存项
      *
      * 获取指定键的值，如果存在则将其移到最近使用位置（Map 末尾）。

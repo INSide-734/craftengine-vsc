@@ -4,7 +4,7 @@
  * 基于 LRUCache 提供缓存策略，支持 TTL 过期和版本检查
  */
 
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type ILogger } from '../../core/interfaces/ILogger';
 import { LRUCache } from '../../core/utils/LRUCache';
 
 /**
@@ -72,7 +72,7 @@ export class DiagnosticCache<T> {
     static optionsFromConfig(cacheConfig?: { capacity: number; ttl: number }): DiagnosticCacheOptions {
         return {
             capacity: cacheConfig?.capacity ?? DiagnosticCache.DEFAULT_CAPACITY,
-            ttl: cacheConfig?.ttl ?? DiagnosticCache.DEFAULT_TTL
+            ttl: cacheConfig?.ttl ?? DiagnosticCache.DEFAULT_TTL,
         };
     }
 
@@ -96,10 +96,10 @@ export class DiagnosticCache<T> {
 
         this.logger?.debug(`${this.name} initialized`, {
             capacity: this.capacity,
-            ttl: this.ttl
+            ttl: this.ttl,
         });
     }
-/* PLACEHOLDER_METHODS */
+    /* PLACEHOLDER_METHODS */
 
     /**
      * 获取缓存值
@@ -149,7 +149,9 @@ export class DiagnosticCache<T> {
      */
     has(key: string, version?: number): boolean {
         const entry = this.cache.get(key);
-        if (!entry) { return false; }
+        if (!entry) {
+            return false;
+        }
 
         if (version !== undefined && entry.version !== version) {
             return false;
@@ -162,7 +164,7 @@ export class DiagnosticCache<T> {
 
         return true;
     }
-/* PLACEHOLDER_REST */
+    /* PLACEHOLDER_REST */
 
     /**
      * 删除缓存条目
@@ -184,14 +186,16 @@ export class DiagnosticCache<T> {
      * 清除过期条目
      */
     purgeExpired(): number {
-        if (this.ttl <= 0) { return 0; }
+        if (this.ttl <= 0) {
+            return 0;
+        }
 
         const now = Date.now();
         let purged = 0;
         const keysToDelete: string[] = [];
 
         for (const key of this.cache.keys()) {
-            const entry = this.cache.get(key);
+            const entry = this.cache.peek(key);
             if (entry && now - entry.createdAt > this.ttl) {
                 keysToDelete.push(key);
             }
@@ -222,7 +226,7 @@ export class DiagnosticCache<T> {
             misses: this.misses,
             hitRate: total > 0 ? this.hits / total : 0,
             expirations: this.expirations,
-            evictions: this.evictions
+            evictions: this.evictions,
         };
     }
 

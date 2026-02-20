@@ -1,13 +1,17 @@
-import { CompletionItem, CompletionItemKind, MarkdownString, CancellationToken } from 'vscode';
+import { CompletionItem, CompletionItemKind, MarkdownString, type CancellationToken } from 'vscode';
 import { ServiceContainer } from '../../../infrastructure/ServiceContainer';
-import { ICompletionStrategy, ICompletionContextInfo, ICompletionResult } from '../../../core/interfaces/ICompletionStrategy';
-import { IDataStoreService } from '../../../core/interfaces/IDataStoreService';
-import { IItemId } from '../../../core/interfaces/IItemId';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
-import { IItemTypeDisplayConfig } from '../../../core/types/ConfigTypes';
+import {
+    type ICompletionStrategy,
+    type ICompletionContextInfo,
+    type ICompletionResult,
+} from '../../../core/interfaces/ICompletionStrategy';
+import { type IDataStoreService } from '../../../core/interfaces/IDataStoreService';
+import { type IItemId } from '../../../core/interfaces/IItemId';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
+import { type IItemTypeDisplayConfig } from '../../../core/types/ConfigTypes';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
-import { CompletionItemWithStrategy } from '../../types/CompletionTypes';
+import { type CompletionItemWithStrategy } from '../../types/CompletionTypes';
 import { getRelativePath, extractCompletionPrefix } from '../../../infrastructure/utils/StringUtils';
 
 /** 默认物品类型配置（回退值） */
@@ -33,7 +37,9 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
 
     constructor() {
         this.dataStoreService = ServiceContainer.getService<IDataStoreService>(SERVICE_TOKENS.DataStoreService);
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild('ItemIdCompletionStrategy');
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(
+            'ItemIdCompletionStrategy',
+        );
 
         // 从配置文件加载优先级和物品类型配置
         const configLoader = ServiceContainer.getService<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
@@ -49,7 +55,7 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
 
     async provideCompletionItems(
         context: ICompletionContextInfo,
-        token?: CancellationToken
+        token?: CancellationToken,
     ): Promise<ICompletionResult | undefined> {
         if (token?.isCancellationRequested) {
             return undefined;
@@ -57,7 +63,7 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
 
         this.logger.debug('Providing item ID completions', {
             position: `${context.position.line}:${context.position.character}`,
-            linePrefix: context.linePrefix
+            linePrefix: context.linePrefix,
         });
 
         const items = await this.dataStoreService.getAllItems();
@@ -67,21 +73,18 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
 
         const prefix = extractCompletionPrefix(context.linePrefix, /[a-zA-Z0-9_:/-]+$/);
         const filteredItems = this.filterItems(items, prefix);
-        const completionItems = filteredItems.map(item => this.createCompletionItem(item));
+        const completionItems = filteredItems.map((item) => this.createCompletionItem(item));
 
         this.logger.debug('Item ID completions provided', {
             total: items.length,
             filtered: completionItems.length,
-            prefix
+            prefix,
         });
 
         return { items: completionItems, isIncomplete: false, completionType: 'item-id', priority: this.priority };
     }
 
-    async resolveCompletionItem(
-        item: CompletionItem,
-        token?: CancellationToken
-    ): Promise<CompletionItem | undefined> {
+    async resolveCompletionItem(item: CompletionItem, token?: CancellationToken): Promise<CompletionItem | undefined> {
         if (token?.isCancellationRequested) {
             return item;
         }
@@ -107,17 +110,19 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
 
         const lowerPrefix = prefix.toLowerCase();
         return items
-            .filter(item =>
-                item.id.toLowerCase().includes(lowerPrefix) ||
-                item.name.toLowerCase().includes(lowerPrefix) ||
-                item.namespace.toLowerCase().includes(lowerPrefix)
+            .filter(
+                (item) =>
+                    item.id.toLowerCase().includes(lowerPrefix) ||
+                    item.name.toLowerCase().includes(lowerPrefix) ||
+                    item.namespace.toLowerCase().includes(lowerPrefix),
             )
             .sort((a, b) => a.id.localeCompare(b.id));
     }
 
     private createCompletionItem(item: IItemId): CompletionItem {
         const completionItem = new CompletionItem(item.id, CompletionItemKind.Value);
-        const config = this.itemTypeConfig[item.type || 'item'] || this.itemTypeConfig['item'] || DEFAULT_ITEM_TYPE_CONFIG['item'];
+        const config =
+            this.itemTypeConfig[item.type || 'item'] || this.itemTypeConfig['item'] || DEFAULT_ITEM_TYPE_CONFIG['item'];
 
         completionItem.sortText = `${item.namespace}_${item.name}`;
         completionItem.filterText = `${item.id} ${item.name} ${item.namespace}`;
@@ -131,7 +136,8 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
     }
 
     private createItemDocumentation(item: IItemId): MarkdownString {
-        const config = this.itemTypeConfig[item.type || 'item'] || this.itemTypeConfig['item'] || DEFAULT_ITEM_TYPE_CONFIG['item'];
+        const config =
+            this.itemTypeConfig[item.type || 'item'] || this.itemTypeConfig['item'] || DEFAULT_ITEM_TYPE_CONFIG['item'];
         const md = new MarkdownString();
         md.isTrusted = true;
         md.supportHtml = true;
@@ -155,12 +161,10 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
             md.appendMarkdown(`| 📍 Line Number | \`${item.lineNumber + 1}\` |\n`);
         }
 
-        md.appendMarkdown(`\n> **💡 Tip:** This is a custom ${config.label.toLowerCase()} defined in your configuration.\n`);
+        md.appendMarkdown(
+            `\n> **💡 Tip:** This is a custom ${config.label.toLowerCase()} defined in your configuration.\n`,
+        );
 
         return md;
     }
-
 }
-
-
-

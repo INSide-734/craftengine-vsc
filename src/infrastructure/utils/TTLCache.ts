@@ -98,7 +98,7 @@ export class TTLCache<K, V> {
         this.cache.set(key, {
             value,
             timestamp: Date.now(),
-            ttl
+            ttl,
         });
     }
 

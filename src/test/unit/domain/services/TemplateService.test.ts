@@ -10,11 +10,11 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TemplateService } from '../../../../domain/services/TemplateService';
-import { ITemplate, ITemplateParameter } from '../../../../core/interfaces/ITemplate';
-import { IDataStoreService } from '../../../../core/interfaces/IDataStoreService';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../../core/interfaces/IConfiguration';
-import { Uri, Position, TextDocument } from 'vscode';
+import { type ITemplate, type ITemplateParameter } from '../../../../core/interfaces/ITemplate';
+import { type IDataStoreService } from '../../../../core/interfaces/IDataStoreService';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../../core/interfaces/IConfiguration';
+import { Uri, Position, type TextDocument } from 'vscode';
 import { Template } from '../../../../domain/entities/Template';
 
 describe('TemplateService', () => {
@@ -24,14 +24,16 @@ describe('TemplateService', () => {
     let mockConfiguration: IConfiguration;
 
     // 辅助函数：创建测试模板
-    const createTestTemplate = (overrides: Partial<{
-        id: string;
-        name: string;
-        parameters: ITemplateParameter[];
-        sourceFile: Uri;
-        usageCount: number;
-        lastUsedAt: Date;
-    }> = {}): ITemplate => {
+    const createTestTemplate = (
+        overrides: Partial<{
+            id: string;
+            name: string;
+            parameters: ITemplateParameter[];
+            sourceFile: Uri;
+            usageCount: number;
+            lastUsedAt: Date;
+        }> = {},
+    ): ITemplate => {
         return new Template({
             id: overrides.id ?? `tpl-${Date.now()}-${Math.random()}`,
             name: overrides.name ?? 'test:template',
@@ -148,8 +150,8 @@ templates:
                 'Parsing document for templates',
                 expect.objectContaining({
                     fileName: expect.any(String),
-                    languageId: 'yaml'
-                })
+                    languageId: 'yaml',
+                }),
             );
         });
 
@@ -248,7 +250,7 @@ templates:
             vi.mocked(mockDataStoreService.queryTemplates).mockResolvedValue({
                 items: [template1, template2, template3],
                 total: 3,
-                hasMore: false
+                hasMore: false,
             });
 
             const result = await service.searchTemplates({ prefix: 'user' });
@@ -258,7 +260,7 @@ templates:
             // 搜索服务返回的结果应包含 user 前缀的模板（分数较高的排在前面）
             // 前两个结果应该是 user 前缀的模板
             expect(result.length).toBeGreaterThanOrEqual(2);
-            const userTemplates = result.filter(m => m.template.name.startsWith('user'));
+            const userTemplates = result.filter((m) => m.template.name.startsWith('user'));
             expect(userTemplates.length).toBe(2);
         });
 
@@ -266,7 +268,7 @@ templates:
             vi.mocked(mockDataStoreService.queryTemplates).mockResolvedValue({
                 items: [],
                 total: 0,
-                hasMore: false
+                hasMore: false,
             });
 
             const result = await service.searchTemplates({ prefix: 'nonexistent' });
@@ -280,7 +282,7 @@ templates:
             vi.mocked(mockDataStoreService.queryTemplates).mockResolvedValue({
                 items: [template],
                 total: 1,
-                hasMore: false
+                hasMore: false,
             });
 
             const result = await service.searchTemplates({ prefix: 'awesome', fuzzy: true });
@@ -289,14 +291,12 @@ templates:
         });
 
         it('should respect limit option', async () => {
-            const templates = Array.from({ length: 20 }, (_, i) =>
-                createTestTemplate({ name: `test:template${i}` })
-            );
+            const templates = Array.from({ length: 20 }, (_, i) => createTestTemplate({ name: `test:template${i}` }));
 
             vi.mocked(mockDataStoreService.queryTemplates).mockResolvedValue({
                 items: templates,
                 total: 20,
-                hasMore: true
+                hasMore: true,
             });
 
             const result = await service.searchTemplates({ limit: 5 });
@@ -311,7 +311,7 @@ templates:
             vi.mocked(mockDataStoreService.queryTemplates).mockResolvedValue({
                 items: [template2, template1],
                 total: 2,
-                hasMore: false
+                hasMore: false,
             });
 
             const result = await service.searchTemplates({ prefix: 'test:exact' });
@@ -329,7 +329,7 @@ templates:
             vi.mocked(mockDataStoreService.queryTemplates).mockResolvedValue({
                 items: [template1, template2],
                 total: 2,
-                hasMore: false
+                hasMore: false,
             });
 
             const result = await service.searchTemplates({ sortBy: 'name' });
@@ -350,14 +350,14 @@ templates:
                 name: 'test:template',
                 parameters: [
                     { name: 'requiredParam', required: true },
-                    { name: 'optionalParam', required: false }
-                ]
+                    { name: 'optionalParam', required: false },
+                ],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
             const result = await service.validateTemplateUsage('test:template', {
-                requiredParam: 'value'
+                requiredParam: 'value',
             });
 
             expect(result).toBeDefined();
@@ -367,9 +367,7 @@ templates:
         it('should return invalid result when required parameter missing', async () => {
             const template = createTestTemplate({
                 name: 'test:template',
-                parameters: [
-                    { name: 'requiredParam', required: true }
-                ]
+                parameters: [{ name: 'requiredParam', required: true }],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -387,21 +385,19 @@ templates:
             const result = await service.validateTemplateUsage('nonexistent:template', {});
 
             expect(result.isValid).toBe(false);
-            expect(result.errors.some(e => e.message.includes('not found'))).toBe(true);
+            expect(result.errors.some((e) => e.message.includes('not found'))).toBe(true);
         });
 
         it('should include warnings for unknown parameters', async () => {
             const template = createTestTemplate({
                 name: 'test:template',
-                parameters: [
-                    { name: 'knownParam', required: false }
-                ]
+                parameters: [{ name: 'knownParam', required: false }],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
             const result = await service.validateTemplateUsage('test:template', {
-                unknownParam: 'value'
+                unknownParam: 'value',
             });
 
             expect(result).toBeDefined();
@@ -419,7 +415,7 @@ templates:
                 document: createMockDocument(''),
                 position: new Position(0, 0),
                 lineText: '',
-                indentLevel: 0
+                indentLevel: 0,
             };
 
             const result = await service.isTemplateAvailableAt('existing:template', context);
@@ -434,7 +430,7 @@ templates:
                 document: createMockDocument(''),
                 position: new Position(0, 0),
                 lineText: '',
-                indentLevel: 0
+                indentLevel: 0,
             };
 
             const result = await service.isTemplateAvailableAt('nonexistent:template', context);
@@ -455,14 +451,14 @@ templates:
             vi.mocked(mockDataStoreService.queryTemplates).mockResolvedValue({
                 items: [template1, template2],
                 total: 2,
-                hasMore: false
+                hasMore: false,
             });
 
             const context = {
                 document: createMockDocument('template: user'),
                 position: new Position(0, 14),
                 lineText: 'template: user',
-                indentLevel: 0
+                indentLevel: 0,
             };
 
             const result = await service.getTemplateSuggestions(context);
@@ -475,14 +471,14 @@ templates:
             vi.mocked(mockDataStoreService.queryTemplates).mockResolvedValue({
                 items: [],
                 total: 0,
-                hasMore: false
+                hasMore: false,
             });
 
             const context = {
                 document: createMockDocument(''),
                 position: new Position(0, 0),
                 lineText: '',
-                indentLevel: 0
+                indentLevel: 0,
             };
 
             const result = await service.getTemplateSuggestions(context);
@@ -498,8 +494,8 @@ templates:
                 parameters: [
                     { name: 'param1', required: true },
                     { name: 'param2', required: true },
-                    { name: 'param3', required: false }
-                ]
+                    { name: 'param3', required: false },
+                ],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -525,8 +521,8 @@ templates:
                 parameters: [
                     { name: 'optional1', required: false },
                     { name: 'required1', required: true },
-                    { name: 'optional2', required: false }
-                ]
+                    { name: 'optional2', required: false },
+                ],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);

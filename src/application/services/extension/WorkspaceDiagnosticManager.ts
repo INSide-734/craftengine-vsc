@@ -4,14 +4,9 @@
  * 管理整个工作区的诊断状态
  */
 
-import {
-    Disposable,
-    Uri,
-    workspace,
-    DiagnosticCollection
-} from 'vscode';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../core/interfaces/IEventBus';
+import { type Disposable, Uri, workspace, type DiagnosticCollection } from 'vscode';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../core/interfaces/IEventBus';
 
 /**
  * 诊断统计信息
@@ -44,12 +39,15 @@ export interface IDiagnosticReport {
     /** 统计信息 */
     statistics: IDiagnosticStatistics;
     /** 按文件分组的诊断 */
-    byFile: Record<string, {
-        errors: number;
-        warnings: number;
-        info: number;
-        hints: number;
-    }>;
+    byFile: Record<
+        string,
+        {
+            errors: number;
+            warnings: number;
+            info: number;
+            hints: number;
+        }
+    >;
 }
 
 /**
@@ -69,15 +67,18 @@ export class WorkspaceDiagnosticManager implements Disposable {
     private readonly diagnosticCollections = new Map<string, DiagnosticCollection>();
 
     /** 文件诊断状态追踪 */
-    private readonly fileDiagnosticState = new Map<string, {
-        lastUpdated: Date;
-        diagnosticCount: number;
-    }>();
+    private readonly fileDiagnosticState = new Map<
+        string,
+        {
+            lastUpdated: Date;
+            diagnosticCount: number;
+        }
+    >();
 
     constructor(
         logger: ILogger,
         private readonly eventBus: IEventBus,
-        private readonly generateEventId: (prefix?: string) => string
+        private readonly generateEventId: (prefix?: string) => string,
     ) {
         this.logger = logger.createChild('WorkspaceDiagnosticManager');
 
@@ -91,27 +92,27 @@ export class WorkspaceDiagnosticManager implements Disposable {
     private setupEventListeners(): void {
         // 监听文件删除事件
         this.disposables.push(
-            workspace.onDidDeleteFiles(event => {
+            workspace.onDidDeleteFiles((event) => {
                 for (const uri of event.files) {
                     this.handleFileDeleted(uri);
                 }
-            })
+            }),
         );
 
         // 监听文件重命名事件
         this.disposables.push(
-            workspace.onDidRenameFiles(event => {
+            workspace.onDidRenameFiles((event) => {
                 for (const { oldUri, newUri } of event.files) {
                     this.handleFileRenamed(oldUri, newUri);
                 }
-            })
+            }),
         );
 
         // 监听工作区文件夹变化
         this.disposables.push(
             workspace.onDidChangeWorkspaceFolders(() => {
                 this.handleWorkspaceFoldersChanged();
-            })
+            }),
         );
 
         this.logger.debug('Event listeners registered');
@@ -148,7 +149,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
             id: this.generateEventId('diag-file-deleted'),
             type: 'diagnostics.fileDeleted',
             timestamp: new Date(),
-            uri
+            uri,
         });
     }
 
@@ -158,7 +159,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
     private handleFileRenamed(oldUri: Uri, newUri: Uri): void {
         this.logger.debug('File renamed, updating diagnostics', {
             oldFile: oldUri.fsPath,
-            newFile: newUri.fsPath
+            newFile: newUri.fsPath,
         });
 
         // 对于每个诊断集合，将旧文件的诊断移动到新文件
@@ -169,7 +170,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
                 collection.delete(oldUri);
                 this.logger.debug('Moved diagnostics to new file', {
                     name,
-                    count: diagnostics.length
+                    count: diagnostics.length,
                 });
             }
         }
@@ -190,13 +191,11 @@ export class WorkspaceDiagnosticManager implements Disposable {
 
         // 清除不再属于工作区的文件的诊断
         const workspaceFolders = workspace.workspaceFolders || [];
-        const workspacePaths = workspaceFolders.map(f => f.uri.fsPath);
+        const workspacePaths = workspaceFolders.map((f) => f.uri.fsPath);
 
         for (const [uriString] of this.fileDiagnosticState) {
             const uri = Uri.parse(uriString);
-            const isInWorkspace = workspacePaths.some(wp =>
-                uri.fsPath.startsWith(wp)
-            );
+            const isInWorkspace = workspacePaths.some((wp) => uri.fsPath.startsWith(wp));
 
             if (!isInWorkspace) {
                 this.clearDiagnosticsForFile(uri);
@@ -228,7 +227,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
         this.eventBus.publish('diagnostics.cleared', {
             id: this.generateEventId('diag-cleared'),
             type: 'diagnostics.cleared',
-            timestamp: new Date()
+            timestamp: new Date(),
         });
     }
 
@@ -242,7 +241,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
         await this.eventBus.publish('diagnostics.refreshRequested', {
             id: this.generateEventId('diag-refresh'),
             type: 'diagnostics.refreshRequested',
-            timestamp: new Date()
+            timestamp: new Date(),
         });
     }
 
@@ -257,7 +256,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
             informationCount: 0,
             hintCount: 0,
             fileCount: 0,
-            bySource: {}
+            bySource: {},
         };
 
         const filesWithDiagnostics = new Set<string>();
@@ -337,7 +336,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
             generatedAt: new Date(),
             workspacePath: workspace.workspaceFolders?.[0]?.uri.fsPath || '',
             statistics,
-            byFile
+            byFile,
         };
     }
 
@@ -347,7 +346,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
     updateFileState(uri: Uri, diagnosticCount: number): void {
         this.fileDiagnosticState.set(uri.toString(), {
             lastUpdated: new Date(),
-            diagnosticCount
+            diagnosticCount,
         });
     }
 

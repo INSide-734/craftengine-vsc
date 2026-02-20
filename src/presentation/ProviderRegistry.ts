@@ -1,8 +1,16 @@
-import { languages, ExtensionContext, DocumentSelector, Disposable, CodeActionKind, CodeActionProvider, CodeActionProviderMetadata } from 'vscode';
+import {
+    languages,
+    type ExtensionContext,
+    type DocumentSelector,
+    type Disposable,
+    CodeActionKind,
+    type CodeActionProvider,
+    type CodeActionProviderMetadata,
+} from 'vscode';
 import { ServiceContainer } from '../infrastructure/ServiceContainer';
-import { ILogger } from '../core/interfaces/ILogger';
+import { type ILogger } from '../core/interfaces/ILogger';
 import { SERVICE_TOKENS } from '../core/constants/ServiceTokens';
-import { IEventBus } from '../core/interfaces/IEventBus';
+import { type IEventBus } from '../core/interfaces/IEventBus';
 import { generateEventId } from '../infrastructure/utils';
 
 // 语言服务提供者
@@ -56,7 +64,7 @@ const YAML_SELECTOR: DocumentSelector = { language: 'yaml', scheme: 'file' };
 
 /** 通用 CodeAction 元数据 */
 const QUICKFIX_METADATA: CodeActionProviderMetadata = {
-    providedCodeActionKinds: [CodeActionKind.QuickFix]
+    providedCodeActionKinds: [CodeActionKind.QuickFix],
 };
 
 /**
@@ -123,8 +131,8 @@ export class ProviderRegistry {
             languages.registerCompletionItemProvider(
                 YAML_SELECTOR,
                 this.unifiedCompletion.getProvider(),
-                ...this.unifiedCompletion.getTriggerCharacters()
-            )
+                ...this.unifiedCompletion.getTriggerCharacters(),
+            ),
         );
         this.logger.debug('Completion system initialized');
     }
@@ -143,7 +151,7 @@ export class ProviderRegistry {
             languages.registerDefinitionProvider(YAML_SELECTOR, new ItemIdDefinitionProvider()),
             languages.registerDefinitionProvider(YAML_SELECTOR, new CategoryDefinitionProvider()),
             // 引用查找
-            languages.registerReferenceProvider(YAML_SELECTOR, new TranslationReferenceProvider())
+            languages.registerReferenceProvider(YAML_SELECTOR, new TranslationReferenceProvider()),
         );
         this.logger.debug('Language providers registered');
     }
@@ -171,7 +179,7 @@ export class ProviderRegistry {
             this.miniMessageDiagnostic,
             this.itemIdDiagnostic,
             this.versionConditionDiagnostic,
-            this.categoryDiagnostic
+            this.categoryDiagnostic,
         );
         this.logger.debug('Diagnostic providers registered');
     }
@@ -183,7 +191,7 @@ export class ProviderRegistry {
         // 简单提供者（无元数据）
         context.subscriptions.push(
             this.registerCodeAction(new TemplateCodeActionProvider()),
-            this.registerCodeAction(new TranslationCodeActionProvider())
+            this.registerCodeAction(new TranslationCodeActionProvider()),
         );
 
         // 带 QuickFix 元数据的提供者
@@ -231,11 +239,7 @@ export class ProviderRegistry {
      */
     private initializeWorkspaceDiagnosticManager(context: ExtensionContext): void {
         const eventBus = ServiceContainer.getService<IEventBus>(SERVICE_TOKENS.EventBus);
-        this.workspaceDiagnosticManager = new WorkspaceDiagnosticManager(
-            this.logger,
-            eventBus,
-            generateEventId
-        );
+        this.workspaceDiagnosticManager = new WorkspaceDiagnosticManager(this.logger, eventBus, generateEventId);
         context.subscriptions.push(this.workspaceDiagnosticManager);
         this.logger.debug('Workspace diagnostic manager initialized');
     }
@@ -258,71 +262,95 @@ export class ProviderRegistry {
      * 获取模板诊断提供者实例
      * @returns 模板诊断提供者实例，如果尚未初始化则返回 undefined
      */
-    getTemplateDiagnosticProvider(): TemplateDiagnosticProvider | undefined { return this.templateDiagnostic; }
+    getTemplateDiagnosticProvider(): TemplateDiagnosticProvider | undefined {
+        return this.templateDiagnostic;
+    }
 
     /**
      * 获取翻译诊断提供者实例
      * @returns 翻译诊断提供者实例，如果尚未初始化则返回 undefined
      */
-    getTranslationDiagnosticProvider(): TranslationDiagnosticProvider | undefined { return this.translationDiagnostic; }
+    getTranslationDiagnosticProvider(): TranslationDiagnosticProvider | undefined {
+        return this.translationDiagnostic;
+    }
 
     /**
      * 获取 Schema 诊断提供者实例
      * @returns Schema 诊断提供者实例，如果尚未初始化则返回 undefined
      */
-    getSchemaDiagnosticProvider(): SchemaDiagnosticProvider | undefined { return this.schemaDiagnostic; }
+    getSchemaDiagnosticProvider(): SchemaDiagnosticProvider | undefined {
+        return this.schemaDiagnostic;
+    }
 
     /**
      * 获取文件路径诊断提供者实例
      * @returns 文件路径诊断提供者实例，如果尚未初始化则返回 undefined
      */
-    getFilePathDiagnosticProvider(): FilePathDiagnosticProvider | undefined { return this.filePathDiagnostic; }
+    getFilePathDiagnosticProvider(): FilePathDiagnosticProvider | undefined {
+        return this.filePathDiagnostic;
+    }
 
     /**
      * 获取 MiniMessage 诊断提供者实例
      * @returns MiniMessage 诊断提供者实例，如果尚未初始化则返回 undefined
      */
-    getMiniMessageDiagnosticProvider(): MiniMessageDiagnosticProvider | undefined { return this.miniMessageDiagnostic; }
+    getMiniMessageDiagnosticProvider(): MiniMessageDiagnosticProvider | undefined {
+        return this.miniMessageDiagnostic;
+    }
 
     /**
      * 获取物品 ID 诊断提供者实例
      * @returns 物品 ID 诊断提供者实例，如果尚未初始化则返回 undefined
      */
-    getItemIdDiagnosticProvider(): ItemIdDiagnosticProvider | undefined { return this.itemIdDiagnostic; }
+    getItemIdDiagnosticProvider(): ItemIdDiagnosticProvider | undefined {
+        return this.itemIdDiagnostic;
+    }
 
     /**
      * 获取版本条件诊断提供者实例
      * @returns 版本条件诊断提供者实例，如果尚未初始化则返回 undefined
      */
-    getVersionConditionDiagnosticProvider(): VersionConditionDiagnosticProvider | undefined { return this.versionConditionDiagnostic; }
+    getVersionConditionDiagnosticProvider(): VersionConditionDiagnosticProvider | undefined {
+        return this.versionConditionDiagnostic;
+    }
 
     /**
      * 获取分类诊断提供者实例
      * @returns 分类诊断提供者实例，如果尚未初始化则返回 undefined
      */
-    getCategoryDiagnosticProvider(): CategoryDiagnosticProvider | undefined { return this.categoryDiagnostic; }
+    getCategoryDiagnosticProvider(): CategoryDiagnosticProvider | undefined {
+        return this.categoryDiagnostic;
+    }
 
     /**
      * 获取统一补全提供者实例
      * @returns 统一补全提供者实例，如果尚未初始化则返回 undefined
      */
-    getUnifiedCompletionProvider(): UnifiedCompletionProvider | undefined { return this.unifiedCompletion; }
+    getUnifiedCompletionProvider(): UnifiedCompletionProvider | undefined {
+        return this.unifiedCompletion;
+    }
 
     /**
      * 获取诊断状态栏管理器实例
      * @returns 诊断状态栏管理器实例，如果尚未初始化则返回 undefined
      */
-    getStatusBarManager(): DiagnosticStatusBarManager | undefined { return this.statusBar; }
+    getStatusBarManager(): DiagnosticStatusBarManager | undefined {
+        return this.statusBar;
+    }
 
     /**
      * 获取统一诊断代码操作提供者实例
      * @returns 统一诊断代码操作提供者实例，如果尚未初始化则返回 undefined
      */
-    getDiagnosticCodeActionProvider(): DiagnosticCodeActionProvider | undefined { return this.diagnosticCodeAction; }
+    getDiagnosticCodeActionProvider(): DiagnosticCodeActionProvider | undefined {
+        return this.diagnosticCodeAction;
+    }
 
     /**
      * 获取工作区诊断管理器实例
      * @returns 工作区诊断管理器实例，如果尚未初始化则返回 undefined
      */
-    getWorkspaceDiagnosticManager(): WorkspaceDiagnosticManager | undefined { return this.workspaceDiagnosticManager; }
+    getWorkspaceDiagnosticManager(): WorkspaceDiagnosticManager | undefined {
+        return this.workspaceDiagnosticManager;
+    }
 }

@@ -1,9 +1,5 @@
-import {
-    IEventBus,
-    IEventSubscription,
-    EventHandler
-} from '../../core/interfaces/IEventBus';
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type IEventBus, type IEventSubscription, type EventHandler } from '../../core/interfaces/IEventBus';
+import { type ILogger } from '../../core/interfaces/ILogger';
 
 // ============================================================================
 // 类型定义
@@ -26,9 +22,9 @@ interface PatternTrieNode {
 
 /**
  * 事件订阅实现
- * 
+ *
  * 表示一个事件订阅，提供订阅管理和状态查询功能。
- * 
+ *
  * @remarks
  * 每个订阅都有一个唯一的处理器和取消订阅的回调。
  * 订阅被取消后，不会再接收事件通知。
@@ -36,10 +32,10 @@ interface PatternTrieNode {
 class EventSubscription implements IEventSubscription {
     /** 订阅是否仍然活跃 */
     private active = true;
-    
+
     /**
      * 构造事件订阅实例
-     * 
+     *
      * @param eventType - 订阅的事件类型
      * @param handler - 事件处理器函数
      * @param unsubscribeCallback - 取消订阅时的回调函数
@@ -47,12 +43,12 @@ class EventSubscription implements IEventSubscription {
     constructor(
         private readonly eventType: string,
         private readonly handler: EventHandler,
-        private readonly unsubscribeCallback: () => void
+        private readonly unsubscribeCallback: () => void,
     ) {}
-    
+
     /**
      * 取消订阅
-     * 
+     *
      * 停止接收事件通知，并从事件总线中移除此订阅。
      */
     unsubscribe(): void {
@@ -61,28 +57,28 @@ class EventSubscription implements IEventSubscription {
             this.active = false;
         }
     }
-    
+
     /**
      * 检查订阅是否仍然活跃
-     * 
+     *
      * @returns 如果订阅活跃返回 true
      */
     isActive(): boolean {
         return this.active;
     }
-    
+
     /**
      * 获取订阅的事件类型
-     * 
+     *
      * @returns 事件类型字符串
      */
     getEventType(): string {
         return this.eventType;
     }
-    
+
     /**
      * 获取事件处理器
-     * 
+     *
      * @returns 处理器函数
      */
     getHandler(): EventHandler {
@@ -92,65 +88,65 @@ class EventSubscription implements IEventSubscription {
 
 /**
  * 事件总线实现
- * 
+ *
  * 基于发布-订阅模式的事件总线，提供解耦的模块间通信机制。
  * 支持精确匹配、通配符和模式匹配三种订阅方式。
- * 
+ *
  * @remarks
  * **三种订阅模式**：
- * 
+ *
  * 1. **精确匹配**
  *    - 订阅特定的事件类型
  *    - 例：`eventBus.subscribe('template.created', handler)`
  *    - 只接收完全匹配的事件
- * 
+ *
  * 2. **通配符匹配**
  *    - 订阅所有事件
  *    - 例：`eventBus.subscribe('*', handler)`
  *    - 接收所有发布的事件
- * 
+ *
  * 3. **模式匹配**
  *    - 使用点号分隔的模式
  *    - 例：`eventBus.subscribe('template.*', handler)`
  *    - 匹配 `template.created`、`template.updated` 等
- * 
+ *
  * **事件处理**：
  * - 异步事件处理，不阻塞发布者
  * - 错误隔离：一个处理器出错不影响其他处理器
  * - 并行执行：所有处理器并行调用
  * - 取消支持：支持中途取消订阅
- * 
+ *
  * **使用场景**：
  * - 模块解耦：模块间通过事件通信
  * - 状态变更通知：领域事件发布
  * - 审计日志：订阅所有事件记录日志
  * - 缓存失效：监听数据变更事件
- * 
+ *
  * **性能特点**：
  * - O(1) 精确匹配订阅查找
  * - O(n) 模式匹配（n 为模式数量）
  * - 异步并行处理，吞吐量高
  * - 支持订阅计数和统计
- * 
+ *
  * @example
  * ```typescript
  * const eventBus = new EventBus(logger);
- * 
+ *
  * // 精确订阅
  * const sub1 = eventBus.subscribe('template.created', (event) => {
  *     console.log('Template created:', event.template.name);
  * });
- * 
+ *
  * // 模式订阅
  * const sub2 = eventBus.subscribe('template.*', (event) => {
  *     console.log('Template event:', event.type);
  * });
- * 
+ *
  * // 通配符订阅（接收所有事件）
  * const sub3 = eventBus.subscribe('*', (event) => {
  *     console.log('Any event:', event);
  * });
- * 
+ *
  * // 发布事件
  * await eventBus.publish('template.created', {
  *     id: '123',
@@ -158,14 +154,14 @@ class EventSubscription implements IEventSubscription {
  *     timestamp: new Date(),
  *     template: myTemplate
  * });
- * 
+ *
  * // 取消订阅
  * sub1.unsubscribe();
- * 
+ *
  * // 获取统计
  * const count = eventBus.getSubscriptionCount('template.created');
  * console.log(`${count} subscribers`);
- * 
+ *
  * // 清理
  * eventBus.dispose();
  * ```
@@ -182,28 +178,28 @@ export class EventBus implements IEventBus {
     private readonly patternTrie: PatternTrieNode = {
         children: new Map(),
         wildcardChild: null,
-        subscriptions: new Set()
+        subscriptions: new Set(),
     };
 
     /** 事件总线是否已释放 */
     private disposed = false;
-    
+
     /**
      * 构造事件总线实例
-     * 
+     *
      * @param logger - 日志记录器（可选），用于记录事件发布和错误
      */
     constructor(private readonly logger?: ILogger) {}
-    
+
     /**
      * 发布事件
-     * 
+     *
      * 将事件发送给所有匹配的订阅者。处理器并行异步执行。
-     * 
+     *
      * @param eventType - 事件类型标识符
      * @param event - 事件数据
      * @returns Promise，表示所有处理器执行完成
-     * 
+     *
      * @remarks
      * 发布流程：
      * 1. 检查事件总线是否已释放
@@ -211,12 +207,12 @@ export class EventBus implements IEventBus {
      * 3. 并行调用所有处理器
      * 4. 使用 Promise.allSettled 避免单个处理器错误影响整体
      * 5. 记录错误但不抛出异常
-     * 
+     *
      * 匹配规则：
      * - 精确匹配：`template.created` 匹配 `template.created`
      * - 模式匹配：`template.*` 匹配 `template.created`、`template.updated`
      * - 通配符：`*` 匹配所有事件
-     * 
+     *
      * @example
      * ```typescript
      * // 发布领域事件
@@ -226,7 +222,7 @@ export class EventBus implements IEventBus {
      *     timestamp: new Date(),
      *     template: newTemplate
      * });
-     * 
+     *
      * // 发布系统事件
      * await eventBus.publish('system.startup', {
      *     id: generateId(),
@@ -238,14 +234,14 @@ export class EventBus implements IEventBus {
      */
     async publish<T = unknown>(eventType: string, event: T): Promise<void> {
         this.ensureNotDisposed();
-        
+
         this.logger?.debug('Publishing event', {
             eventType,
-            hasData: !!event
+            hasData: !!event,
         });
-        
+
         const promises: Promise<void>[] = [];
-        
+
         // 处理特定事件订阅
         const eventSubscriptions = this.subscriptions.get(eventType);
         if (eventSubscriptions) {
@@ -255,7 +251,7 @@ export class EventBus implements IEventBus {
                 }
             }
         }
-        
+
         // 处理通配符订阅
         for (const subscription of this.wildcardSubscriptions) {
             if (subscription.isActive()) {
@@ -271,22 +267,20 @@ export class EventBus implements IEventBus {
 
         // 等待所有处理器完成
         await Promise.allSettled(promises);
-        
+
         this.logger?.debug('Event published', {
             eventType,
-            handlerCount: promises.length
+            handlerCount: promises.length,
         });
     }
-    
+
     subscribe<T = unknown>(eventType: string, handler: EventHandler<T>): IEventSubscription {
         this.ensureNotDisposed();
-        
-        const subscription = new EventSubscription(
-            eventType,
-            handler as EventHandler,
-            () => this.removeSubscription(eventType, subscription)
+
+        const subscription = new EventSubscription(eventType, handler as EventHandler, () =>
+            this.removeSubscription(eventType, subscription),
         );
-        
+
         if (eventType === '*') {
             // 通配符订阅（匹配所有事件）
             this.wildcardSubscriptions.add(subscription);
@@ -306,15 +300,15 @@ export class EventBus implements IEventBus {
             }
             this.subscriptions.get(eventType)!.add(subscription);
         }
-        
+
         this.logger?.debug('Event subscription added', {
             eventType,
-            totalSubscriptions: this.getSubscriptionCount(eventType)
+            totalSubscriptions: this.getSubscriptionCount(eventType),
         });
-        
+
         return subscription;
     }
-    
+
     unsubscribeAll(eventType?: string): void {
         this.ensureNotDisposed();
 
@@ -356,55 +350,55 @@ export class EventBus implements IEventBus {
             this.logger?.debug('Unsubscribed all handlers for all events');
         }
     }
-    
+
     getSubscriptionCount(eventType: string): number {
         this.ensureNotDisposed();
-        
+
         if (eventType === '*') {
             return this.wildcardSubscriptions.size;
         }
-        
+
         const subscriptions = this.subscriptions.get(eventType);
         return subscriptions ? subscriptions.size : 0;
     }
-    
+
     dispose(): void {
         if (this.disposed) {
             return;
         }
-        
+
         // 注意：在停用时不要使用 logger，因为 VSCode 的输出通道可能已经关闭
-        
+
         // 清除所有订阅
         this.unsubscribeAll();
-        
+
         this.disposed = true;
     }
-    
+
     /**
      * 获取所有事件类型的统计信息
      */
     getStatistics(): Record<string, number> {
         const stats: Record<string, number> = {};
-        
+
         for (const [eventType, subscriptions] of this.subscriptions) {
             stats[eventType] = subscriptions.size;
         }
-        
+
         if (this.wildcardSubscriptions.size > 0) {
             stats['*'] = this.wildcardSubscriptions.size;
         }
-        
+
         return stats;
     }
-    
+
     /**
      * 执行事件处理器
      */
     private async executeHandler(handler: EventHandler, event: unknown, eventType: string): Promise<void> {
         try {
             const result = handler(event);
-            
+
             // 如果处理器返回 Promise，等待它完成
             if (result && typeof result.then === 'function') {
                 await result;
@@ -412,13 +406,13 @@ export class EventBus implements IEventBus {
         } catch (error) {
             this.logger?.error('Error in event handler', error instanceof Error ? error : new Error(String(error)), {
                 eventType,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             });
-            
+
             // 继续处理其他处理器，不让一个处理器的错误影响其他处理器
         }
     }
-    
+
     /**
      * 移除订阅
      */
@@ -452,7 +446,7 @@ export class EventBus implements IEventBus {
 
         this.logger?.debug('Event subscription removed', {
             eventType,
-            remainingSubscriptions: this.getSubscriptionCount(eventType)
+            remainingSubscriptions: this.getSubscriptionCount(eventType),
         });
     }
 
@@ -473,7 +467,7 @@ export class EventBus implements IEventBus {
                     node.wildcardChild = {
                         children: new Map(),
                         wildcardChild: null,
-                        subscriptions: new Set()
+                        subscriptions: new Set(),
                     };
                 }
                 node = node.wildcardChild;
@@ -482,7 +476,7 @@ export class EventBus implements IEventBus {
                     node.children.set(segment, {
                         children: new Map(),
                         wildcardChild: null,
-                        subscriptions: new Set()
+                        subscriptions: new Set(),
                     });
                 }
                 node = node.children.get(segment)!;
@@ -534,12 +528,7 @@ export class EventBus implements IEventBus {
     /**
      * 遍历 Trie 树查找匹配的订阅
      */
-    private traverseTrie(
-        node: PatternTrieNode,
-        segments: string[],
-        index: number,
-        results: EventSubscription[]
-    ): void {
+    private traverseTrie(node: PatternTrieNode, segments: string[], index: number, results: EventSubscription[]): void {
         if (index === segments.length) {
             // 收集此节点的活跃订阅
             for (const sub of node.subscriptions) {

@@ -4,15 +4,8 @@
  * 为 "enum" 错误提供选择正确值的快速修复
  */
 
-import {
-    CodeAction,
-    CodeActionKind,
-    Diagnostic,
-    Range,
-    TextDocument,
-    WorkspaceEdit
-} from 'vscode';
-import { IQuickFixProvider } from './IQuickFixProvider';
+import { CodeAction, CodeActionKind, type Diagnostic, Range, type TextDocument, WorkspaceEdit } from 'vscode';
+import { type IQuickFixProvider } from './IQuickFixProvider';
 import { QUICK_FIX_MESSAGES } from '../../../core/constants/DiagnosticMessages';
 
 /**
@@ -81,7 +74,7 @@ export class EnumValueFix implements IQuickFixProvider {
             const valuesStr = match[1];
             const values = valuesStr.match(/"([^"]+)"/g);
             if (values) {
-                return values.map(v => v.replace(/"/g, ''));
+                return values.map((v) => v.replace(/"/g, ''));
             }
         }
 
@@ -90,7 +83,7 @@ export class EnumValueFix implements IQuickFixProvider {
             for (const info of diagnostic.relatedInformation) {
                 const relatedMatch = info.message.match(/Allowed values:\s*(.+)$/);
                 if (relatedMatch) {
-                    return relatedMatch[1].split(',').map(v => v.trim());
+                    return relatedMatch[1].split(',').map((v) => v.trim());
                 }
             }
         }
@@ -113,25 +106,18 @@ export class EnumValueFix implements IQuickFixProvider {
 
         // 提取值部分
         const valuePart = lineText.substring(colonIndex + 1).trim();
-        const valueStart = colonIndex + 1 + (lineText.substring(colonIndex + 1).length - lineText.substring(colonIndex + 1).trimStart().length);
+        const valueStart =
+            colonIndex +
+            1 +
+            (lineText.substring(colonIndex + 1).length - lineText.substring(colonIndex + 1).trimStart().length);
         const valueEnd = lineText.length;
 
         // 如果值为空，返回冒号后的位置
         if (valuePart === '') {
-            return new Range(
-                diagnostic.range.start.line,
-                colonIndex + 2,
-                diagnostic.range.start.line,
-                colonIndex + 2
-            );
+            return new Range(diagnostic.range.start.line, colonIndex + 2, diagnostic.range.start.line, colonIndex + 2);
         }
 
-        return new Range(
-            diagnostic.range.start.line,
-            valueStart,
-            diagnostic.range.start.line,
-            valueEnd
-        );
+        return new Range(diagnostic.range.start.line, valueStart, diagnostic.range.start.line, valueEnd);
     }
 
     /**
@@ -141,12 +127,9 @@ export class EnumValueFix implements IQuickFixProvider {
         diagnostic: Diagnostic,
         document: TextDocument,
         valueRange: Range,
-        newValue: string
+        newValue: string,
     ): CodeAction | undefined {
-        const fix = new CodeAction(
-            QUICK_FIX_MESSAGES.useSuggestedValue(newValue),
-            CodeActionKind.QuickFix
-        );
+        const fix = new CodeAction(QUICK_FIX_MESSAGES.useSuggestedValue(newValue), CodeActionKind.QuickFix);
 
         fix.edit = new WorkspaceEdit();
 

@@ -9,34 +9,34 @@
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { NamespaceDiscoveryService } from '../../../../infrastructure/filesystem/NamespaceDiscoveryService';
-import { ILogger } from '../../../../core/interfaces/ILogger';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
 import * as fs from 'fs';
 
 // Mock fs
 vi.mock('fs', () => ({
     existsSync: vi.fn(),
-    readdirSync: vi.fn()
+    readdirSync: vi.fn(),
 }));
 
 // Mock vscode workspace
 vi.mock('vscode', () => ({
     workspace: {
-        workspaceFolders: []
-    }
+        workspaceFolders: [],
+    },
 }));
 
 // Mock ServiceContainer
 vi.mock('../../../../infrastructure/ServiceContainer', () => ({
     ServiceContainer: {
-        tryGetService: vi.fn(() => null)
-    }
+        tryGetService: vi.fn(() => null),
+    },
 }));
 
 // Mock ResourcePackDiscovery
 vi.mock('../../../../infrastructure/filesystem/ResourcePackDiscovery', () => ({
     ResourcePackDiscovery: {
-        discoverInWorkspace: vi.fn(() => [])
-    }
+        discoverInWorkspace: vi.fn(() => []),
+    },
 }));
 
 describe('NamespaceDiscoveryService', () => {
@@ -279,38 +279,23 @@ describe('NamespaceDiscoveryService', () => {
 
     describe('compareResourceLocations', () => {
         it('should return true for equal locations', () => {
-            expect(service.compareResourceLocations(
-                'minecraft:item/sword',
-                'minecraft:item/sword'
-            )).toBe(true);
+            expect(service.compareResourceLocations('minecraft:item/sword', 'minecraft:item/sword')).toBe(true);
         });
 
         it('should return true for normalized equal locations', () => {
-            expect(service.compareResourceLocations(
-                'Minecraft:Item/Sword',
-                'minecraft:item/sword'
-            )).toBe(true);
+            expect(service.compareResourceLocations('Minecraft:Item/Sword', 'minecraft:item/sword')).toBe(true);
         });
 
         it('should return true when one has default namespace', () => {
-            expect(service.compareResourceLocations(
-                'minecraft:item/sword',
-                'item/sword'
-            )).toBe(true);
+            expect(service.compareResourceLocations('minecraft:item/sword', 'item/sword')).toBe(true);
         });
 
         it('should return false for different locations', () => {
-            expect(service.compareResourceLocations(
-                'minecraft:item/sword',
-                'minecraft:item/axe'
-            )).toBe(false);
+            expect(service.compareResourceLocations('minecraft:item/sword', 'minecraft:item/axe')).toBe(false);
         });
 
         it('should return false for invalid locations', () => {
-            expect(service.compareResourceLocations(
-                '',
-                'minecraft:item/sword'
-            )).toBe(false);
+            expect(service.compareResourceLocations('', 'minecraft:item/sword')).toBe(false);
         });
     });
 
@@ -397,7 +382,7 @@ describe('NamespaceDiscoveryService', () => {
             vi.mocked(fs.readdirSync).mockReturnValue([
                 { name: 'minecraft', isDirectory: () => true },
                 { name: 'mymod', isDirectory: () => true },
-                { name: 'file.txt', isDirectory: () => false }
+                { name: 'file.txt', isDirectory: () => false },
             ] as any);
 
             const result = service.discoverNamespaces('/assets');
@@ -412,7 +397,7 @@ describe('NamespaceDiscoveryService', () => {
             vi.mocked(fs.readdirSync).mockReturnValue([
                 { name: 'minecraft', isDirectory: () => true },
                 { name: 'InvalidMod', isDirectory: () => true },
-                { name: '123mod', isDirectory: () => true }
+                { name: '123mod', isDirectory: () => true },
             ] as any);
 
             const result = service.discoverNamespaces('/assets');
@@ -432,9 +417,7 @@ describe('NamespaceDiscoveryService', () => {
 
         it('should cache results', () => {
             vi.mocked(fs.existsSync).mockReturnValue(true);
-            vi.mocked(fs.readdirSync).mockReturnValue([
-                { name: 'minecraft', isDirectory: () => true }
-            ] as any);
+            vi.mocked(fs.readdirSync).mockReturnValue([{ name: 'minecraft', isDirectory: () => true }] as any);
 
             // 第一次调用
             service.discoverNamespaces('/assets');
@@ -465,9 +448,7 @@ describe('NamespaceDiscoveryService', () => {
     describe('clearCache', () => {
         it('should clear namespace cache', () => {
             vi.mocked(fs.existsSync).mockReturnValue(true);
-            vi.mocked(fs.readdirSync).mockReturnValue([
-                { name: 'minecraft', isDirectory: () => true }
-            ] as any);
+            vi.mocked(fs.readdirSync).mockReturnValue([{ name: 'minecraft', isDirectory: () => true }] as any);
 
             // 填充缓存
             service.discoverNamespaces('/assets');

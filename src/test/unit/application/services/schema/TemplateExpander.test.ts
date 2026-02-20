@@ -9,9 +9,9 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TemplateExpander } from '../../../../../application/services/schema/TemplateExpander';
-import { IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { ITemplate } from '../../../../../core/interfaces/ITemplate';
+import { type IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type ITemplate } from '../../../../../core/interfaces/ITemplate';
 import { Uri, Position } from 'vscode';
 
 // 辅助类型：用于类型断言
@@ -43,7 +43,9 @@ describe('TemplateExpander', () => {
         hasParameter: () => false,
         getParameter: () => undefined,
         validateParameters: () => ({ isValid: true, errors: [], warnings: [] }),
-        recordUsage: function() { return this; }
+        recordUsage: function () {
+            return this;
+        },
     });
 
     beforeEach(() => {
@@ -103,7 +105,7 @@ items:
         it('should expand template reference', async () => {
             const template = createTestTemplate('base:item', {
                 material: 'DIAMOND',
-                displayName: '<red>Base Item'
+                displayName: '<red>Base Item',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -127,18 +129,21 @@ items:
         it('should apply multiple templates in order', async () => {
             const template1 = createTestTemplate('base:item', {
                 material: 'STONE',
-                name: 'Base'
+                name: 'Base',
             });
             const template2 = createTestTemplate('override:item', {
-                material: 'DIAMOND'  // 覆盖 base:item 的 material
+                material: 'DIAMOND', // 覆盖 base:item 的 material
             });
 
-            vi.mocked(mockDataStoreService.getTemplateByName)
-                .mockImplementation(async (name) => {
-                    if (name === 'base:item') {return template1;}
-                    if (name === 'override:item') {return template2;}
-                    return undefined;
-                });
+            vi.mocked(mockDataStoreService.getTemplateByName).mockImplementation(async (name) => {
+                if (name === 'base:item') {
+                    return template1;
+                }
+                if (name === 'override:item') {
+                    return template2;
+                }
+                return undefined;
+            });
 
             const content = `
 items:
@@ -158,7 +163,7 @@ items:
         it('should substitute parameters', async () => {
             const template = createTestTemplate('param:item', {
                 displayName: '${name}',
-                amount: '${count:-1}'
+                amount: '${count:-1}',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -182,7 +187,7 @@ items:
         it('should use default value when parameter not provided', async () => {
             const template = createTestTemplate('default:item', {
                 amount: '${count:-5}',
-                name: '${title:-Default Title}'
+                name: '${title:-Default Title}',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -227,7 +232,7 @@ items:
 
             // template_not_found 不是关键错误
             expect(result.success).toBe(true);
-            expect(result.errors.some(e => e.type === 'template_not_found')).toBe(true);
+            expect(result.errors.some((e) => e.type === 'template_not_found')).toBe(true);
         });
     });
 
@@ -238,14 +243,14 @@ items:
     describe('expandObject', () => {
         it('should expand single object', async () => {
             const template = createTestTemplate('test:template', {
-                type: 'expanded'
+                type: 'expanded',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
             const obj = {
                 template: 'test:template',
-                extra: 'value'
+                extra: 'value',
             };
 
             const result = await expander.expandObject(obj);
@@ -257,19 +262,19 @@ items:
 
         it('should handle expansion context', async () => {
             const template = createTestTemplate('test:template', {
-                value: 'from template'
+                value: 'from template',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
             const obj = {
-                template: 'test:template'
+                template: 'test:template',
             };
 
             const context = {
                 path: ['items', 'my_item'],
                 visited: new Set<string>(),
-                currentDepth: 0
+                currentDepth: 0,
             };
 
             const result = await expander.expandObject(obj, context);
@@ -290,15 +295,12 @@ items:
 
         it('should expand arrays recursively', async () => {
             const template = createTestTemplate('test:template', {
-                type: 'expanded'
+                type: 'expanded',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
-            const arr = [
-                { template: 'test:template' },
-                { normal: 'object' }
-            ];
+            const arr = [{ template: 'test:template' }, { normal: 'object' }];
 
             const result = await expander.expandObject(arr);
             const expanded = result.expanded as Array<Record<string, unknown>>;
@@ -317,7 +319,7 @@ items:
         it('should detect direct circular reference', async () => {
             // 模板 A 引用自己
             const templateA = createTestTemplate('circular:a', {
-                template: 'circular:a'  // 自我引用
+                template: 'circular:a', // 自我引用
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(templateA);
@@ -330,24 +332,27 @@ items:
 
             const result = await expander.expandDocument(content);
 
-            expect(result.errors.some(e => e.type === 'circular_reference')).toBe(true);
+            expect(result.errors.some((e) => e.type === 'circular_reference')).toBe(true);
         });
 
         it('should detect indirect circular reference', async () => {
             // A -> B -> A
             const templateA = createTestTemplate('circular:a', {
-                template: 'circular:b'
+                template: 'circular:b',
             });
             const templateB = createTestTemplate('circular:b', {
-                template: 'circular:a'
+                template: 'circular:a',
             });
 
-            vi.mocked(mockDataStoreService.getTemplateByName)
-                .mockImplementation(async (name) => {
-                    if (name === 'circular:a') {return templateA;}
-                    if (name === 'circular:b') {return templateB;}
-                    return undefined;
-                });
+            vi.mocked(mockDataStoreService.getTemplateByName).mockImplementation(async (name) => {
+                if (name === 'circular:a') {
+                    return templateA;
+                }
+                if (name === 'circular:b') {
+                    return templateB;
+                }
+                return undefined;
+            });
 
             const content = `
 items:
@@ -357,7 +362,7 @@ items:
 
             const result = await expander.expandDocument(content);
 
-            expect(result.errors.some(e => e.type === 'circular_reference')).toBe(true);
+            expect(result.errors.some((e) => e.type === 'circular_reference')).toBe(true);
         });
     });
 
@@ -372,12 +377,11 @@ items:
             for (let i = 0; i < 15; i++) {
                 templates[`deep:level${i}`] = createTestTemplate(`deep:level${i}`, {
                     level: i,
-                    template: `deep:level${i + 1}`
+                    template: `deep:level${i + 1}`,
                 });
             }
 
-            vi.mocked(mockDataStoreService.getTemplateByName)
-                .mockImplementation(async (name) => templates[name]);
+            vi.mocked(mockDataStoreService.getTemplateByName).mockImplementation(async (name) => templates[name]);
 
             const content = `
 items:
@@ -387,7 +391,7 @@ items:
 
             const result = await expander.expandDocument(content);
 
-            expect(result.errors.some(e => e.type === 'max_depth_exceeded')).toBe(true);
+            expect(result.errors.some((e) => e.type === 'max_depth_exceeded')).toBe(true);
         });
     });
 
@@ -398,7 +402,7 @@ items:
     describe('parameter substitution', () => {
         it('should substitute object parameters directly', async () => {
             const template = createTestTemplate('object:param', {
-                settings: '${config}'
+                settings: '${config}',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -426,7 +430,7 @@ items:
 
         it('should substitute array parameters directly', async () => {
             const template = createTestTemplate('array:param', {
-                items: '${list}'
+                items: '${list}',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -451,7 +455,7 @@ items:
         it('should skip special parameters', async () => {
             const template = createTestTemplate('special:param', {
                 namespace: '${__NAMESPACE__}',
-                id: '${__ID__}'
+                id: '${__ID__}',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -472,7 +476,7 @@ items:
 
         it('should substitute parameters in keys', async () => {
             const template = createTestTemplate('key:param', {
-                'prefix_${suffix}': 'value'
+                'prefix_${suffix}': 'value',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -493,7 +497,7 @@ items:
 
         it('should handle mixed parameter and text', async () => {
             const template = createTestTemplate('mixed:param', {
-                message: 'Hello ${name}, you have ${count} items'
+                message: 'Hello ${name}, you have ${count} items',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -515,7 +519,7 @@ items:
 
         it('should convert objects to JSON in mixed strings', async () => {
             const template = createTestTemplate('json:param', {
-                data: 'Config: ${config}'
+                data: 'Config: ${config}',
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -546,9 +550,9 @@ items:
                 settings: {
                     display: {
                         color: 'red',
-                        size: 'large'
-                    }
-                }
+                        size: 'large',
+                    },
+                },
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -576,7 +580,7 @@ items:
 
         it('should override arrays instead of merging', async () => {
             const template = createTestTemplate('array:template', {
-                list: [1, 2, 3]
+                list: [1, 2, 3],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -617,7 +621,7 @@ items:
             expect((result.expanded as ExpandedData).items!.my_item.name).toBe('Static Name');
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Skipping dynamic template name',
-                expect.objectContaining({ templateName: '${dynamic:template}' })
+                expect.objectContaining({ templateName: '${dynamic:template}' }),
             );
         });
     });
@@ -631,8 +635,8 @@ items:
             const template = createTestTemplate('test:template', {
                 name: 'From Template',
                 nested: {
-                    value: 123
-                }
+                    value: 123,
+                },
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -673,7 +677,7 @@ items:
             expect((result.expanded as ExpandedData).items!.my_item.name).toBe('My Item');
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Template has no content',
-                expect.objectContaining({ templateName: 'empty:template' })
+                expect.objectContaining({ templateName: 'empty:template' }),
             );
         });
 

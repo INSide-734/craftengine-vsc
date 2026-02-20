@@ -1,7 +1,7 @@
-import { TextDocument, Range } from 'vscode';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IValidationError } from '../../../infrastructure/schema/SchemaValidator';
-import { IPositionInfo } from '../../../core/interfaces/IParsedDocument';
+import { type TextDocument, Range } from 'vscode';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IValidationError } from '../../../infrastructure/schema/SchemaValidator';
+import { type IPositionInfo } from '../../../core/interfaces/IParsedDocument';
 
 /**
  * Schema 错误位置解析器
@@ -17,15 +17,9 @@ export class SchemaPositionResolver {
      *
      * 根据错误类型返回更精确的范围
      */
-    getErrorRange(
-        error: IValidationError,
-        document: TextDocument,
-        positionMap?: Map<string, IPositionInfo>
-    ): Range {
+    getErrorRange(error: IValidationError, document: TextDocument, positionMap?: Map<string, IPositionInfo>): Range {
         if (error.path && positionMap) {
-            let normalizedPath = error.path
-                .replace(/^\//, '')
-                .replace(/\//g, '.');
+            let normalizedPath = error.path.replace(/^\//, '').replace(/\//g, '.');
 
             normalizedPath = this.fixVersionNumbersInPath(normalizedPath);
 
@@ -33,7 +27,7 @@ export class SchemaPositionResolver {
                 originalPath: error.path,
                 normalizedPath,
                 errorCode: error.code,
-                availablePaths: Array.from(positionMap.keys()).slice(0, 10)
+                availablePaths: Array.from(positionMap.keys()).slice(0, 10),
             });
 
             // 直接查找
@@ -62,7 +56,7 @@ export class SchemaPositionResolver {
             this.logger.warn('No position found for error path', {
                 path: error.path,
                 normalizedPath,
-                message: error.message
+                message: error.message,
             });
         }
 
@@ -72,10 +66,7 @@ export class SchemaPositionResolver {
     /**
      * 模糊查找位置
      */
-    private findFuzzyPosition(
-        targetPath: string,
-        positionMap: Map<string, IPositionInfo>
-    ): IPositionInfo | undefined {
+    private findFuzzyPosition(targetPath: string, positionMap: Map<string, IPositionInfo>): IPositionInfo | undefined {
         const pathParts = targetPath.split('.');
 
         for (const [key, value] of positionMap.entries()) {
@@ -115,11 +106,7 @@ export class SchemaPositionResolver {
     /**
      * 精细化错误范围
      */
-    private refineErrorRange(
-        error: IValidationError,
-        position: IPositionInfo,
-        document: TextDocument
-    ): Range {
+    private refineErrorRange(error: IValidationError, position: IPositionInfo, document: TextDocument): Range {
         switch (error.code) {
             case 'required':
             case 'additionalProperties':
@@ -174,7 +161,7 @@ export class SchemaPositionResolver {
                     range.start.line,
                     range.start.character + colonIndex,
                     range.start.line,
-                    range.start.character + colonIndex + 1
+                    range.start.character + colonIndex + 1,
                 );
             }
             return this.getFirstLineRange(range, document);

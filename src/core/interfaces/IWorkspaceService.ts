@@ -1,4 +1,4 @@
-import { EditorUri, EditorTextDocument } from '../types/EditorTypes';
+import { type EditorUri, type EditorTextDocument } from '../types/EditorTypes';
 
 /**
  * 工作区文件夹信息

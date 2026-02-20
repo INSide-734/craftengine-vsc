@@ -15,7 +15,7 @@ import {
     repeat,
     createIndent,
     removeQuotes,
-    countOccurrences
+    countOccurrences,
 } from '../../../../infrastructure/utils/StringUtils';
 
 describe('StringUtils', () => {

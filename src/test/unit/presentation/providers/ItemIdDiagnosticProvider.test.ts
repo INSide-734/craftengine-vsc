@@ -8,39 +8,35 @@
  * - Schema 驱动的诊断
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-    TextDocument,
-    Uri,
-    DiagnosticSeverity
-} from '../../../__mocks__/vscode';
+import { TextDocument, Uri, DiagnosticSeverity } from '../../../__mocks__/vscode';
 import type { TextDocument as VscodeTextDocument } from 'vscode';
 import { ItemIdDiagnosticProvider } from '../../../../presentation/providers/ItemIdDiagnosticProvider';
 import { ServiceContainer } from '../../../../infrastructure/ServiceContainer';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../../core/interfaces/IConfiguration';
-import { IDataStoreService } from '../../../../core/interfaces/IDataStoreService';
-import { ISchemaService } from '../../../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../../../core/interfaces/IYamlPathParser';
-import { PerformanceMonitor } from '../../../../infrastructure/performance/PerformanceMonitor';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../../core/interfaces/IConfiguration';
+import { type IDataStoreService } from '../../../../core/interfaces/IDataStoreService';
+import { type ISchemaService } from '../../../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../../../core/interfaces/IYamlPathParser';
+import { type PerformanceMonitor } from '../../../../infrastructure/performance/PerformanceMonitor';
 import { SERVICE_TOKENS } from '../../../../core/constants/ServiceTokens';
 
 // Mock ServiceContainer
 vi.mock('../../../../infrastructure/ServiceContainer', () => ({
     ServiceContainer: {
-        getService: vi.fn()
-    }
+        getService: vi.fn(),
+    },
 }));
 
 // Mock DiagnosticSeverityConfig
 const mockSeverityConfig = {
     getSeverity: vi.fn().mockReturnValue(DiagnosticSeverity.Error),
-    shouldIgnore: vi.fn().mockReturnValue(false)
+    shouldIgnore: vi.fn().mockReturnValue(false),
 };
 vi.mock('../../../../infrastructure/config/DiagnosticSeverityConfig', () => ({
     DiagnosticSeverityConfig: class {
         getSeverity = mockSeverityConfig.getSeverity;
         shouldIgnore = mockSeverityConfig.shouldIgnore;
-    }
+    },
 }));
 
 describe('ItemIdDiagnosticProvider', () => {
@@ -70,30 +66,30 @@ describe('ItemIdDiagnosticProvider', () => {
                 }
                 return defaultValue;
             }),
-            onChange: vi.fn().mockReturnValue({ dispose: vi.fn() })
+            onChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
         } as unknown as IConfiguration;
 
         // 创建 mock data store service
         mockDataStoreService = {
-            getItemById: vi.fn().mockResolvedValue(undefined)
+            getItemById: vi.fn().mockResolvedValue(undefined),
         } as unknown as IDataStoreService;
 
         // 创建 mock schema service
         mockSchemaService = {
             getSchemaForPath: vi.fn().mockResolvedValue(null),
-            getCustomProperty: vi.fn().mockReturnValue(null)
+            getCustomProperty: vi.fn().mockReturnValue(null),
         } as unknown as ISchemaService;
 
         // 创建 mock yaml path parser
         mockYamlPathParser = {
-            parsePath: vi.fn().mockReturnValue([])
+            parsePath: vi.fn().mockReturnValue([]),
         } as unknown as IYamlPathParser;
 
         // 创建 mock performance monitor
         mockPerformanceMonitor = {
             startTimer: vi.fn().mockReturnValue({
-                stop: vi.fn()
-            })
+                stop: vi.fn(),
+            }),
         } as unknown as PerformanceMonitor;
 
         // 配置 ServiceContainer mock
@@ -129,11 +125,7 @@ describe('ItemIdDiagnosticProvider', () => {
 
     // 辅助函数：创建测试文档
     function createDocument(content: string): VscodeTextDocument {
-        return new TextDocument(
-            Uri.file('/test/file.yaml'),
-            content,
-            'yaml'
-        ) as unknown as VscodeTextDocument;
+        return new TextDocument(Uri.file('/test/file.yaml'), content, 'yaml') as unknown as VscodeTextDocument;
     }
 
     // ========================================
@@ -145,7 +137,7 @@ describe('ItemIdDiagnosticProvider', () => {
             const document = new TextDocument(
                 Uri.file('/test/file.txt'),
                 'hello world',
-                'plaintext'
+                'plaintext',
             ) as unknown as VscodeTextDocument;
 
             await provider.updateDiagnostics(document);
@@ -172,7 +164,7 @@ items:
             // 模拟 schema 返回 itemId 字段
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.itemId'
+                'x-completion-provider': 'craftengine.itemId',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.itemId');
 
@@ -190,7 +182,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.itemId'
+                'x-completion-provider': 'craftengine.itemId',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.itemId');
             vi.mocked(mockDataStoreService.getItemById).mockResolvedValue(undefined);
@@ -209,7 +201,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.itemId'
+                'x-completion-provider': 'craftengine.itemId',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.itemId');
             vi.mocked(mockDataStoreService.getItemById).mockResolvedValue({
@@ -217,7 +209,7 @@ items:
                 namespace: 'minecraft',
                 name: 'diamond',
                 type: 'item',
-                sourceFile: '/test/items.yaml'
+                sourceFile: '/test/items.yaml',
             });
 
             await provider.updateDiagnostics(document);
@@ -242,7 +234,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.itemId'
+                'x-completion-provider': 'craftengine.itemId',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.itemId');
             vi.mocked(mockDataStoreService.getItemById).mockResolvedValue(undefined);
@@ -268,7 +260,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.itemId'
+                'x-completion-provider': 'craftengine.itemId',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.itemId');
 
@@ -286,7 +278,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.itemId'
+                'x-completion-provider': 'craftengine.itemId',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.itemId');
 
@@ -403,12 +395,10 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.itemId'
+                'x-completion-provider': 'craftengine.itemId',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.itemId');
-            vi.mocked(mockDataStoreService.getItemById).mockRejectedValue(
-                new Error('Service error')
-            );
+            vi.mocked(mockDataStoreService.getItemById).mockRejectedValue(new Error('Service error'));
 
             await expect(provider.updateDiagnostics(document)).resolves.not.toThrow();
         });

@@ -4,7 +4,7 @@
  * 移植自 craft-engine 的 SimplifiedModelReader
  */
 
-import { Key } from '../utils/Key';
+import { type Key } from '../utils/Key';
 
 /**
  * 简化模型读取器接口
@@ -18,11 +18,7 @@ export interface SimplifiedModelReader {
      * @param id 资源标识符
      * @returns 模型定义对象，如果无法转换则返回 null
      */
-    convertFromTextures(
-        textures: string[],
-        optionalModelPaths: string[],
-        id: Key
-    ): Record<string, unknown> | null;
+    convertFromTextures(textures: string[], optionalModelPaths: string[], id: Key): Record<string, unknown> | null;
 
     /**
      * 从模型路径列表转换为模型定义

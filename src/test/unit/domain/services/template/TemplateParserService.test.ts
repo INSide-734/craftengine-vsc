@@ -9,8 +9,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TemplateParserService } from '../../../../../domain/services/template/TemplateParserService';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../../../core/interfaces/IConfiguration';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../../../core/interfaces/IConfiguration';
 import { Uri } from 'vscode';
 
 describe('TemplateParserService', () => {
@@ -31,7 +31,7 @@ describe('TemplateParserService', () => {
         } as unknown as ILogger;
 
         mockConfiguration = {
-            get: vi.fn().mockReturnValue('templates')
+            get: vi.fn().mockReturnValue('templates'),
         } as unknown as IConfiguration;
 
         service = new TemplateParserService(mockLogger, mockConfiguration);
@@ -95,11 +95,11 @@ describe('TemplateParserService', () => {
             const template = result.templates[0];
             expect(template.parameters).toHaveLength(2);
 
-            const nameParam = template.parameters.find(p => p.name === 'itemName');
+            const nameParam = template.parameters.find((p) => p.name === 'itemName');
             expect(nameParam).toBeDefined();
             expect(nameParam?.required).toBe(true);
 
-            const descParam = template.parameters.find(p => p.name === 'description');
+            const descParam = template.parameters.find((p) => p.name === 'description');
             expect(descParam).toBeDefined();
             expect(descParam?.required).toBe(false);
             expect(descParam?.defaultValue).toBe('Default description');
@@ -197,9 +197,9 @@ templates:
 
             expect(result.templates).toHaveLength(1);
             const params = result.templates[0].parameters;
-            expect(params.map(p => p.name)).toContain('displayName');
-            expect(params.map(p => p.name)).toContain('color');
-            expect(params.map(p => p.name)).toContain('itemId');
+            expect(params.map((p) => p.name)).toContain('displayName');
+            expect(params.map((p) => p.name)).toContain('color');
+            expect(params.map((p) => p.name)).toContain('itemId');
         });
 
         it('should exclude metadata keys from content', () => {

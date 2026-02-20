@@ -1,25 +1,25 @@
 import {
-    CodeActionProvider,
-    TextDocument,
-    Range,
-    CodeActionContext,
+    type CodeActionProvider,
+    type TextDocument,
+    type Range,
+    type CodeActionContext,
     CodeAction,
     CodeActionKind,
     WorkspaceEdit,
     Position,
-    Diagnostic,
-    DiagnosticSeverity
+    type Diagnostic,
+    DiagnosticSeverity,
 } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { ITemplateService } from '../../core/interfaces/ITemplateService';
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type ITemplateService } from '../../core/interfaces/ITemplateService';
+import { type ILogger } from '../../core/interfaces/ILogger';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { TemplateDiagnosticProvider } from './TemplateDiagnosticProvider';
 import { calculateSimilarity } from '../../infrastructure/utils';
 
 /**
  * 模板代码操作提供者
- * 
+ *
  * 为诊断错误提供快速修复建议（Quick Fix）
  */
 export class TemplateCodeActionProvider implements CodeActionProvider {
@@ -27,38 +27,33 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
     private readonly logger: ILogger;
 
     /** 提供的 CodeAction 类型 */
-    static readonly providedCodeActionKinds = [
-        CodeActionKind.QuickFix
-    ];
+    static readonly providedCodeActionKinds = [CodeActionKind.QuickFix];
 
     constructor() {
         this.templateService = ServiceContainer.getService<ITemplateService>(SERVICE_TOKENS.TemplateService);
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild('TemplateCodeActionProvider');
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(
+            'TemplateCodeActionProvider',
+        );
     }
 
     /**
      * 提供代码操作
      */
-    async provideCodeActions(
-        document: TextDocument,
-        _range: Range,
-        context: CodeActionContext
-    ): Promise<CodeAction[]> {
+    async provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
 
         try {
             for (const diagnostic of context.diagnostics) {
                 // 只处理模板相关的诊断（基于诊断源匹配）
-                if (diagnostic.source !== TemplateDiagnosticProvider.DIAGNOSTIC_SOURCE && 
-                    diagnostic.source !== 'CraftEngine Parser') {
+                if (
+                    diagnostic.source !== TemplateDiagnosticProvider.DIAGNOSTIC_SOURCE &&
+                    diagnostic.source !== 'CraftEngine Parser'
+                ) {
                     continue;
                 }
 
                 // 根据错误代码生成相应的快速修复
-                const fixActions = await this.createFixActionsForDiagnostic(
-                    document,
-                    diagnostic
-                );
+                const fixActions = await this.createFixActionsForDiagnostic(document, diagnostic);
                 actions.push(...fixActions);
             }
 
@@ -66,10 +61,9 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
             if (actions.length > 0) {
                 this.logger.debug('Code actions provided', {
                     document: document.fileName,
-                    actionsCount: actions.length
+                    actionsCount: actions.length,
                 });
             }
-
         } catch (error) {
             this.logger.error('Error providing code actions', error as Error);
         }
@@ -80,10 +74,7 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
     /**
      * 为诊断创建修复操作
      */
-    private async createFixActionsForDiagnostic(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    private async createFixActionsForDiagnostic(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const code = diagnostic.code;
 
         if (code === 'unknown_template') {
@@ -105,10 +96,7 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
     /**
      * 创建未知模板的修复操作
      */
-    private async createUnknownTemplateActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    private async createUnknownTemplateActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
         const templateName = this.extractTemplateName(document, diagnostic.range);
 
@@ -118,22 +106,19 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
 
         // 1. 查找相似的模板名称
         try {
-            const allTemplates = await this.templateService.searchTemplates({ 
-                prefix: '', 
+            const allTemplates = await this.templateService.searchTemplates({
+                prefix: '',
                 limit: 1000,
-                fuzzy: true
+                fuzzy: true,
             });
             const similarTemplates = this.findSimilarTemplates(
-                templateName, 
-                allTemplates.map(m => m.template.name)
+                templateName,
+                allTemplates.map((m) => m.template.name),
             );
 
             // 为每个相似模板创建替换操作
             for (const similarName of similarTemplates.slice(0, 5)) {
-                const action = new CodeAction(
-                    `Change '${templateName}' to '${similarName}'`,
-                    CodeActionKind.QuickFix
-                );
+                const action = new CodeAction(`Change '${templateName}' to '${similarName}'`, CodeActionKind.QuickFix);
 
                 action.diagnostics = [diagnostic];
                 action.isPreferred = similarTemplates[0] === similarName;
@@ -149,28 +134,22 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
         }
 
         // 2. 创建新模板的操作
-        const createAction = new CodeAction(
-            `Create template '${templateName}'`,
-            CodeActionKind.QuickFix
-        );
+        const createAction = new CodeAction(`Create template '${templateName}'`, CodeActionKind.QuickFix);
         createAction.diagnostics = [diagnostic];
         createAction.command = {
             title: 'Create new template',
             command: 'craftengine.createTemplateFromUsage',
-            arguments: [templateName, document.uri, diagnostic.range]
+            arguments: [templateName, document.uri, diagnostic.range],
         };
         actions.push(createAction);
 
         // 3. 忽略此警告
-        const ignoreAction = new CodeAction(
-            'Ignore this template warning',
-            CodeActionKind.QuickFix
-        );
+        const ignoreAction = new CodeAction('Ignore this template warning', CodeActionKind.QuickFix);
         ignoreAction.diagnostics = [diagnostic];
         ignoreAction.command = {
             title: 'Add to ignore list',
             command: 'craftengine.ignoreTemplateWarning',
-            arguments: [templateName]
+            arguments: [templateName],
         };
         actions.push(ignoreAction);
 
@@ -180,10 +159,7 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
     /**
      * 创建缺少参数的修复操作
      */
-    private createMissingParameterActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createMissingParameterActions(document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 从错误消息中提取参数名称
@@ -195,10 +171,7 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
         const paramName = paramMatch[1];
 
         // 1. 添加缺失的参数
-        const addAction = new CodeAction(
-            `Add required parameter '${paramName}'`,
-            CodeActionKind.QuickFix
-        );
+        const addAction = new CodeAction(`Add required parameter '${paramName}'`, CodeActionKind.QuickFix);
         addAction.diagnostics = [diagnostic];
         addAction.isPreferred = true;
 
@@ -215,25 +188,18 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
         return actions;
     }
 
-
     /**
      * 创建语法错误的修复操作
      */
-    private createSyntaxErrorActions(
-        _document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createSyntaxErrorActions(_document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 1. 格式化文档
-        const formatAction = new CodeAction(
-            'Format YAML document',
-            CodeActionKind.QuickFix
-        );
+        const formatAction = new CodeAction('Format YAML document', CodeActionKind.QuickFix);
         formatAction.diagnostics = [diagnostic];
         formatAction.command = {
             title: 'Format document',
-            command: 'editor.action.formatDocument'
+            command: 'editor.action.formatDocument',
         };
         actions.push(formatAction);
 
@@ -243,23 +209,17 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
     /**
      * 创建通用修复操作
      */
-    private createGenericActions(
-        _document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createGenericActions(_document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 如果是警告级别，提供忽略选项
         if (diagnostic.severity === DiagnosticSeverity.Warning) {
-            const ignoreAction = new CodeAction(
-                'Ignore this warning',
-                CodeActionKind.QuickFix
-            );
+            const ignoreAction = new CodeAction('Ignore this warning', CodeActionKind.QuickFix);
             ignoreAction.diagnostics = [diagnostic];
             ignoreAction.command = {
                 title: 'Ignore warning',
                 command: 'craftengine.ignoreWarning',
-                arguments: [diagnostic]
+                arguments: [diagnostic],
             };
             actions.push(ignoreAction);
         }
@@ -285,14 +245,14 @@ export class TemplateCodeActionProvider implements CodeActionProvider {
      */
     private findSimilarTemplates(target: string, templates: string[]): string[] {
         const similarities = templates
-            .map(name => ({
+            .map((name) => ({
                 name,
-                score: calculateSimilarity(target, name)
+                score: calculateSimilarity(target, name),
             }))
-            .filter(item => item.score > 0.5)
+            .filter((item) => item.score > 0.5)
             .sort((a, b) => b.score - a.score);
 
-        return similarities.map(item => item.name);
+        return similarities.map((item) => item.name);
     }
 
     /**

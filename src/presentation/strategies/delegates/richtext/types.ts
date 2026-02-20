@@ -1,17 +1,17 @@
-import { CompletionItem } from 'vscode';
-import { ITranslationKey } from '../../../../core/interfaces/ITranslation';
+import { type CompletionItem } from 'vscode';
+import { type ITranslationKey } from '../../../../core/interfaces/ITranslation';
 
 /**
  * 富文本补全上下文类型
  */
-export type RichTextCompletionType = 
-    | 'tag'              // 标签名称补全
-    | 'closing-tag'      // 关闭标签补全
-    | 'hex-color'        // 十六进制颜色补全
-    | 'tag-argument'     // 标签参数补全
-    | 'translation-key'  // 翻译键补全（i18n/l10n 标签参数）
+export type RichTextCompletionType =
+    | 'tag' // 标签名称补全
+    | 'closing-tag' // 关闭标签补全
+    | 'hex-color' // 十六进制颜色补全
+    | 'tag-argument' // 标签参数补全
+    | 'translation-key' // 翻译键补全（i18n/l10n 标签参数）
     | 'pure-translation' // 纯翻译键补全（非 MiniMessage 上下文）
-    | 'none';            // 无匹配
+    | 'none'; // 无匹配
 
 /**
  * 翻译键验证状态
@@ -64,7 +64,7 @@ export let PATTERNS = {
     TRANSLATION_TAG: /<(i18n|l10n):([a-z0-9._-]*)$/i,
 
     /** 匹配纯翻译键（用于 translation-only 模式） */
-    PURE_TRANSLATION_KEY: /^([a-z][a-z0-9._-]*)$/
+    PURE_TRANSLATION_KEY: /^([a-z][a-z0-9._-]*)$/,
 };
 
 /** 常用语言代码（用于检测缺失的翻译，默认值可被配置覆盖） */
@@ -72,12 +72,12 @@ export let COMMON_LANGUAGES: readonly string[] = ['en', 'zh_cn', 'ja', 'ko', 'de
 
 /** 配置键到 PATTERNS 字段的映射 */
 const PATTERN_KEY_MAP: Record<string, keyof typeof PATTERNS> = {
-    'completionTagStart': 'TAG_START',
-    'completionTagArgument': 'TAG_ARGUMENT',
-    'completionClosingTag': 'CLOSING_TAG',
-    'completionHexColor': 'HEX_COLOR',
-    'completionTranslationTag': 'TRANSLATION_TAG',
-    'pureTranslationKey': 'PURE_TRANSLATION_KEY',
+    completionTagStart: 'TAG_START',
+    completionTagArgument: 'TAG_ARGUMENT',
+    completionClosingTag: 'CLOSING_TAG',
+    completionHexColor: 'HEX_COLOR',
+    completionTranslationTag: 'TRANSLATION_TAG',
+    pureTranslationKey: 'PURE_TRANSLATION_KEY',
 };
 
 /**
@@ -86,10 +86,7 @@ const PATTERN_KEY_MAP: Record<string, keyof typeof PATTERNS> = {
  * @param patterns - 正则模式配置（键名 -> 正则字符串）
  * @param commonLanguages - 常用语言代码列表
  */
-export function initializeMiniMessagePatterns(
-    patterns: Record<string, string>,
-    commonLanguages: string[]
-): void {
+export function initializeMiniMessagePatterns(patterns: Record<string, string>, commonLanguages: string[]): void {
     // 从配置构建正则表达式
     const newPatterns = { ...PATTERNS };
     for (const [configKey, patternField] of Object.entries(PATTERN_KEY_MAP)) {
@@ -104,4 +101,3 @@ export function initializeMiniMessagePatterns(
         COMMON_LANGUAGES = commonLanguages;
     }
 }
-

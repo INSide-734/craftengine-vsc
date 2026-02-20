@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ILogger } from '../../../../core/interfaces/ILogger';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
 
 // Mock data loader 实例 - 在 beforeEach 中初始化
 const mockDataLoaderInstance = {
@@ -19,15 +19,15 @@ const mockDataLoaderInstance = {
     loadFluidTags: vi.fn(),
     loadGameEventTags: vi.fn(),
     loadDamageTypes: vi.fn(),
-    loadGameEvents: vi.fn()
+    loadGameEvents: vi.fn(),
 };
 
 // Mock MinecraftDataLoader - 必须在 import 之前
 vi.mock('../../../../infrastructure/data/MinecraftDataLoader', () => {
     return {
-        MinecraftDataLoader: function() {
+        MinecraftDataLoader: function () {
             return mockDataLoaderInstance;
-        }
+        },
     };
 });
 
@@ -59,7 +59,7 @@ describe('MinecraftDataService', () => {
             treasureOnly: false,
             curse: false,
             weight: 10,
-            exclude: ['smite']
+            exclude: ['smite'],
         },
         {
             id: 17,
@@ -68,8 +68,8 @@ describe('MinecraftDataService', () => {
             maxLevel: 5,
             category: 'weapon',
             treasureOnly: false,
-            curse: false
-        }
+            curse: false,
+        },
     ];
 
     const mockEntitiesRaw = [
@@ -80,7 +80,7 @@ describe('MinecraftDataService', () => {
             width: 0.6,
             height: 1.95,
             type: 'mob',
-            category: 'hostile'
+            category: 'hostile',
         },
         {
             id: 95,
@@ -88,18 +88,18 @@ describe('MinecraftDataService', () => {
             displayName: 'Player',
             width: 0.6,
             height: 1.8,
-            type: 'player'
-        }
+            type: 'player',
+        },
     ];
 
     const mockParticlesRaw = [
         { id: 0, name: 'ambient_entity_effect' },
-        { id: 26, name: 'flame' }
+        { id: 26, name: 'flame' },
     ];
 
     const mockEffectsRaw = [
         { id: 1, name: 'speed', displayName: 'Speed', type: 'good' },
-        { id: 2, name: 'slowness', displayName: 'Slowness', type: 'bad' }
+        { id: 2, name: 'slowness', displayName: 'Slowness', type: 'bad' },
     ];
 
     const mockBiomesRaw = [
@@ -109,15 +109,11 @@ describe('MinecraftDataService', () => {
             displayName: 'Plains',
             category: 'none',
             temperature: 0.8,
-            precipitation: 'rain'
-        }
+            precipitation: 'rain',
+        },
     ];
 
-    const mockSoundNames = [
-        'ambient.cave',
-        'block.stone.break',
-        'entity.player.hurt'
-    ];
+    const mockSoundNames = ['ambient.cave', 'block.stone.break', 'entity.player.hurt'];
 
     const mockBlocksRaw = [
         {
@@ -131,7 +127,7 @@ describe('MinecraftDataService', () => {
             transparent: false,
             emitLight: 0,
             filterLight: 15,
-            boundingBox: 'block'
+            boundingBox: 'block',
         },
         {
             id: 2,
@@ -142,10 +138,8 @@ describe('MinecraftDataService', () => {
             stackSize: 64,
             diggable: true,
             transparent: false,
-            states: [
-                { name: 'snowy', type: 'bool', values: ['true', 'false'] }
-            ]
-        }
+            states: [{ name: 'snowy', type: 'bool', values: ['true', 'false'] }],
+        },
     ];
 
     const mockItemsRaw = [
@@ -153,7 +147,7 @@ describe('MinecraftDataService', () => {
             id: 1,
             name: 'stone',
             displayName: 'Stone',
-            stackSize: 64
+            stackSize: 64,
         },
         {
             id: 802,
@@ -162,8 +156,8 @@ describe('MinecraftDataService', () => {
             stackSize: 1,
             durability: 1561,
             enchantCategories: ['weapon'],
-            repairWith: ['diamond']
-        }
+            repairWith: ['diamond'],
+        },
     ];
 
     const mockAttributesRaw = [
@@ -172,33 +166,27 @@ describe('MinecraftDataService', () => {
             resource: 'max_health',
             min: 1,
             max: 1024,
-            default: 20
+            default: 20,
         },
         {
             name: 'generic.attack_damage',
             resource: 'attack_damage',
             min: 0,
             max: 2048,
-            default: 2
-        }
+            default: 2,
+        },
     ];
 
     const mockBlockTags = new Map([
         ['planks', ['oak_planks', 'spruce_planks', 'birch_planks']],
-        ['logs', ['oak_log', 'spruce_log', '#oak_logs']]
+        ['logs', ['oak_log', 'spruce_log', '#oak_logs']],
     ]);
 
-    const mockItemTags = new Map([
-        ['swords', ['diamond_sword', 'iron_sword', 'wooden_sword']]
-    ]);
+    const mockItemTags = new Map([['swords', ['diamond_sword', 'iron_sword', 'wooden_sword']]]);
 
-    const mockEntityTags = new Map([
-        ['undead', ['zombie', 'skeleton', 'wither']]
-    ]);
+    const mockEntityTags = new Map([['undead', ['zombie', 'skeleton', 'wither']]]);
 
-    const mockFluidTags = new Map([
-        ['water', ['water', 'flowing_water']]
-    ]);
+    const mockFluidTags = new Map([['water', ['water', 'flowing_water']]]);
 
     const mockGameEventTags = new Map<string, string[]>();
 
@@ -207,18 +195,18 @@ describe('MinecraftDataService', () => {
             name: 'in_fire',
             scaling: 'when_caused_by_living_non_player',
             exhaustion: 0.1,
-            effects: 'burning'
+            effects: 'burning',
         },
         {
             name: 'arrow',
             scaling: 'when_caused_by_living_non_player',
-            exhaustion: 0.1
-        }
+            exhaustion: 0.1,
+        },
     ];
 
     const mockGameEventsRaw = [
         { id: 1, name: 'block_change' },
-        { id: 2, name: 'block_activate' }
+        { id: 2, name: 'block_activate' },
     ];
 
     beforeEach(() => {
@@ -231,39 +219,39 @@ describe('MinecraftDataService', () => {
             debug: vi.fn(),
             warn: vi.fn(),
             error: vi.fn(),
-            createChild: vi.fn().mockReturnThis()
+            createChild: vi.fn().mockReturnThis(),
         } as unknown as ILogger;
 
         // Mock DataConfigLoader
         const mockConfigLoader = {
             getTimingConfigSync: vi.fn().mockReturnValue({
                 cache: {
-                    minecraftDataCacheTTL: 3600000
+                    minecraftDataCacheTTL: 3600000,
                 },
                 network: {
-                    requestTimeout: 10000
-                }
+                    requestTimeout: 10000,
+                },
             }),
             getDataSourcesConfigSync: vi.fn().mockReturnValue({
                 sources: {
                     prismarineData: {
                         primary: 'https://example.com',
-                        mirrors: []
+                        mirrors: [],
                     },
                     minecraftAssets: {
                         primary: 'https://example.com',
-                        mirrors: []
-                    }
+                        mirrors: [],
+                    },
                 },
                 builtinSource: {
-                    identifier: '<minecraft:builtin>'
-                }
+                    identifier: '<minecraft:builtin>',
+                },
             }),
             loadTimingConfig: vi.fn().mockResolvedValue({
                 cache: {
-                    minecraftDataCacheTTL: 3600000
-                }
-            })
+                    minecraftDataCacheTTL: 3600000,
+                },
+            }),
         };
 
         // 设置 mock data loader 实例的返回值
@@ -372,7 +360,7 @@ describe('MinecraftDataService', () => {
                     maxLevel: 5,
                     category: 'weapon',
                     treasureOnly: false,
-                    curse: false
+                    curse: false,
                 });
             });
         });
@@ -386,7 +374,7 @@ describe('MinecraftDataService', () => {
                     id: 54,
                     name: 'zombie',
                     displayName: 'Zombie',
-                    type: 'mob'
+                    type: 'mob',
                 });
             });
         });
@@ -398,7 +386,7 @@ describe('MinecraftDataService', () => {
                 expect(particles).toHaveLength(2);
                 expect(particles[0]).toMatchObject({
                     id: 0,
-                    name: 'ambient_entity_effect'
+                    name: 'ambient_entity_effect',
                 });
             });
         });
@@ -412,7 +400,7 @@ describe('MinecraftDataService', () => {
                     id: 1,
                     name: 'speed',
                     displayName: 'Speed',
-                    type: 'good'
+                    type: 'good',
                 });
             });
         });
@@ -426,7 +414,7 @@ describe('MinecraftDataService', () => {
                     id: 1,
                     name: 'plains',
                     displayName: 'Plains',
-                    category: 'none'
+                    category: 'none',
                 });
             });
         });
@@ -448,18 +436,18 @@ describe('MinecraftDataService', () => {
                 expect(blocks[0]).toMatchObject({
                     id: 1,
                     name: 'stone',
-                    displayName: 'Stone'
+                    displayName: 'Stone',
                 });
             });
 
             it('should include block states', () => {
                 const blocks = service.getBlocks();
-                const grassBlock = blocks.find(b => b.name === 'grass_block');
+                const grassBlock = blocks.find((b) => b.name === 'grass_block');
 
                 expect(grassBlock?.states).toBeDefined();
                 expect(grassBlock?.states?.[0]).toMatchObject({
                     name: 'snowy',
-                    type: 'bool'
+                    type: 'bool',
                 });
             });
         });
@@ -473,7 +461,7 @@ describe('MinecraftDataService', () => {
                     id: 1,
                     name: 'stone',
                     displayName: 'Stone',
-                    stackSize: 64
+                    stackSize: 64,
                 });
             });
         });
@@ -488,7 +476,7 @@ describe('MinecraftDataService', () => {
                     resource: 'max_health',
                     min: 1,
                     max: 1024,
-                    default: 20
+                    default: 20,
                 });
             });
         });
@@ -498,7 +486,7 @@ describe('MinecraftDataService', () => {
                 const tags = service.getTags('blocks');
 
                 expect(tags.length).toBeGreaterThan(0);
-                const planksTag = tags.find(t => t.name === 'planks');
+                const planksTag = tags.find((t) => t.name === 'planks');
                 expect(planksTag).toBeDefined();
                 expect(planksTag?.type).toBe('blocks');
                 expect(planksTag?.values).toContain('oak_planks');
@@ -508,7 +496,7 @@ describe('MinecraftDataService', () => {
                 const tags = service.getTags('items');
 
                 expect(tags.length).toBeGreaterThan(0);
-                const swordsTag = tags.find(t => t.name === 'swords');
+                const swordsTag = tags.find((t) => t.name === 'swords');
                 expect(swordsTag).toBeDefined();
             });
 
@@ -516,7 +504,7 @@ describe('MinecraftDataService', () => {
                 const tags = service.getTags('entity_types');
 
                 expect(tags.length).toBeGreaterThan(0);
-                const undeadTag = tags.find(t => t.name === 'undead');
+                const undeadTag = tags.find((t) => t.name === 'undead');
                 expect(undeadTag).toBeDefined();
             });
         });
@@ -527,8 +515,8 @@ describe('MinecraftDataService', () => {
 
                 expect(allTags.length).toBeGreaterThan(0);
                 // 应该包含不同类型的标签
-                const blockTag = allTags.find(t => t.type === 'blocks');
-                const itemTag = allTags.find(t => t.type === 'items');
+                const blockTag = allTags.find((t) => t.type === 'blocks');
+                const itemTag = allTags.find((t) => t.type === 'items');
                 expect(blockTag).toBeDefined();
                 expect(itemTag).toBeDefined();
             });
@@ -793,7 +781,15 @@ describe('MinecraftDataService', () => {
 
             it('should handle null/undefined values', async () => {
                 mockDataLoaderInstance.loadEnchantments.mockResolvedValue([
-                    { id: 1, name: 'test', displayName: 'Test', maxLevel: 1, category: 'armor', treasureOnly: false, curse: false }
+                    {
+                        id: 1,
+                        name: 'test',
+                        displayName: 'Test',
+                        maxLevel: 1,
+                        category: 'armor',
+                        treasureOnly: false,
+                        curse: false,
+                    },
                 ]);
 
                 await service.ensureLoaded();
@@ -808,13 +804,13 @@ describe('MinecraftDataService', () => {
             it('should convert block states correctly', async () => {
                 await service.ensureLoaded();
                 const blocks = service.getBlocks();
-                const grassBlock = blocks.find(b => b.name === 'grass_block');
+                const grassBlock = blocks.find((b) => b.name === 'grass_block');
 
                 expect(grassBlock?.states?.[0]).toEqual({
                     name: 'snowy',
                     type: 'bool',
                     values: ['true', 'false'],
-                    num_values: undefined
+                    num_values: undefined,
                 });
             });
         });
@@ -839,10 +835,7 @@ describe('MinecraftDataService', () => {
             await service.ensureLoaded();
 
             // 不应抛出错误，但数据可能为空
-            expect(mockLogger.error).toHaveBeenCalledWith(
-                'Failed to load Minecraft data',
-                expect.any(Error)
-            );
+            expect(mockLogger.error).toHaveBeenCalledWith('Failed to load Minecraft data', expect.any(Error));
         });
 
         it('should preserve previous data on refresh failure', async () => {
@@ -866,7 +859,7 @@ describe('MinecraftDataService', () => {
 
             expect(mockLogger.info).toHaveBeenCalledWith(
                 'Loading Minecraft data',
-                expect.objectContaining({ version: '1.21.4' })
+                expect.objectContaining({ version: '1.21.4' }),
             );
         });
 
@@ -878,8 +871,8 @@ describe('MinecraftDataService', () => {
                 expect.objectContaining({
                     version: '1.21.4',
                     duration: expect.any(Number),
-                    counts: expect.any(Object)
-                })
+                    counts: expect.any(Object),
+                }),
             );
         });
 
@@ -950,7 +943,7 @@ describe('MinecraftDataService', () => {
                 name: 'in_fire',
                 scaling: 'when_caused_by_living_non_player',
                 exhaustion: 0.1,
-                effects: 'burning'
+                effects: 'burning',
             });
         });
 
@@ -959,7 +952,7 @@ describe('MinecraftDataService', () => {
             expect(gameEvents).toHaveLength(2);
             expect(gameEvents[0]).toMatchObject({
                 id: 1,
-                name: 'block_change'
+                name: 'block_change',
             });
         });
 
@@ -1023,7 +1016,7 @@ describe('MinecraftDataService', () => {
 
             expect(mockLogger.warn).toHaveBeenCalledWith(
                 expect.stringContaining('Failed to load enchantments'),
-                expect.any(Object)
+                expect.any(Object),
             );
         });
     });

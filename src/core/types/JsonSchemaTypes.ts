@@ -13,7 +13,7 @@
  * 注意：此类型兼容 JSONSchema7 和 IJsonSchema，
  * 可以通过 `as JsonSchemaNode` 安全转换。
  */
- 
+
 export interface JsonSchemaNode {
     [key: string]: unknown;
 }

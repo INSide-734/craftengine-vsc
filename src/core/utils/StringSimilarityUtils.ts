@@ -83,11 +83,7 @@ export function levenshteinDistance(s1: string, s2: string): number {
  * calculateSimilarity('Hello', 'hello', false); // 1.0
  * ```
  */
-export function calculateSimilarity(
-    s1: string,
-    s2: string,
-    caseSensitive: boolean = false
-): number {
+export function calculateSimilarity(s1: string, s2: string, caseSensitive: boolean = false): number {
     if (!caseSensitive) {
         s1 = s1.toLowerCase();
         s2 = s2.toLowerCase();
@@ -148,13 +144,9 @@ export interface SimilarityResult<T> {
 export function findSimilarStrings(
     target: string,
     candidates: string[],
-    options: FindSimilarOptions = {}
+    options: FindSimilarOptions = {},
 ): SimilarityResult<string>[] {
-    const {
-        threshold = 0.5,
-        maxResults = 5,
-        caseSensitive = false
-    } = options;
+    const { threshold = 0.5, maxResults = 5, caseSensitive = false } = options;
 
     const results: SimilarityResult<string>[] = [];
 
@@ -164,7 +156,7 @@ export function findSimilarStrings(
             results.push({
                 item: candidate,
                 value: candidate,
-                similarity
+                similarity,
             });
         }
     }
@@ -202,13 +194,9 @@ export function findSimilarItems<T>(
     target: string,
     candidates: T[],
     valueExtractor: (item: T) => string,
-    options: FindSimilarOptions = {}
+    options: FindSimilarOptions = {},
 ): SimilarityResult<T>[] {
-    const {
-        threshold = 0.5,
-        maxResults = 5,
-        caseSensitive = false
-    } = options;
+    const { threshold = 0.5, maxResults = 5, caseSensitive = false } = options;
 
     const results: SimilarityResult<T>[] = [];
 
@@ -219,7 +207,7 @@ export function findSimilarItems<T>(
             results.push({
                 item: candidate,
                 value,
-                similarity
+                similarity,
             });
         }
     }
@@ -251,11 +239,11 @@ export function findSimilarItems<T>(
 export function getBestMatch(
     target: string,
     candidates: string[],
-    options: Omit<FindSimilarOptions, 'maxResults'> = {}
+    options: Omit<FindSimilarOptions, 'maxResults'> = {},
 ): SimilarityResult<string> | null {
     const results = findSimilarStrings(target, candidates, {
         ...options,
-        maxResults: 1
+        maxResults: 1,
     });
     return results.length > 0 ? results[0] : null;
 }
@@ -276,11 +264,7 @@ export function getBestMatch(
  * prefixMatchScore('apl', 'apple'); // 0.0 (不是前缀)
  * ```
  */
-export function prefixMatchScore(
-    input: string,
-    candidate: string,
-    caseSensitive: boolean = false
-): number {
+export function prefixMatchScore(input: string, candidate: string, caseSensitive: boolean = false): number {
     if (!input) {
         return 1.0;
     }
@@ -350,7 +334,7 @@ export function calculateMatchScore(
     input: string,
     candidate: string,
     prefixWeight: number = 0.6,
-    similarityWeight: number = 0.4
+    similarityWeight: number = 0.4,
 ): number {
     const prefix = prefixMatchScore(input, candidate);
     const similarity = calculateSimilarity(input, candidate);
@@ -412,22 +396,18 @@ export function safeRegExp(pattern: string, flags?: string, maxLength: number = 
  * // ['apple', 'application']
  * ```
  */
-export function filterAndSort(
-    input: string,
-    candidates: string[],
-    minScore: number = 0.3
-): string[] {
+export function filterAndSort(input: string, candidates: string[], minScore: number = 0.3): string[] {
     if (!input) {
         return [...candidates];
     }
 
     const scored = candidates
-        .map(candidate => ({
+        .map((candidate) => ({
             candidate,
-            score: calculateMatchScore(input, candidate)
+            score: calculateMatchScore(input, candidate),
         }))
-        .filter(item => item.score >= minScore)
+        .filter((item) => item.score >= minScore)
         .sort((a, b) => b.score - a.score);
 
-    return scored.map(item => item.candidate);
+    return scored.map((item) => item.candidate);
 }

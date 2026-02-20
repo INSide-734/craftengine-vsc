@@ -1,6 +1,6 @@
 /**
  * YamlParser 单元测试
- * 
+ *
  * 测试 YAML 解析器的所有功能，包括：
  * - 基本解析
  * - 位置信息追踪
@@ -10,9 +10,9 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { YamlParser } from '../../../../infrastructure/yaml/YamlParser';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IIncrementalParseContext } from '../../../../core/interfaces/IYamlParser';
-import { Uri, TextDocument, Position, Range } from 'vscode';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IIncrementalParseContext } from '../../../../core/interfaces/IYamlParser';
+import { Uri, type TextDocument, Position, Range } from 'vscode';
 
 describe('YamlParser', () => {
     let parser: YamlParser;
@@ -34,10 +34,14 @@ describe('YamlParser', () => {
                 if (!range) {
                     return content;
                 }
-                const startOffset = lines.slice(0, range.start.line).join('\n').length +
-                    (range.start.line > 0 ? 1 : 0) + range.start.character;
-                const endOffset = lines.slice(0, range.end.line).join('\n').length +
-                    (range.end.line > 0 ? 1 : 0) + range.end.character;
+                const startOffset =
+                    lines.slice(0, range.start.line).join('\n').length +
+                    (range.start.line > 0 ? 1 : 0) +
+                    range.start.character;
+                const endOffset =
+                    lines.slice(0, range.end.line).join('\n').length +
+                    (range.end.line > 0 ? 1 : 0) +
+                    range.end.character;
                 return content.substring(startOffset, endOffset);
             },
             positionAt: (offset: number) => {
@@ -61,9 +65,7 @@ describe('YamlParser', () => {
                 return offset;
             },
             lineAt: (lineOrPosition: number | Position) => {
-                const lineNumber = typeof lineOrPosition === 'number'
-                    ? lineOrPosition
-                    : lineOrPosition.line;
+                const lineNumber = typeof lineOrPosition === 'number' ? lineOrPosition : lineOrPosition.line;
                 const lineText = lines[lineNumber] || '';
                 return {
                     text: lineText,
@@ -143,11 +145,7 @@ items:
 
             expect(result.success).toBe(true);
             expect(result.root?.value).toEqual({
-                items: [
-                    { name: 'item1' },
-                    { name: 'item2' },
-                    { name: 'item3' },
-                ],
+                items: [{ name: 'item1' }, { name: 'item2' }, { name: 'item3' }],
             });
         });
 
@@ -834,4 +832,3 @@ false6: off
         });
     });
 });
-

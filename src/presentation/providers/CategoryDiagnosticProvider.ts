@@ -1,19 +1,14 @@
-import {
-    TextDocument,
-    Diagnostic,
-    Range,
-    Position
-} from 'vscode';
+import { type TextDocument, type Diagnostic, Range, Position } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { IDataStoreService } from '../../core/interfaces/IDataStoreService';
+import { type IDataStoreService } from '../../core/interfaces/IDataStoreService';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { YamlHelper } from '../../infrastructure/yaml/YamlHelper';
 import { CATEGORY_NOT_FOUND } from '../../core/constants/DiagnosticCodes';
 import { REFERENCE_MESSAGES } from '../../core/constants/DiagnosticMessages';
 import { BaseDiagnosticProvider } from './BaseDiagnosticProvider';
 import { SchemaFieldIdentifier } from './helpers/SchemaFieldIdentifier';
-import { ISchemaService } from '../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
+import { type ISchemaService } from '../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
 
 /**
  * 分类引用信息
@@ -51,7 +46,7 @@ export class CategoryDiagnosticProvider extends BaseDiagnosticProvider {
             'craftengine-category',
             'CraftEngine Category',
             'category-diagnostics.update',
-            'CategoryDiagnosticProvider'
+            'CategoryDiagnosticProvider',
         );
         this.dataStoreService = ServiceContainer.getService<IDataStoreService>(SERVICE_TOKENS.DataStoreService);
         const schemaService = ServiceContainer.getService<ISchemaService>(SERVICE_TOKENS.SchemaService);
@@ -111,7 +106,9 @@ export class CategoryDiagnosticProvider extends BaseDiagnosticProvider {
                 // 基于 Schema 检查此位置是否期望分类引用
                 const position = new Position(lineNum, startCol);
                 const isCategoryField = await this.fieldIdentifier.isFieldOfType(
-                    document, position, CategoryDiagnosticProvider.CATEGORY_REFERENCE_PROVIDER
+                    document,
+                    position,
+                    CategoryDiagnosticProvider.CATEGORY_REFERENCE_PROVIDER,
                 );
 
                 if (!isCategoryField) {
@@ -121,7 +118,7 @@ export class CategoryDiagnosticProvider extends BaseDiagnosticProvider {
                 references.push({
                     id: categoryId,
                     range: new Range(lineNum, startCol, lineNum, startCol + categoryId.length),
-                    line: lineNum
+                    line: lineNum,
                 });
             }
         }
@@ -143,7 +140,7 @@ export class CategoryDiagnosticProvider extends BaseDiagnosticProvider {
                 const diagnostic = this.createDiagnostic(
                     ref.range,
                     REFERENCE_MESSAGES.categoryNotFound(ref.id),
-                    CATEGORY_NOT_FOUND
+                    CATEGORY_NOT_FOUND,
                 );
 
                 if (diagnostic) {
@@ -151,18 +148,17 @@ export class CategoryDiagnosticProvider extends BaseDiagnosticProvider {
                     const allCategories = await this.dataStoreService.getAllCategories();
                     diagnostic.relatedInformation = this.createSimilaritySuggestions(
                         ref.id,
-                        allCategories.map(c => c.id),
+                        allCategories.map((c) => c.id),
                         document,
                         ref.range,
-                        'Did you mean category:'
+                        'Did you mean category:',
                     );
                     diagnostics.push(diagnostic);
                 }
             }
-
         } catch (error) {
             this.logger.error('Error validating category reference', error as Error, {
-                categoryId: ref.id
+                categoryId: ref.id,
             });
         }
 

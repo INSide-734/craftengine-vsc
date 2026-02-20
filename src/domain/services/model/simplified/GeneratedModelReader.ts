@@ -4,8 +4,8 @@
  * 移植自 craft-engine 的 GeneratedModelReader
  */
 
-import { Key } from '../utils/Key';
-import { SimplifiedModelReader } from './SimplifiedModelReader';
+import { type Key } from '../utils/Key';
+import { type SimplifiedModelReader } from './SimplifiedModelReader';
 
 /**
  * 简化模型配置错误
@@ -14,7 +14,7 @@ export class SimplifiedModelConfigError extends Error {
     constructor(
         public readonly errorKey: string,
         public readonly expected: string,
-        public readonly actual: string
+        public readonly actual: string,
     ) {
         super(`Invalid simplified model config: expected ${expected}, got ${actual}`);
         this.name = 'SimplifiedModelConfigError';
@@ -32,16 +32,12 @@ export class GeneratedModelReader implements SimplifiedModelReader {
         this.model = model;
     }
 
-    convertFromTextures(
-        textures: string[],
-        optionalModelPaths: string[],
-        id: Key
-    ): Record<string, unknown> {
+    convertFromTextures(textures: string[], optionalModelPaths: string[], id: Key): Record<string, unknown> {
         if (optionalModelPaths.length >= 2) {
             throw new SimplifiedModelConfigError(
                 'warning.config.item.simplified_model.invalid_model',
                 '1',
-                String(optionalModelPaths.length)
+                String(optionalModelPaths.length),
             );
         }
 
@@ -67,9 +63,7 @@ export class GeneratedModelReader implements SimplifiedModelReader {
 
         return {
             type: 'model',
-            path: autoModelPath
-                ? `${id.namespace}:item/${id.value}`
-                : optionalModelPaths[0],
+            path: autoModelPath ? `${id.namespace}:item/${id.value}` : optionalModelPaths[0],
             generation: {
                 parent: `item/${this.model}`,
                 textures: texturesProperty,

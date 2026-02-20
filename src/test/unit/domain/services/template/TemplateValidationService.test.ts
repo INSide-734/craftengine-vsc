@@ -9,9 +9,9 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TemplateValidationService } from '../../../../../domain/services/template/TemplateValidationService';
-import { ITemplate, ITemplateParameter } from '../../../../../core/interfaces/ITemplate';
-import { IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
+import { type ITemplate, type ITemplateParameter } from '../../../../../core/interfaces/ITemplate';
+import { type IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
 import { Uri, Position } from 'vscode';
 import { Template } from '../../../../../domain/entities/Template';
 
@@ -21,11 +21,13 @@ describe('TemplateValidationService', () => {
     let mockLogger: ILogger;
 
     // 辅助函数：创建测试模板
-    const createTestTemplate = (overrides: Partial<{
-        id: string;
-        name: string;
-        parameters: ITemplateParameter[];
-    }> = {}): ITemplate => {
+    const createTestTemplate = (
+        overrides: Partial<{
+            id: string;
+            name: string;
+            parameters: ITemplateParameter[];
+        }> = {},
+    ): ITemplate => {
         return new Template({
             id: overrides.id ?? 'tpl-001',
             name: overrides.name ?? 'test:template',
@@ -82,14 +84,14 @@ describe('TemplateValidationService', () => {
                 name: 'test:template',
                 parameters: [
                     { name: 'requiredParam', required: true },
-                    { name: 'optionalParam', required: false }
-                ]
+                    { name: 'optionalParam', required: false },
+                ],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
             const result = await service.validateTemplateUsage('test:template', {
-                requiredParam: 'value'
+                requiredParam: 'value',
             });
 
             expect(result.isValid).toBe(true);
@@ -101,15 +103,15 @@ describe('TemplateValidationService', () => {
                 name: 'test:template',
                 parameters: [
                     { name: 'requiredParam', required: true },
-                    { name: 'optionalParam', required: false }
-                ]
+                    { name: 'optionalParam', required: false },
+                ],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
             const result = await service.validateTemplateUsage('test:template', {
                 requiredParam: 'value1',
-                optionalParam: 'value2'
+                optionalParam: 'value2',
             });
 
             expect(result.isValid).toBe(true);
@@ -120,20 +122,20 @@ describe('TemplateValidationService', () => {
                 name: 'test:template',
                 parameters: [
                     { name: 'requiredParam1', required: true },
-                    { name: 'requiredParam2', required: true }
-                ]
+                    { name: 'requiredParam2', required: true },
+                ],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
             const result = await service.validateTemplateUsage('test:template', {
-                requiredParam1: 'value'
+                requiredParam1: 'value',
                 // requiredParam2 missing
             });
 
             expect(result.isValid).toBe(false);
             expect(result.errors.length).toBeGreaterThan(0);
-            expect(result.errors.some(e => e.parameter === 'requiredParam2')).toBe(true);
+            expect(result.errors.some((e) => e.parameter === 'requiredParam2')).toBe(true);
         });
 
         it('should return invalid result when template not found', async () => {
@@ -157,17 +159,15 @@ describe('TemplateValidationService', () => {
                 'Validating template usage',
                 expect.objectContaining({
                     templateName: 'test:template',
-                    parameterCount: 1
-                })
+                    parameterCount: 1,
+                }),
             );
         });
 
         it('should validate with empty parameters object', async () => {
             const template = createTestTemplate({
                 name: 'test:template',
-                parameters: [
-                    { name: 'optionalParam', required: false }
-                ]
+                parameters: [{ name: 'optionalParam', required: false }],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -180,15 +180,13 @@ describe('TemplateValidationService', () => {
         it('should return warnings for unknown parameters', async () => {
             const template = createTestTemplate({
                 name: 'test:template',
-                parameters: [
-                    { name: 'knownParam', required: false }
-                ]
+                parameters: [{ name: 'knownParam', required: false }],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
             const result = await service.validateTemplateUsage('test:template', {
-                unknownParam: 'value'
+                unknownParam: 'value',
             });
 
             // 未知参数应该产生警告
@@ -198,7 +196,7 @@ describe('TemplateValidationService', () => {
         it('should handle template with no parameters', async () => {
             const template = createTestTemplate({
                 name: 'test:template',
-                parameters: []
+                parameters: [],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -215,8 +213,8 @@ describe('TemplateValidationService', () => {
                 parameters: [
                     { name: 'required1', required: true },
                     { name: 'required2', required: true },
-                    { name: 'required3', required: true }
-                ]
+                    { name: 'required3', required: true },
+                ],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
@@ -267,23 +265,26 @@ describe('TemplateValidationService', () => {
         it('should validate multiple templates', async () => {
             const template1 = createTestTemplate({
                 name: 'template1',
-                parameters: [{ name: 'param1', required: true }]
+                parameters: [{ name: 'param1', required: true }],
             });
             const template2 = createTestTemplate({
                 name: 'template2',
-                parameters: [{ name: 'param2', required: true }]
+                parameters: [{ name: 'param2', required: true }],
             });
 
-            vi.mocked(mockDataStoreService.getTemplateByName)
-                .mockImplementation(async (name: string) => {
-                    if (name === 'template1') {return template1;}
-                    if (name === 'template2') {return template2;}
-                    return undefined;
-                });
+            vi.mocked(mockDataStoreService.getTemplateByName).mockImplementation(async (name: string) => {
+                if (name === 'template1') {
+                    return template1;
+                }
+                if (name === 'template2') {
+                    return template2;
+                }
+                return undefined;
+            });
 
             const usages = [
                 { templateName: 'template1', parameters: { param1: 'value1' } },
-                { templateName: 'template2', parameters: { param2: 'value2' } }
+                { templateName: 'template2', parameters: { param2: 'value2' } },
             ];
 
             const results = await service.validateMultipleTemplateUsages(usages);
@@ -296,23 +297,26 @@ describe('TemplateValidationService', () => {
         it('should return mixed results for valid and invalid usages', async () => {
             const template1 = createTestTemplate({
                 name: 'template1',
-                parameters: [{ name: 'param1', required: true }]
+                parameters: [{ name: 'param1', required: true }],
             });
             const template2 = createTestTemplate({
                 name: 'template2',
-                parameters: [{ name: 'param2', required: true }]
+                parameters: [{ name: 'param2', required: true }],
             });
 
-            vi.mocked(mockDataStoreService.getTemplateByName)
-                .mockImplementation(async (name: string) => {
-                    if (name === 'template1') {return template1;}
-                    if (name === 'template2') {return template2;}
-                    return undefined;
-                });
+            vi.mocked(mockDataStoreService.getTemplateByName).mockImplementation(async (name: string) => {
+                if (name === 'template1') {
+                    return template1;
+                }
+                if (name === 'template2') {
+                    return template2;
+                }
+                return undefined;
+            });
 
             const usages = [
                 { templateName: 'template1', parameters: { param1: 'value1' } }, // valid
-                { templateName: 'template2', parameters: {} } // invalid - missing required param
+                { templateName: 'template2', parameters: {} }, // invalid - missing required param
             ];
 
             const results = await service.validateMultipleTemplateUsages(usages);
@@ -332,7 +336,7 @@ describe('TemplateValidationService', () => {
 
             const usages = [
                 { templateName: 'nonexistent1', parameters: {} },
-                { templateName: 'nonexistent2', parameters: {} }
+                { templateName: 'nonexistent2', parameters: {} },
             ];
 
             const results = await service.validateMultipleTemplateUsages(usages);
@@ -347,15 +351,15 @@ describe('TemplateValidationService', () => {
                 name: 'template1',
                 parameters: [
                     { name: 'param1', required: true },
-                    { name: 'param2', required: false }
-                ]
+                    { name: 'param2', required: false },
+                ],
             });
 
             vi.mocked(mockDataStoreService.getTemplateByName).mockResolvedValue(template);
 
             const usages = [
                 { templateName: 'template1', parameters: { param1: 'value1' } },
-                { templateName: 'template1', parameters: { param1: 'value2', param2: 'value3' } }
+                { templateName: 'template1', parameters: { param1: 'value2', param2: 'value3' } },
             ];
 
             const results = await service.validateMultipleTemplateUsages(usages);

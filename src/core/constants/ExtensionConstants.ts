@@ -246,16 +246,16 @@ export const UI_TEXT = {
 // ============================================
 
 /** 诊断源类型 */
-export type DiagnosticSource = typeof DIAGNOSTIC_SOURCES[keyof typeof DIAGNOSTIC_SOURCES];
+export type DiagnosticSource = (typeof DIAGNOSTIC_SOURCES)[keyof typeof DIAGNOSTIC_SOURCES];
 
 /** 补全提供者类型 */
-export type CompletionProvider = typeof COMPLETION_PROVIDERS[keyof typeof COMPLETION_PROVIDERS];
+export type CompletionProvider = (typeof COMPLETION_PROVIDERS)[keyof typeof COMPLETION_PROVIDERS];
 
 /** 命令类型 */
-export type Command = typeof COMMANDS[keyof typeof COMMANDS];
+export type Command = (typeof COMMANDS)[keyof typeof COMMANDS];
 
 /** 配置键类型 */
-export type ConfigKey = typeof CONFIG_KEYS[keyof typeof CONFIG_KEYS];
+export type ConfigKey = (typeof CONFIG_KEYS)[keyof typeof CONFIG_KEYS];
 
 /** 上下文键类型 */
-export type ContextKey = typeof CONTEXT_KEYS[keyof typeof CONTEXT_KEYS];
+export type ContextKey = (typeof CONTEXT_KEYS)[keyof typeof CONTEXT_KEYS];

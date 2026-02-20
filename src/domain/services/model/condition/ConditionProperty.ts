@@ -8,15 +8,15 @@
 
 import { Key } from '../utils/Key';
 import {
-    Property,
-    PropertyFactory,
-    PropertyReader,
+    type Property,
+    type PropertyFactory,
+    type PropertyReader,
     SimpleProperty,
     SimplePropertyFactory,
     SimplePropertyReader,
     PropertyRegistry,
 } from '../property/PropertyBase';
-import { IModelPropertyDefinition } from '../../../../core/types/ConfigTypes';
+import { type IModelPropertyDefinition } from '../../../../core/types/ConfigTypes';
 
 // ============================================
 // 条件属性接口（保持向后兼容）
@@ -97,21 +97,18 @@ let conditionPropertyTypesData: Record<string, Key> | null = null;
  *
  * 通过 Proxy 延迟访问，未初始化时抛出错误。
  */
-export const CONDITION_PROPERTY_TYPES: Record<string, Key> = new Proxy(
-    {} as Record<string, Key>,
-    {
-        get(_target, prop: string): Key {
-            if (!conditionPropertyTypesData) {
-                throw new Error('CONDITION_PROPERTY_TYPES not initialized. Call initializeConditionProperties() first.');
-            }
-            const val = conditionPropertyTypesData[prop];
-            if (!val) {
-                throw new Error(`Unknown CONDITION_PROPERTY_TYPES key: ${prop}`);
-            }
-            return val;
-        },
-    }
-);
+export const CONDITION_PROPERTY_TYPES: Record<string, Key> = new Proxy({} as Record<string, Key>, {
+    get(_target, prop: string): Key {
+        if (!conditionPropertyTypesData) {
+            throw new Error('CONDITION_PROPERTY_TYPES not initialized. Call initializeConditionProperties() first.');
+        }
+        const val = conditionPropertyTypesData[prop];
+        if (!val) {
+            throw new Error(`Unknown CONDITION_PROPERTY_TYPES key: ${prop}`);
+        }
+        return val;
+    },
+});
 
 // ============================================
 // 注册表（延迟初始化）
@@ -142,20 +139,14 @@ export function initializeConditionProperties(definitions: IModelPropertyDefinit
     }
 
     // 创建注册表
-    const simpleFactory = new SimplePropertyFactory<ConditionProperty>(
-        (type) => new SimpleConditionProperty(type)
-    );
-    const simpleReader = new SimplePropertyReader<ConditionProperty>(
-        (type) => new SimpleConditionProperty(type)
-    );
+    const simpleFactory = new SimplePropertyFactory<ConditionProperty>((type) => new SimpleConditionProperty(type));
+    const simpleReader = new SimplePropertyReader<ConditionProperty>((type) => new SimpleConditionProperty(type));
 
     registry = new PropertyRegistry<ConditionProperty>('condition property');
 
     // 注册简单属性类型（排除 CUSTOM_MODEL_DATA，它有自定义工厂）
     const customModelDataKey = 'minecraft:custom_model_data';
-    const simpleKeys = definitions
-        .filter(d => d.key !== customModelDataKey)
-        .map(d => Key.of(d.key));
+    const simpleKeys = definitions.filter((d) => d.key !== customModelDataKey).map((d) => Key.of(d.key));
     registry.registerSimpleTypes(simpleKeys, simpleFactory, simpleReader);
 
     // 注册自定义模型数据属性（特殊工厂/读取器）

@@ -8,7 +8,7 @@ import {
     ConcurrencyLimiter,
     batchAsync,
     debounce,
-    throttle
+    throttle,
 } from '../../../../infrastructure/utils/AsyncUtils';
 
 describe('AsyncUtils', () => {
@@ -199,7 +199,8 @@ describe('AsyncUtils', () => {
 
         it('should retry on failure', async () => {
             vi.useRealTimers();
-            const fn = vi.fn()
+            const fn = vi
+                .fn()
                 .mockRejectedValueOnce(new Error('fail 1'))
                 .mockRejectedValueOnce(new Error('fail 2'))
                 .mockResolvedValue(42);
@@ -213,17 +214,14 @@ describe('AsyncUtils', () => {
             vi.useRealTimers();
             const fn = vi.fn().mockRejectedValue(new Error('always fails'));
 
-            await expect(retry(fn, { maxRetries: 2, retryDelay: 10 }))
-                .rejects.toThrow('always fails');
+            await expect(retry(fn, { maxRetries: 2, retryDelay: 10 })).rejects.toThrow('always fails');
             expect(fn).toHaveBeenCalledTimes(3); // 1 initial + 2 retries
         });
 
         it('should call onRetry callback', async () => {
             vi.useRealTimers();
             const onRetry = vi.fn();
-            const fn = vi.fn()
-                .mockRejectedValueOnce(new Error('fail'))
-                .mockResolvedValue(42);
+            const fn = vi.fn().mockRejectedValueOnce(new Error('fail')).mockResolvedValue(42);
 
             await retry(fn, { maxRetries: 2, retryDelay: 10, onRetry });
             expect(onRetry).toHaveBeenCalledTimes(1);
@@ -234,11 +232,13 @@ describe('AsyncUtils', () => {
             vi.useRealTimers();
             const fn = vi.fn().mockRejectedValue(new Error('permanent'));
 
-            await expect(retry(fn, {
-                maxRetries: 5,
-                retryDelay: 10,
-                shouldRetry: () => false
-            })).rejects.toThrow('permanent');
+            await expect(
+                retry(fn, {
+                    maxRetries: 5,
+                    retryDelay: 10,
+                    shouldRetry: () => false,
+                }),
+            ).rejects.toThrow('permanent');
             expect(fn).toHaveBeenCalledTimes(1);
         });
 
@@ -246,8 +246,7 @@ describe('AsyncUtils', () => {
             vi.useRealTimers();
             const fn = vi.fn().mockRejectedValue('string error');
 
-            await expect(retry(fn, { maxRetries: 0, retryDelay: 10 }))
-                .rejects.toThrow('string error');
+            await expect(retry(fn, { maxRetries: 0, retryDelay: 10 })).rejects.toThrow('string error');
         });
     });
 
@@ -258,12 +257,13 @@ describe('AsyncUtils', () => {
             let running = 0;
             let maxRunning = 0;
 
-            const task = () => limiter.run(async () => {
-                running++;
-                maxRunning = Math.max(maxRunning, running);
-                await new Promise(r => setTimeout(r, 50));
-                running--;
-            });
+            const task = () =>
+                limiter.run(async () => {
+                    running++;
+                    maxRunning = Math.max(maxRunning, running);
+                    await new Promise((r) => setTimeout(r, 50));
+                    running--;
+                });
 
             await Promise.all([task(), task(), task(), task()]);
             expect(maxRunning).toBeLessThanOrEqual(2);
@@ -273,7 +273,9 @@ describe('AsyncUtils', () => {
             vi.useRealTimers();
             const limiter = new ConcurrencyLimiter(1);
             let resolveFirst: () => void;
-            const firstPromise = new Promise<void>(r => { resolveFirst = r; });
+            const firstPromise = new Promise<void>((r) => {
+                resolveFirst = r;
+            });
 
             const p1 = limiter.run(() => firstPromise);
             expect(limiter.runningCount()).toBe(1);
@@ -281,7 +283,7 @@ describe('AsyncUtils', () => {
             // 启动第二个任务（会排队）
             const p2Promise = limiter.run(async () => {});
             // 给事件循环一个 tick
-            await new Promise(r => setTimeout(r, 10));
+            await new Promise((r) => setTimeout(r, 10));
             expect(limiter.pendingCount()).toBe(1);
 
             resolveFirst!();
@@ -294,11 +296,7 @@ describe('AsyncUtils', () => {
         it('should process items in batches', async () => {
             vi.useRealTimers();
             const items = [1, 2, 3, 4, 5];
-            const results = await batchAsync(
-                items,
-                async (item) => item * 2,
-                2
-            );
+            const results = await batchAsync(items, async (item) => item * 2, 2);
             expect(results).toEqual([2, 4, 6, 8, 10]);
         });
 
@@ -306,10 +304,14 @@ describe('AsyncUtils', () => {
             vi.useRealTimers();
             const items = ['a', 'b', 'c'];
             const indices: number[] = [];
-            await batchAsync(items, async (_, index) => {
-                indices.push(index);
-                return index;
-            }, 2);
+            await batchAsync(
+                items,
+                async (_, index) => {
+                    indices.push(index);
+                    return index;
+                },
+                2,
+            );
             expect(indices).toEqual([0, 1, 2]);
         });
 

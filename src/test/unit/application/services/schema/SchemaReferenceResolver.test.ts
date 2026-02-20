@@ -8,9 +8,12 @@
  * - 外部文件引用
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SchemaReferenceResolver, isCircularRef } from '../../../../../application/services/schema/SchemaReferenceResolver';
-import { SchemaFileLoader } from '../../../../../application/services/schema/SchemaFileLoader';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
+import {
+    SchemaReferenceResolver,
+    isCircularRef,
+} from '../../../../../application/services/schema/SchemaReferenceResolver';
+import { type SchemaFileLoader } from '../../../../../infrastructure/schema/SchemaFileLoader';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
 import { SCHEMA_METADATA } from '../../../../../application/services/schema/SchemaConstants';
 
 describe('SchemaReferenceResolver', () => {
@@ -33,7 +36,7 @@ describe('SchemaReferenceResolver', () => {
         mockLoader = {
             loadSchema: vi.fn(),
             hasSchema: vi.fn(),
-            clearCache: vi.fn()
+            clearCache: vi.fn(),
         } as unknown as SchemaFileLoader;
 
         resolver = new SchemaReferenceResolver(mockLoader, mockLogger);
@@ -48,8 +51,8 @@ describe('SchemaReferenceResolver', () => {
             const schema = {
                 type: 'object',
                 properties: {
-                    name: { type: 'string' }
-                }
+                    name: { type: 'string' },
+                },
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -69,8 +72,8 @@ describe('SchemaReferenceResolver', () => {
                 $defs: {
                     A: { $ref: '#/$defs/B' },
                     B: { $ref: '#/$defs/C' },
-                    C: { type: 'string' }
-                }
+                    C: { type: 'string' },
+                },
             };
 
             // 设置较低的最大深度
@@ -78,7 +81,7 @@ describe('SchemaReferenceResolver', () => {
 
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Max resolution depth reached',
-                expect.objectContaining({ depth: 1 })
+                expect.objectContaining({ depth: 1 }),
             );
         });
     });
@@ -92,8 +95,8 @@ describe('SchemaReferenceResolver', () => {
             const schema = {
                 $ref: '#/$defs/StringType',
                 $defs: {
-                    StringType: { type: 'string', description: 'A string value' }
-                }
+                    StringType: { type: 'string', description: 'A string value' },
+                },
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -106,11 +109,11 @@ describe('SchemaReferenceResolver', () => {
             const schema = {
                 type: 'object',
                 properties: {
-                    name: { $ref: '#/$defs/NameType' }
+                    name: { $ref: '#/$defs/NameType' },
                 },
                 $defs: {
-                    NameType: { type: 'string', minLength: 1 }
-                }
+                    NameType: { type: 'string', minLength: 1 },
+                },
             };
 
             // 解析 properties 中的 $ref 需要手动导航
@@ -123,16 +126,16 @@ describe('SchemaReferenceResolver', () => {
             const externalSchema = {
                 type: 'object',
                 properties: {
-                    value: { type: 'number' }
+                    value: { type: 'number' },
                 },
-                [SCHEMA_METADATA.SCHEMA_FILE]: 'common/types.schema.json'
+                [SCHEMA_METADATA.SCHEMA_FILE]: 'common/types.schema.json',
             };
 
             vi.mocked(mockLoader.loadSchema).mockResolvedValue(externalSchema);
 
             const schema = {
                 $ref: './common/types.schema.json',
-                [SCHEMA_METADATA.SCHEMA_DIR]: 'schemas'
+                [SCHEMA_METADATA.SCHEMA_DIR]: 'schemas',
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -145,8 +148,8 @@ describe('SchemaReferenceResolver', () => {
             const schema = {
                 $ref: '#/$defs/A',
                 $defs: {
-                    A: { $ref: '#/$defs/A' }  // 循环引用自己
-                }
+                    A: { $ref: '#/$defs/A' }, // 循环引用自己
+                },
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -154,7 +157,7 @@ describe('SchemaReferenceResolver', () => {
             expect(isCircularRef(result)).toBe(true);
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Circular reference detected',
-                expect.objectContaining({ ref: '#/$defs/A' })
+                expect.objectContaining({ ref: '#/$defs/A' }),
             );
         });
 
@@ -163,8 +166,8 @@ describe('SchemaReferenceResolver', () => {
                 $ref: '#/$defs/BaseType',
                 description: 'Overridden description',
                 $defs: {
-                    BaseType: { type: 'string', description: 'Base description' }
-                }
+                    BaseType: { type: 'string', description: 'Base description' },
+                },
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -176,7 +179,7 @@ describe('SchemaReferenceResolver', () => {
 
         it('should handle invalid $ref path', async () => {
             const schema = {
-                $ref: '#/$defs/NonExistent'
+                $ref: '#/$defs/NonExistent',
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -189,7 +192,7 @@ describe('SchemaReferenceResolver', () => {
             vi.mocked(mockLoader.loadSchema).mockRejectedValue(new Error('File not found'));
 
             const schema = {
-                $ref: './nonexistent.schema.json'
+                $ref: './nonexistent.schema.json',
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -207,10 +210,7 @@ describe('SchemaReferenceResolver', () => {
     describe('allOf resolution', () => {
         it('should merge allOf schemas', async () => {
             const schema = {
-                allOf: [
-                    { properties: { name: { type: 'string' } } },
-                    { properties: { age: { type: 'number' } } }
-                ]
+                allOf: [{ properties: { name: { type: 'string' } } }, { properties: { age: { type: 'number' } } }],
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -221,10 +221,7 @@ describe('SchemaReferenceResolver', () => {
 
         it('should merge required arrays from allOf', async () => {
             const schema = {
-                allOf: [
-                    { required: ['name'] },
-                    { required: ['age'] }
-                ]
+                allOf: [{ required: ['name'] }, { required: ['age'] }],
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -235,10 +232,7 @@ describe('SchemaReferenceResolver', () => {
 
         it('should deduplicate required fields', async () => {
             const schema = {
-                allOf: [
-                    { required: ['name', 'age'] },
-                    { required: ['name', 'email'] }
-                ]
+                allOf: [{ required: ['name', 'age'] }, { required: ['name', 'email'] }],
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -251,8 +245,8 @@ describe('SchemaReferenceResolver', () => {
             const schema = {
                 allOf: [
                     { patternProperties: { '^a.*$': { type: 'string' } } },
-                    { patternProperties: { '^b.*$': { type: 'number' } } }
-                ]
+                    { patternProperties: { '^b.*$': { type: 'number' } } },
+                ],
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -265,9 +259,7 @@ describe('SchemaReferenceResolver', () => {
             const schema = {
                 type: 'object',
                 description: 'My schema',
-                allOf: [
-                    { properties: { name: { type: 'string' } } }
-                ]
+                allOf: [{ properties: { name: { type: 'string' } } }],
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -279,13 +271,10 @@ describe('SchemaReferenceResolver', () => {
 
         it('should resolve $ref within allOf', async () => {
             const schema = {
-                allOf: [
-                    { $ref: '#/$defs/NameProp' },
-                    { properties: { age: { type: 'number' } } }
-                ],
+                allOf: [{ $ref: '#/$defs/NameProp' }, { properties: { age: { type: 'number' } } }],
                 $defs: {
-                    NameProp: { properties: { name: { type: 'string' } } }
-                }
+                    NameProp: { properties: { name: { type: 'string' } } },
+                },
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -302,10 +291,7 @@ describe('SchemaReferenceResolver', () => {
     describe('oneOf resolution', () => {
         it('should preserve oneOf structure', async () => {
             const schema = {
-                oneOf: [
-                    { type: 'string' },
-                    { type: 'number' }
-                ]
+                oneOf: [{ type: 'string' }, { type: 'number' }],
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -317,13 +303,10 @@ describe('SchemaReferenceResolver', () => {
 
         it('should resolve $ref within oneOf', async () => {
             const schema = {
-                oneOf: [
-                    { $ref: '#/$defs/StringType' },
-                    { type: 'number' }
-                ],
+                oneOf: [{ $ref: '#/$defs/StringType' }, { type: 'number' }],
                 $defs: {
-                    StringType: { type: 'string', minLength: 1 }
-                }
+                    StringType: { type: 'string', minLength: 1 },
+                },
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -341,10 +324,7 @@ describe('SchemaReferenceResolver', () => {
     describe('anyOf resolution', () => {
         it('should preserve anyOf structure', async () => {
             const schema = {
-                anyOf: [
-                    { type: 'string' },
-                    { type: 'null' }
-                ]
+                anyOf: [{ type: 'string' }, { type: 'null' }],
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -356,12 +336,10 @@ describe('SchemaReferenceResolver', () => {
 
         it('should resolve $ref within anyOf', async () => {
             const schema = {
-                anyOf: [
-                    { $ref: '#/$defs/NullableString' }
-                ],
+                anyOf: [{ $ref: '#/$defs/NullableString' }],
                 $defs: {
-                    NullableString: { type: ['string', 'null'] }
-                }
+                    NullableString: { type: ['string', 'null'] },
+                },
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -383,11 +361,11 @@ describe('SchemaReferenceResolver', () => {
                     A: {
                         type: 'object',
                         properties: {
-                            nested: { $ref: '#/$defs/B' }
-                        }
+                            nested: { $ref: '#/$defs/B' },
+                        },
                     },
-                    B: { type: 'string' }
-                }
+                    B: { type: 'string' },
+                },
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -400,12 +378,12 @@ describe('SchemaReferenceResolver', () => {
         it('should use contextSchema parameter for internal references', async () => {
             const contextSchema = {
                 $defs: {
-                    SharedType: { type: 'boolean' }
-                }
+                    SharedType: { type: 'boolean' },
+                },
             };
 
             const schema = {
-                $ref: '#/$defs/SharedType'
+                $ref: '#/$defs/SharedType',
             };
 
             const result = await resolver.resolveReferences(schema, 5, contextSchema);
@@ -416,14 +394,14 @@ describe('SchemaReferenceResolver', () => {
         it('should handle relative path resolution', async () => {
             const externalSchema = {
                 type: 'object',
-                [SCHEMA_METADATA.SCHEMA_FILE]: 'common/base.schema.json'
+                [SCHEMA_METADATA.SCHEMA_FILE]: 'common/base.schema.json',
             };
 
             vi.mocked(mockLoader.loadSchema).mockResolvedValue(externalSchema);
 
             const schema = {
                 $ref: '../common/base.schema.json',
-                [SCHEMA_METADATA.SCHEMA_DIR]: 'sections'
+                [SCHEMA_METADATA.SCHEMA_DIR]: 'sections',
             };
 
             await resolver.resolveReferences(schema);
@@ -443,7 +421,7 @@ describe('SchemaReferenceResolver', () => {
             const circularSchema = {
                 type: 'object',
                 __circularRef__: '#/$defs/A',
-                description: 'Circular reference to #/$defs/A'
+                description: 'Circular reference to #/$defs/A',
             };
 
             // 注意：isCircularRef 使用 Symbol 标记，需要通过解析器创建
@@ -455,8 +433,8 @@ describe('SchemaReferenceResolver', () => {
             const normalSchema = {
                 type: 'object',
                 properties: {
-                    name: { type: 'string' }
-                }
+                    name: { type: 'string' },
+                },
             };
 
             expect(isCircularRef(normalSchema)).toBe(false);
@@ -482,7 +460,7 @@ describe('SchemaReferenceResolver', () => {
     describe('edge cases', () => {
         it('should handle empty allOf array', async () => {
             const schema = {
-                allOf: []
+                allOf: [],
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -492,10 +470,7 @@ describe('SchemaReferenceResolver', () => {
 
         it('should handle null items in allOf', async () => {
             const schema = {
-                allOf: [
-                    null,
-                    { type: 'string' }
-                ]
+                allOf: [null, { type: 'string' }],
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -509,8 +484,8 @@ describe('SchemaReferenceResolver', () => {
                 $defs: {
                     Level1: { $ref: '#/$defs/Level2' },
                     Level2: { $ref: '#/$defs/Level3' },
-                    Level3: { type: 'string' }
-                }
+                    Level3: { type: 'string' },
+                },
             };
 
             const result = await resolver.resolveReferences(schema, 10);
@@ -524,18 +499,18 @@ describe('SchemaReferenceResolver', () => {
                     { $ref: '#/$defs/Base' },
                     {
                         properties: {
-                            extra: { type: 'boolean' }
-                        }
-                    }
+                            extra: { type: 'boolean' },
+                        },
+                    },
                 ],
                 $defs: {
                     Base: {
                         type: 'object',
                         properties: {
-                            name: { type: 'string' }
-                        }
-                    }
-                }
+                            name: { type: 'string' },
+                        },
+                    },
+                },
             };
 
             const result = await resolver.resolveReferences(schema);
@@ -547,15 +522,15 @@ describe('SchemaReferenceResolver', () => {
         it('should handle $ref with internal path', async () => {
             const externalSchema = {
                 $defs: {
-                    Item: { type: 'object', properties: { id: { type: 'number' } } }
+                    Item: { type: 'object', properties: { id: { type: 'number' } } },
                 },
-                [SCHEMA_METADATA.SCHEMA_FILE]: 'external.schema.json'
+                [SCHEMA_METADATA.SCHEMA_FILE]: 'external.schema.json',
             };
 
             vi.mocked(mockLoader.loadSchema).mockResolvedValue(externalSchema);
 
             const schema = {
-                $ref: './external.schema.json#/$defs/Item'
+                $ref: './external.schema.json#/$defs/Item',
             };
 
             const result = await resolver.resolveReferences(schema);

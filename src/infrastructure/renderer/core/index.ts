@@ -3,15 +3,15 @@ export { MinecraftModelRenderer, default } from './MinecraftModelRenderer';
 
 // 类型导出
 export type {
-  RenderOptions,
-  ImageData,
-  Element,
-  ElementRotation,
-  Ray,
-  Intersection,
-  ModelJson,
-  ElementJson,
-  FaceJson
+    RenderOptions,
+    ImageData,
+    Element,
+    ElementRotation,
+    Ray,
+    Intersection,
+    ModelJson,
+    ElementJson,
+    FaceJson,
 } from '../types/index';
 
 export { Axis, Direction } from '../types/index';

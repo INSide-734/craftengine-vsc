@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { FileLogTarget } from '../../../../infrastructure/logging/FileLogTarget';
-import { LogLevel, ILogEntry } from '../../../../core/interfaces/ILogger';
+import { LogLevel, type ILogEntry } from '../../../../core/interfaces/ILogger';
 
 /** 创建测试用日志条目 */
 function makeEntry(message: string, level: LogLevel = LogLevel.INFO): ILogEntry {
@@ -54,7 +54,7 @@ describe('FileLogTarget', () => {
 
             // 上一次的日志应被重命名为备份
             const files = fs.readdirSync(tmpDir);
-            const backups = files.filter(f => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
+            const backups = files.filter((f) => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
             expect(backups.length).toBe(1);
 
             // 备份文件应包含上一次会话的内容
@@ -79,7 +79,7 @@ describe('FileLogTarget', () => {
 
             // 不应有备份文件
             const files = fs.readdirSync(tmpDir);
-            const backups = files.filter(f => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
+            const backups = files.filter((f) => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
             expect(backups.length).toBe(0);
 
             // 日志文件应已创建
@@ -97,7 +97,7 @@ describe('FileLogTarget', () => {
             });
 
             const files = fs.readdirSync(tmpDir);
-            const backups = files.filter(f => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
+            const backups = files.filter((f) => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
             expect(backups.length).toBe(0);
 
             await target.dispose();
@@ -119,10 +119,10 @@ describe('FileLogTarget', () => {
             });
 
             // 等待异步清理完成
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
 
             const files = fs.readdirSync(tmpDir);
-            const backups = files.filter(f => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
+            const backups = files.filter((f) => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
             // maxBackupCount=2，启动时轮转产生 1 个新备份 + 3 个旧备份 = 4 个，应清理到 2 个
             expect(backups.length).toBeLessThanOrEqual(2);
 
@@ -141,7 +141,7 @@ describe('FileLogTarget', () => {
             await target.write(makeEntry('new session message'));
 
             // 等待 flush
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 50));
 
             const currentContent = fs.readFileSync(logFilePath, 'utf8');
             expect(currentContent).not.toContain('old session data');
@@ -200,11 +200,11 @@ describe('FileLogTarget', () => {
             }
 
             // 等待异步轮转和清理完成
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise((resolve) => setTimeout(resolve, 200));
             await target.dispose();
 
             const files = fs.readdirSync(tmpDir);
-            const backups = files.filter(f => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
+            const backups = files.filter((f) => f.startsWith('test_') && f.endsWith('.log') && f !== 'test.log');
             // maxBackupCount=2，所以最多保留 2 个备份
             expect(backups.length).toBeLessThanOrEqual(2);
         });
@@ -217,15 +217,15 @@ describe('FileLogTarget', () => {
     describe('写入和缓冲', () => {
         it('缓冲区超过阈值时应立即 flush 到磁盘', async () => {
             const target = new FileLogTarget(logFilePath, {
-                flushIntervalMs: 60_000,       // 禁用定时 flush
-                bufferSizeThreshold: 50,        // 很小的阈值
+                flushIntervalMs: 60_000, // 禁用定时 flush
+                bufferSizeThreshold: 50, // 很小的阈值
             });
 
             // 写入足够大的消息触发 flush
             await target.write(makeEntry('a'.repeat(100)));
 
             // writeStream.write 是异步的，等一个 tick 让数据落盘
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 50));
 
             // 不等 dispose，文件应已有内容
             expect(fs.existsSync(logFilePath)).toBe(true);
@@ -267,7 +267,7 @@ describe('FileLogTarget', () => {
     describe('文件大小轮转', () => {
         it('写入超过 maxFileSize 时应触发轮转', async () => {
             const target = new FileLogTarget(logFilePath, {
-                maxFileSize: 200,               // 很小的限制
+                maxFileSize: 200, // 很小的限制
                 flushIntervalMs: 60_000,
                 bufferSizeThreshold: 10,
             });
@@ -278,11 +278,11 @@ describe('FileLogTarget', () => {
             }
 
             // 等待异步轮转完成
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
             await target.dispose();
 
             const files = fs.readdirSync(tmpDir);
-            const backups = files.filter(f => f.startsWith('test_') && f.endsWith('.log'));
+            const backups = files.filter((f) => f.startsWith('test_') && f.endsWith('.log'));
             // 至少应有 1 个运行时轮转产生的备份 + dispose 轮转的备份
             expect(backups.length).toBeGreaterThanOrEqual(1);
         });

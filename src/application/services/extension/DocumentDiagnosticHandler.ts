@@ -1,9 +1,13 @@
 import * as vscode from 'vscode';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IExtensionService } from '../../../core/interfaces/IExtensionService';
-import { IDocumentParseCache, IParsedDocument } from '../../../core/interfaces/IParsedDocument';
-import { IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
-import { IDiagnosticProvider, IDiagnosticProviders, IDiagnosticIgnoreParser } from '../../../core/interfaces/IDiagnosticProvider';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IExtensionService } from '../../../core/interfaces/IExtensionService';
+import { type IDocumentParseCache, type IParsedDocument } from '../../../core/interfaces/IParsedDocument';
+import { type IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
+import {
+    type IDiagnosticProvider,
+    type IDiagnosticProviders,
+    type IDiagnosticIgnoreParser,
+} from '../../../core/interfaces/IDiagnosticProvider';
 import { DocumentChangeTracker } from './DocumentChangeTracker';
 
 // 重导出接口以保持向后兼容
@@ -16,7 +20,7 @@ export enum DiagnosticPriority {
     P0_SYNTAX = 0,
     P1_REFERENCE = 1,
     P2_TYPE = 2,
-    P3_SUGGESTION = 3
+    P3_SUGGESTION = 3,
 }
 
 /**
@@ -59,7 +63,7 @@ export class DocumentDiagnosticHandler {
             lowPriorityDelay?: number;
             incrementalThreshold?: number;
             diagnosticGroups?: DiagnosticGroup[];
-        }
+        },
     ) {
         this.ignoreParser = ignoreParser ?? { isFileIgnored: () => false };
         this.INITIAL_DELAY = timingConfig?.initialDelay ?? 100;
@@ -68,9 +72,17 @@ export class DocumentDiagnosticHandler {
         this.INCREMENTAL_THRESHOLD = timingConfig?.incrementalThreshold ?? 50;
         this.DIAGNOSTIC_GROUPS = timingConfig?.diagnosticGroups ?? [
             { name: 'syntax', providers: ['schema'], priority: DiagnosticPriority.P0_SYNTAX },
-            { name: 'reference', providers: ['template', 'translation', 'category'], priority: DiagnosticPriority.P1_REFERENCE },
+            {
+                name: 'reference',
+                providers: ['template', 'translation', 'category'],
+                priority: DiagnosticPriority.P1_REFERENCE,
+            },
             { name: 'type-validation', providers: ['filePath', 'itemId'], priority: DiagnosticPriority.P2_TYPE },
-            { name: 'suggestions', providers: ['miniMessage', 'versionCondition'], priority: DiagnosticPriority.P3_SUGGESTION }
+            {
+                name: 'suggestions',
+                providers: ['miniMessage', 'versionCondition'],
+                priority: DiagnosticPriority.P3_SUGGESTION,
+            },
         ];
     }
 
@@ -79,10 +91,10 @@ export class DocumentDiagnosticHandler {
      */
     registerDocumentListeners(context: vscode.ExtensionContext): void {
         context.subscriptions.push(
-            vscode.workspace.onDidChangeTextDocument(e => this.handleDocumentChange(e)),
-            vscode.workspace.onDidOpenTextDocument(doc => this.handleDocumentOpen(doc)),
-            vscode.workspace.onDidCloseTextDocument(doc => this.handleDocumentClose(doc)),
-            vscode.workspace.onDidSaveTextDocument(doc => this.handleDocumentSave(doc))
+            vscode.workspace.onDidChangeTextDocument((e) => this.handleDocumentChange(e)),
+            vscode.workspace.onDidOpenTextDocument((doc) => this.handleDocumentOpen(doc)),
+            vscode.workspace.onDidCloseTextDocument((doc) => this.handleDocumentClose(doc)),
+            vscode.workspace.onDidSaveTextDocument((doc) => this.handleDocumentSave(doc)),
         );
 
         this.logger.debug('Document event listeners registered');
@@ -99,7 +111,7 @@ export class DocumentDiagnosticHandler {
 
         setTimeout(async () => {
             // 并行更新所有打开的文档
-            await Promise.all(openYamlDocs.map(doc => this.updateAllDiagnostics(doc)));
+            await Promise.all(openYamlDocs.map((doc) => this.updateAllDiagnostics(doc)));
             this.logger.debug('Initial diagnostics updated', { documentCount: openYamlDocs.length });
         }, this.INITIAL_DELAY);
     }
@@ -130,7 +142,7 @@ export class DocumentDiagnosticHandler {
 
         if (this.shouldIgnoreFile(event.document.uri)) {
             this.logger.debug('Document ignored by .craftengine-ignore', {
-                file: event.document.fileName
+                file: event.document.fileName,
             });
             return;
         }
@@ -149,18 +161,21 @@ export class DocumentDiagnosticHandler {
 
         // 判断是否可以使用增量更新
         const changeInfo = this.changeTracker.getChangeInfo(uri);
-        const useIncremental = changeInfo &&
-            changeInfo.changedLines.size <= this.INCREMENTAL_THRESHOLD;
+        const useIncremental = changeInfo && changeInfo.changedLines.size <= this.INCREMENTAL_THRESHOLD;
 
         // 高优先级诊断（P0, P1）快速响应
         const highPriorityTimer = setTimeout(async () => {
             if (!this.changeTracker.isVersionCurrent(uri, currentVersion)) {
                 this.logger.debug('Skipping outdated high priority diagnostics', {
-                    file: event.document.fileName
+                    file: event.document.fileName,
                 });
                 return;
             }
-            await this.updateHighPriorityDiagnostics(event.document, useIncremental ? changeInfo : undefined, currentVersion);
+            await this.updateHighPriorityDiagnostics(
+                event.document,
+                useIncremental ? changeInfo : undefined,
+                currentVersion,
+            );
             this.debounceTimers.delete(uri);
         }, this.HIGH_PRIORITY_DELAY);
 
@@ -170,7 +185,7 @@ export class DocumentDiagnosticHandler {
         const lowTimer = setTimeout(async () => {
             if (!this.changeTracker.isVersionCurrent(uri, currentVersion)) {
                 this.logger.debug('Skipping outdated low priority diagnostics', {
-                    file: event.document.fileName
+                    file: event.document.fileName,
                 });
                 return;
             }
@@ -188,7 +203,7 @@ export class DocumentDiagnosticHandler {
     private async updateHighPriorityDiagnostics(
         document: vscode.TextDocument,
         _changeInfo?: import('./DocumentChangeTracker').DocumentChangeInfo,
-        executionVersion?: number
+        executionVersion?: number,
     ): Promise<void> {
         const timer = this.performanceMonitor?.startTimer('diagnostics.highPriority');
 
@@ -201,7 +216,7 @@ export class DocumentDiagnosticHandler {
 
             // 执行高优先级组（P0, P1）
             const highPriorityGroups = this.DIAGNOSTIC_GROUPS.filter(
-                g => g.priority <= DiagnosticPriority.P1_REFERENCE
+                (g) => g.priority <= DiagnosticPriority.P1_REFERENCE,
             );
 
             for (const group of highPriorityGroups) {
@@ -209,10 +224,9 @@ export class DocumentDiagnosticHandler {
             }
 
             timer?.stop({ success: 'true' });
-
         } catch (error) {
             this.logger.error('Failed to update high priority diagnostics', error as Error, {
-                file: document.fileName
+                file: document.fileName,
             });
             timer?.stop({ success: 'false', error: (error as Error).message });
         }
@@ -223,7 +237,7 @@ export class DocumentDiagnosticHandler {
      */
     private async updateLowPriorityDiagnostics(
         document: vscode.TextDocument,
-        executionVersion?: number
+        executionVersion?: number,
     ): Promise<void> {
         const timer = this.performanceMonitor?.startTimer('diagnostics.lowPriority');
 
@@ -236,7 +250,7 @@ export class DocumentDiagnosticHandler {
 
             // 执行低优先级组（P2, P3）
             const lowPriorityGroups = this.DIAGNOSTIC_GROUPS.filter(
-                g => g.priority > DiagnosticPriority.P1_REFERENCE
+                (g) => g.priority > DiagnosticPriority.P1_REFERENCE,
             );
 
             for (const group of lowPriorityGroups) {
@@ -244,10 +258,9 @@ export class DocumentDiagnosticHandler {
             }
 
             timer?.stop({ success: 'true' });
-
         } catch (error) {
             this.logger.error('Failed to update low priority diagnostics', error as Error, {
-                file: document.fileName
+                file: document.fileName,
             });
             timer?.stop({ success: 'false', error: (error as Error).message });
         }
@@ -264,17 +277,19 @@ export class DocumentDiagnosticHandler {
         // 检查文件是否应该被忽略
         if (this.shouldIgnoreFile(document.uri)) {
             this.logger.debug('Document ignored by .craftengine-ignore', {
-                file: document.fileName
+                file: document.fileName,
             });
             return;
         }
 
         // 等待初始扫描完成后再更新诊断
-        this.extensionService?.initialScanCompleted.then(async () => {
-            await this.updateAllDiagnostics(document);
-        }).catch(error => {
-            this.logger.error('Failed to update diagnostics on document open', error as Error);
-        });
+        this.extensionService?.initialScanCompleted
+            .then(async () => {
+                await this.updateAllDiagnostics(document);
+            })
+            .catch((error) => {
+                this.logger.error('Failed to update diagnostics on document open', error as Error);
+            });
     }
 
     /**
@@ -314,12 +329,12 @@ export class DocumentDiagnosticHandler {
         this.documentParseCache?.clearCache(uri);
         this.clearAllCaches(document.uri);
 
-        this.updateAllDiagnostics(document).catch(error => {
+        this.updateAllDiagnostics(document).catch((error) => {
             this.logger.error('Failed to update diagnostics on save', error as Error);
         });
 
         this.logger.debug('Document saved, diagnostics refreshed', {
-            file: document.fileName
+            file: document.fileName,
         });
     }
 
@@ -341,22 +356,19 @@ export class DocumentDiagnosticHandler {
                 this.logger.debug('Document pre-parsed for diagnostics', {
                     file: document.fileName,
                     success: parsedDoc.success,
-                    errorCount: parsedDoc.errors.length
+                    errorCount: parsedDoc.errors.length,
                 });
             }
 
             // 2. 所有诊断组并行执行
             await Promise.all(
-                this.DIAGNOSTIC_GROUPS.map(group =>
-                    this.executeGroupDiagnostics(group, document, parsedDoc)
-                )
+                this.DIAGNOSTIC_GROUPS.map((group) => this.executeGroupDiagnostics(group, document, parsedDoc)),
             );
 
             timer?.stop({ success: 'true' });
-
         } catch (error) {
             this.logger.error('Failed to update all diagnostics', error as Error, {
-                file: document.fileName
+                file: document.fileName,
             });
             timer?.stop({ success: 'false', error: (error as Error).message });
         }
@@ -374,7 +386,7 @@ export class DocumentDiagnosticHandler {
         group: DiagnosticGroup,
         document: vscode.TextDocument,
         parsedDoc?: IParsedDocument,
-        executionVersion?: number
+        executionVersion?: number,
     ): Promise<void> {
         // 检查执行版本是否仍然有效
         if (executionVersion !== undefined) {
@@ -382,7 +394,7 @@ export class DocumentDiagnosticHandler {
             if (!this.changeTracker.isVersionCurrent(uri, executionVersion)) {
                 this.logger.debug('Skipping outdated diagnostic group', {
                     group: group.name,
-                    file: document.fileName
+                    file: document.fileName,
                 });
                 return;
             }
@@ -398,12 +410,11 @@ export class DocumentDiagnosticHandler {
                 const provider = this.providers[providerKey];
                 if (provider) {
                     // 包装为 Promise（处理同步和异步两种情况）
-                    const task = Promise.resolve(provider.updateDiagnostics(document, parsedDoc))
-                        .catch(error => {
-                            this.logger.error(`Diagnostic provider ${providerKey} failed`, error as Error, {
-                                file: document.fileName
-                            });
+                    const task = Promise.resolve(provider.updateDiagnostics(document, parsedDoc)).catch((error) => {
+                        this.logger.error(`Diagnostic provider ${providerKey} failed`, error as Error, {
+                            file: document.fileName,
                         });
+                    });
                     tasks.push(task);
                 }
             }
@@ -414,7 +425,6 @@ export class DocumentDiagnosticHandler {
             }
 
             timer?.stop({ success: 'true', providerCount: String(tasks.length) });
-
         } catch (error) {
             this.logger.error(`Diagnostic group ${group.name} failed`, error as Error);
             timer?.stop({ success: 'false', error: (error as Error).message });
@@ -469,7 +479,7 @@ export class DocumentDiagnosticHandler {
      * 获取所有打开的 YAML 文档
      */
     private getOpenYamlDocuments(): vscode.TextDocument[] {
-        return vscode.workspace.textDocuments.filter(doc => this.isYamlFile(doc));
+        return vscode.workspace.textDocuments.filter((doc) => this.isYamlFile(doc));
     }
 
     /**

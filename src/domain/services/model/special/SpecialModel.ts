@@ -8,15 +8,15 @@
 
 import { Key } from '../utils/Key';
 import {
-    Property,
-    PropertyFactory,
-    PropertyReader,
+    type Property,
+    type PropertyFactory,
+    type PropertyReader,
     SimpleProperty,
     SimplePropertyFactory,
     SimplePropertyReader,
     PropertyRegistry,
 } from '../property/PropertyBase';
-import { IModelPropertyDefinition } from '../../../../core/types/ConfigTypes';
+import { type IModelPropertyDefinition } from '../../../../core/types/ConfigTypes';
 
 // ============================================
 // 特殊模型接口（保持向后兼容）
@@ -47,21 +47,18 @@ let specialModelTypesData: Record<string, Key> | null = null;
  *
  * 通过 Proxy 延迟访问，未初始化时抛出错误。
  */
-export const SPECIAL_MODEL_TYPES: Record<string, Key> = new Proxy(
-    {} as Record<string, Key>,
-    {
-        get(_target, prop: string): Key {
-            if (!specialModelTypesData) {
-                throw new Error('SPECIAL_MODEL_TYPES not initialized. Call initializeSpecialModelTypes() first.');
-            }
-            const val = specialModelTypesData[prop];
-            if (!val) {
-                throw new Error(`Unknown SPECIAL_MODEL_TYPES key: ${prop}`);
-            }
-            return val;
-        },
-    }
-);
+export const SPECIAL_MODEL_TYPES: Record<string, Key> = new Proxy({} as Record<string, Key>, {
+    get(_target, prop: string): Key {
+        if (!specialModelTypesData) {
+            throw new Error('SPECIAL_MODEL_TYPES not initialized. Call initializeSpecialModelTypes() first.');
+        }
+        const val = specialModelTypesData[prop];
+        if (!val) {
+            throw new Error(`Unknown SPECIAL_MODEL_TYPES key: ${prop}`);
+        }
+        return val;
+    },
+});
 
 // ============================================
 // 注册表（延迟初始化）
@@ -87,20 +84,14 @@ export function initializeSpecialModelTypes(definitions: IModelPropertyDefinitio
         specialModelTypesData[def.name] = Key.of(def.key);
     }
 
-    const simpleFactory = new SimplePropertyFactory<SpecialModel>(
-        (type) => new SimpleSpecialModel(type),
-        'type'
-    );
-    const simpleReader = new SimplePropertyReader<SpecialModel>(
-        (type) => new SimpleSpecialModel(type),
-        'type'
-    );
+    const simpleFactory = new SimplePropertyFactory<SpecialModel>((type) => new SimpleSpecialModel(type), 'type');
+    const simpleReader = new SimplePropertyReader<SpecialModel>((type) => new SimpleSpecialModel(type), 'type');
 
     registry = new PropertyRegistry<SpecialModel>('special model', 'type');
     registry.registerSimpleTypes(
-        definitions.map(d => Key.of(d.key)),
+        definitions.map((d) => Key.of(d.key)),
         simpleFactory,
-        simpleReader
+        simpleReader,
     );
 }
 

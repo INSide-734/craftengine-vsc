@@ -4,8 +4,8 @@
  * 移植自 craft-engine 的 BowModelReader
  */
 
-import { Key } from '../utils/Key';
-import { SimplifiedModelReader } from './SimplifiedModelReader';
+import { type Key } from '../utils/Key';
+import { type SimplifiedModelReader } from './SimplifiedModelReader';
 import { SimplifiedModelConfigError } from './GeneratedModelReader';
 
 /** 弓模型所需的纹理/模型数量 */
@@ -14,11 +14,7 @@ const BOW_REQUIRED_COUNT = 4;
 /**
  * 创建带纹理生成的模型配置
  */
-function createModelWithGeneration(
-    path: string,
-    parent: string,
-    texture: string
-): Record<string, unknown> {
+function createModelWithGeneration(path: string, parent: string, texture: string): Record<string, unknown> {
     return {
         path,
         generation: {
@@ -32,16 +28,12 @@ function createModelWithGeneration(
  * 弓模型读取器
  */
 export class BowModelReader implements SimplifiedModelReader {
-    convertFromTextures(
-        textures: string[],
-        optionalModelPaths: string[],
-        id: Key
-    ): Record<string, unknown> {
+    convertFromTextures(textures: string[], optionalModelPaths: string[], id: Key): Record<string, unknown> {
         if (textures.length !== BOW_REQUIRED_COUNT) {
             throw new SimplifiedModelConfigError(
                 'warning.config.item.simplified_model.invalid_texture',
                 String(BOW_REQUIRED_COUNT),
-                String(textures.length)
+                String(textures.length),
             );
         }
 
@@ -50,7 +42,7 @@ export class BowModelReader implements SimplifiedModelReader {
             throw new SimplifiedModelConfigError(
                 'warning.config.item.simplified_model.invalid_model',
                 String(BOW_REQUIRED_COUNT),
-                String(optionalModelPaths.length)
+                String(optionalModelPaths.length),
             );
         }
 
@@ -61,18 +53,20 @@ export class BowModelReader implements SimplifiedModelReader {
         return {
             type: 'condition',
             property: 'using_item',
-            'on-false': createModelWithGeneration(
-                getPath('', 0),
-                'item/bow',
-                textures[0]
-            ),
+            'on-false': createModelWithGeneration(getPath('', 0), 'item/bow', textures[0]),
             'on-true': {
                 type: 'range_dispatch',
                 property: 'use_duration',
                 scale: 0.05,
                 entries: [
-                    { model: createModelWithGeneration(getPath('_pulling_1', 2), 'item/bow_pulling_1', textures[2]), threshold: 0.65 },
-                    { model: createModelWithGeneration(getPath('_pulling_2', 3), 'item/bow_pulling_2', textures[3]), threshold: 0.9 },
+                    {
+                        model: createModelWithGeneration(getPath('_pulling_1', 2), 'item/bow_pulling_1', textures[2]),
+                        threshold: 0.65,
+                    },
+                    {
+                        model: createModelWithGeneration(getPath('_pulling_2', 3), 'item/bow_pulling_2', textures[3]),
+                        threshold: 0.9,
+                    },
                 ],
                 fallback: createModelWithGeneration(getPath('_pulling_0', 1), 'item/bow_pulling_0', textures[1]),
             },
@@ -84,7 +78,7 @@ export class BowModelReader implements SimplifiedModelReader {
             throw new SimplifiedModelConfigError(
                 'warning.config.item.simplified_model.invalid_model',
                 String(BOW_REQUIRED_COUNT),
-                String(models.length)
+                String(models.length),
             );
         }
 

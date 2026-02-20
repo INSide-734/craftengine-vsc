@@ -5,15 +5,15 @@
  */
 
 import { DiagnosticSeverity } from 'vscode';
-import { IConfiguration } from '../../core/interfaces/IConfiguration';
+import { type IConfiguration } from '../../core/interfaces/IConfiguration';
 import { ServiceContainer } from '../ServiceContainer';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import {
-    SeverityLevel,
-    ValidationMode,
+    type SeverityLevel,
+    type ValidationMode,
     SEVERITY_RULES,
     getConfigurableCodes,
-    getDefaultSeverity
+    getDefaultSeverity,
 } from '../../core/constants/DiagnosticSeverityRules';
 import { getDiagnosticCodeInfo } from '../../core/constants/DiagnosticCodes';
 
@@ -68,7 +68,7 @@ export function fromVSCodeSeverity(severity: DiagnosticSeverity): SeverityLevel 
 export function getSeverity(
     diagnosticCode: string,
     mode: ValidationMode = 'default',
-    customSeverity?: Record<string, SeverityLevel>
+    customSeverity?: Record<string, SeverityLevel>,
 ): DiagnosticSeverity | null {
     const rule = SEVERITY_RULES[diagnosticCode];
 
@@ -106,7 +106,7 @@ export function getSeverity(
 export function getSeverityFromInternalCode(
     internalCode: string,
     mode: ValidationMode = 'default',
-    customSeverity?: Record<string, SeverityLevel>
+    customSeverity?: Record<string, SeverityLevel>,
 ): DiagnosticSeverity | null {
     const diagnosticCode = getDiagnosticCodeInfo(internalCode)?.code;
 
@@ -163,10 +163,7 @@ export class DiagnosticSeverityConfig {
      * 获取验证模式
      */
     getValidationMode(): ValidationMode {
-        const mode = this.configuration.get<string>(
-            DiagnosticSeverityConfig.CONFIG_KEY_MODE,
-            'loose'
-        );
+        const mode = this.configuration.get<string>(DiagnosticSeverityConfig.CONFIG_KEY_MODE, 'loose');
 
         switch (mode.toLowerCase()) {
             case 'strict':
@@ -182,10 +179,7 @@ export class DiagnosticSeverityConfig {
      * 获取用户自定义严重程度
      */
     getCustomSeverity(): Record<string, SeverityLevel> {
-        return this.configuration.get<Record<string, SeverityLevel>>(
-            DiagnosticSeverityConfig.CONFIG_KEY_SEVERITY,
-            {}
-        );
+        return this.configuration.get<Record<string, SeverityLevel>>(DiagnosticSeverityConfig.CONFIG_KEY_SEVERITY, {});
     }
 
     /**
@@ -194,7 +188,7 @@ export class DiagnosticSeverityConfig {
     getSettings(): IDiagnosticSeveritySettings {
         return {
             mode: this.getValidationMode(),
-            customSeverity: this.getCustomSeverity()
+            customSeverity: this.getCustomSeverity(),
         };
     }
 
@@ -245,7 +239,7 @@ export class DiagnosticSeverityConfig {
         return {
             mode: this.getValidationMode(),
             customSeverityCount: customCount,
-            customSeverity: customCount > 0 ? customSeverity : undefined
+            customSeverity: customCount > 0 ? customSeverity : undefined,
         };
     }
 }

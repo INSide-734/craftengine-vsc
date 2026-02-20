@@ -1,10 +1,5 @@
-import { Uri, workspace, FileType as VscodeFileType } from 'vscode';
-import {
-    IFileReader,
-    IFileStat,
-    IDirectoryEntry,
-    FileType
-} from '../../core/interfaces/IFileReader';
+import { type Uri, workspace, FileType as VscodeFileType } from 'vscode';
+import { type IFileReader, type IFileStat, type IDirectoryEntry, FileType } from '../../core/interfaces/IFileReader';
 
 /**
  * VS Code 文件读取器实现
@@ -63,7 +58,7 @@ export class VscodeFileReader implements IFileReader {
                 type: this.convertFileType(stat.type),
                 size: stat.size,
                 mtime: stat.mtime,
-                ctime: stat.ctime
+                ctime: stat.ctime,
             };
         } catch {
             return null;
@@ -80,7 +75,7 @@ export class VscodeFileReader implements IFileReader {
         const entries = await workspace.fs.readDirectory(uri);
         return entries.map(([name, type]) => ({
             name,
-            type: this.convertFileType(type)
+            type: this.convertFileType(type),
         }));
     }
 

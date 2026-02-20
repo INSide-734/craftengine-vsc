@@ -9,8 +9,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CategoryStore } from '../../../../domain/services/stores/CategoryStore';
-import { ICategory } from '../../../../core/interfaces/ICategory';
-import { ILogger } from '../../../../core/interfaces/ILogger';
+import { type ICategory } from '../../../../core/interfaces/ICategory';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
 import { Uri } from 'vscode';
 
 describe('CategoryStore', () => {
@@ -18,18 +18,20 @@ describe('CategoryStore', () => {
     let mockLogger: ILogger;
 
     // 辅助函数：创建测试分类
-    const createTestCategory = (overrides: Partial<{
-        id: string;
-        namespace: string;
-        name: string;
-        displayName: string;
-        description: string[];
-        icon: string;
-        hidden: boolean;
-        priority: number;
-        sourceFile: string;
-        lineNumber: number;
-    }> = {}): ICategory => {
+    const createTestCategory = (
+        overrides: Partial<{
+            id: string;
+            namespace: string;
+            name: string;
+            displayName: string;
+            description: string[];
+            icon: string;
+            hidden: boolean;
+            priority: number;
+            sourceFile: string;
+            lineNumber: number;
+        }> = {},
+    ): ICategory => {
         const namespace = overrides.namespace ?? 'mypack';
         const name = overrides.name ?? 'test_category';
         return {
@@ -89,7 +91,7 @@ describe('CategoryStore', () => {
         it('should update namespace index', async () => {
             const category = createTestCategory({
                 id: '#mypack:weapons',
-                namespace: 'mypack'
+                namespace: 'mypack',
             });
 
             await store.addCategory(category);
@@ -101,7 +103,7 @@ describe('CategoryStore', () => {
         it('should update file index', async () => {
             const category = createTestCategory({
                 id: '#mypack:weapons',
-                sourceFile: '/test/categories.yaml'
+                sourceFile: '/test/categories.yaml',
             });
 
             await store.addCategory(category);
@@ -113,7 +115,7 @@ describe('CategoryStore', () => {
         it('should log category addition', async () => {
             const category = createTestCategory({
                 id: '#mypack:weapons',
-                namespace: 'mypack'
+                namespace: 'mypack',
             });
 
             await store.addCategory(category);
@@ -122,19 +124,19 @@ describe('CategoryStore', () => {
                 'Category added',
                 expect.objectContaining({
                     id: '#mypack:weapons',
-                    namespace: 'mypack'
-                })
+                    namespace: 'mypack',
+                }),
             );
         });
 
         it('should overwrite category with same ID', async () => {
             const category1 = createTestCategory({
                 id: '#mypack:weapons',
-                displayName: 'Old Name'
+                displayName: 'Old Name',
             });
             const category2 = createTestCategory({
                 id: '#mypack:weapons',
-                displayName: 'New Name'
+                displayName: 'New Name',
             });
 
             await store.addCategory(category1);
@@ -170,8 +172,8 @@ describe('CategoryStore', () => {
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Categories batch added',
                 expect.objectContaining({
-                    count: 2
-                })
+                    count: 2,
+                }),
             );
         });
     });
@@ -236,7 +238,7 @@ describe('CategoryStore', () => {
             const categories = await store.searchCategories('#mypack:weapons');
 
             expect(categories).toHaveLength(2);
-            expect(categories.every(c => c.id.startsWith('#mypack:weapons'))).toBe(true);
+            expect(categories.every((c) => c.id.startsWith('#mypack:weapons'))).toBe(true);
         });
 
         it('should search by prefix without # prefix', async () => {
@@ -260,25 +262,31 @@ describe('CategoryStore', () => {
 
     describe('getCategoriesByNamespace', () => {
         beforeEach(async () => {
-            await store.addCategory(createTestCategory({
-                id: '#mypack:weapons',
-                namespace: 'mypack'
-            }));
-            await store.addCategory(createTestCategory({
-                id: '#mypack:armor',
-                namespace: 'mypack'
-            }));
-            await store.addCategory(createTestCategory({
-                id: '#other:tools',
-                namespace: 'other'
-            }));
+            await store.addCategory(
+                createTestCategory({
+                    id: '#mypack:weapons',
+                    namespace: 'mypack',
+                }),
+            );
+            await store.addCategory(
+                createTestCategory({
+                    id: '#mypack:armor',
+                    namespace: 'mypack',
+                }),
+            );
+            await store.addCategory(
+                createTestCategory({
+                    id: '#other:tools',
+                    namespace: 'other',
+                }),
+            );
         });
 
         it('should return categories by namespace', async () => {
             const categories = await store.getCategoriesByNamespace('mypack');
 
             expect(categories).toHaveLength(2);
-            expect(categories.every(c => c.namespace === 'mypack')).toBe(true);
+            expect(categories.every((c) => c.namespace === 'mypack')).toBe(true);
         });
 
         it('should return empty array for non-existing namespace', async () => {
@@ -341,10 +349,12 @@ describe('CategoryStore', () => {
         });
 
         it('should update namespace index after removal', async () => {
-            await store.addCategory(createTestCategory({
-                id: '#mypack:weapons',
-                namespace: 'mypack'
-            }));
+            await store.addCategory(
+                createTestCategory({
+                    id: '#mypack:weapons',
+                    namespace: 'mypack',
+                }),
+            );
 
             await store.removeCategory('#mypack:weapons');
 
@@ -353,10 +363,12 @@ describe('CategoryStore', () => {
         });
 
         it('should update file index after removal', async () => {
-            await store.addCategory(createTestCategory({
-                id: '#mypack:weapons',
-                sourceFile: '/test/categories.yaml'
-            }));
+            await store.addCategory(
+                createTestCategory({
+                    id: '#mypack:weapons',
+                    sourceFile: '/test/categories.yaml',
+                }),
+            );
 
             await store.removeCategory('#mypack:weapons');
 
@@ -371,8 +383,8 @@ describe('CategoryStore', () => {
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Category removed',
                 expect.objectContaining({
-                    id: '#mypack:weapons'
-                })
+                    id: '#mypack:weapons',
+                }),
             );
         });
 
@@ -396,18 +408,24 @@ describe('CategoryStore', () => {
             const file1 = '/test/pack1.yaml';
             const file2 = '/test/pack2.yaml';
 
-            await store.addCategory(createTestCategory({
-                id: '#mypack:cat1',
-                sourceFile: file1
-            }));
-            await store.addCategory(createTestCategory({
-                id: '#mypack:cat2',
-                sourceFile: file1
-            }));
-            await store.addCategory(createTestCategory({
-                id: '#other:cat1',
-                sourceFile: file2
-            }));
+            await store.addCategory(
+                createTestCategory({
+                    id: '#mypack:cat1',
+                    sourceFile: file1,
+                }),
+            );
+            await store.addCategory(
+                createTestCategory({
+                    id: '#mypack:cat2',
+                    sourceFile: file1,
+                }),
+            );
+            await store.addCategory(
+                createTestCategory({
+                    id: '#other:cat1',
+                    sourceFile: file2,
+                }),
+            );
 
             await store.removeCategoriesByFile(Uri.file(file1));
 
@@ -418,14 +436,18 @@ describe('CategoryStore', () => {
 
         it('should log removal', async () => {
             const file = '/test/categories.yaml';
-            await store.addCategory(createTestCategory({
-                id: '#mypack:cat1',
-                sourceFile: file
-            }));
-            await store.addCategory(createTestCategory({
-                id: '#mypack:cat2',
-                sourceFile: file
-            }));
+            await store.addCategory(
+                createTestCategory({
+                    id: '#mypack:cat1',
+                    sourceFile: file,
+                }),
+            );
+            await store.addCategory(
+                createTestCategory({
+                    id: '#mypack:cat2',
+                    sourceFile: file,
+                }),
+            );
 
             await store.removeCategoriesByFile(Uri.file(file));
 
@@ -433,15 +455,17 @@ describe('CategoryStore', () => {
                 'Categories removed by file',
                 expect.objectContaining({
                     file,
-                    count: 2
-                })
+                    count: 2,
+                }),
             );
         });
 
         it('should do nothing for file with no categories', async () => {
-            await store.addCategory(createTestCategory({
-                sourceFile: '/other/file.yaml'
-            }));
+            await store.addCategory(
+                createTestCategory({
+                    sourceFile: '/other/file.yaml',
+                }),
+            );
 
             await store.removeCategoriesByFile(Uri.file('/nonexistent/file.yaml'));
 
@@ -461,11 +485,13 @@ describe('CategoryStore', () => {
         });
 
         it('should clear all indexes', async () => {
-            await store.addCategory(createTestCategory({
-                id: '#mypack:weapons',
-                namespace: 'mypack',
-                sourceFile: '/test/categories.yaml'
-            }));
+            await store.addCategory(
+                createTestCategory({
+                    id: '#mypack:weapons',
+                    namespace: 'mypack',
+                    sourceFile: '/test/categories.yaml',
+                }),
+            );
 
             await store.clearCategories();
 
@@ -484,8 +510,8 @@ describe('CategoryStore', () => {
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'All categories cleared',
                 expect.objectContaining({
-                    count: 2
-                })
+                    count: 2,
+                }),
             );
         });
     });
@@ -496,21 +522,27 @@ describe('CategoryStore', () => {
 
     describe('getStats', () => {
         it('should return correct statistics', async () => {
-            await store.addCategory(createTestCategory({
-                id: '#pack1:cat1',
-                namespace: 'pack1',
-                sourceFile: '/test/pack1.yaml'
-            }));
-            await store.addCategory(createTestCategory({
-                id: '#pack1:cat2',
-                namespace: 'pack1',
-                sourceFile: '/test/pack1.yaml'
-            }));
-            await store.addCategory(createTestCategory({
-                id: '#pack2:cat1',
-                namespace: 'pack2',
-                sourceFile: '/test/pack2.yaml'
-            }));
+            await store.addCategory(
+                createTestCategory({
+                    id: '#pack1:cat1',
+                    namespace: 'pack1',
+                    sourceFile: '/test/pack1.yaml',
+                }),
+            );
+            await store.addCategory(
+                createTestCategory({
+                    id: '#pack1:cat2',
+                    namespace: 'pack1',
+                    sourceFile: '/test/pack1.yaml',
+                }),
+            );
+            await store.addCategory(
+                createTestCategory({
+                    id: '#pack2:cat1',
+                    namespace: 'pack2',
+                    sourceFile: '/test/pack2.yaml',
+                }),
+            );
 
             const stats = store.getStats();
 

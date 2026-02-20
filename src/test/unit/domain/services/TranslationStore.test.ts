@@ -9,8 +9,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TranslationStore } from '../../../../domain/services/stores/TranslationStore';
-import { ITranslationKey } from '../../../../core/interfaces/ITranslation';
-import { ILogger } from '../../../../core/interfaces/ILogger';
+import { type ITranslationKey } from '../../../../core/interfaces/ITranslation';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
 import { Uri } from 'vscode';
 
 describe('TranslationStore', () => {
@@ -18,14 +18,16 @@ describe('TranslationStore', () => {
     let mockLogger: ILogger;
 
     // 辅助函数：创建测试翻译键
-    const createTestKey = (overrides: Partial<{
-        key: string;
-        fullPath: string;
-        languageCode: string;
-        value: string;
-        sourceFile: string;
-        lineNumber: number;
-    }> = {}): ITranslationKey => {
+    const createTestKey = (
+        overrides: Partial<{
+            key: string;
+            fullPath: string;
+            languageCode: string;
+            value: string;
+            sourceFile: string;
+            lineNumber: number;
+        }> = {},
+    ): ITranslationKey => {
         const key = overrides.key ?? 'test.key';
         const languageCode = overrides.languageCode ?? 'en';
         return {
@@ -72,7 +74,7 @@ describe('TranslationStore', () => {
             const key = createTestKey({
                 key: 'item.sword',
                 languageCode: 'en',
-                sourceFile: '/test/en.yaml'
+                sourceFile: '/test/en.yaml',
             });
 
             await store.addKey(key);
@@ -90,8 +92,8 @@ describe('TranslationStore', () => {
                 'Translation key added',
                 expect.objectContaining({
                     key: 'new.key',
-                    languageCode: 'en'
-                })
+                    languageCode: 'en',
+                }),
             );
         });
 
@@ -100,13 +102,13 @@ describe('TranslationStore', () => {
                 key: 'item.sword',
                 languageCode: 'en',
                 fullPath: 'en.item.sword',
-                value: 'Sword'
+                value: 'Sword',
             });
             const keyZh = createTestKey({
                 key: 'item.sword',
                 languageCode: 'zh_cn',
                 fullPath: 'zh_cn.item.sword',
-                value: '剑'
+                value: '剑',
             });
 
             await store.addKey(keyEn);
@@ -121,12 +123,12 @@ describe('TranslationStore', () => {
             const key1 = createTestKey({
                 key: 'item.sword',
                 fullPath: 'en.item.sword',
-                value: 'Old Sword'
+                value: 'Old Sword',
             });
             const key2 = createTestKey({
                 key: 'item.sword',
                 fullPath: 'en.item.sword',
-                value: 'New Sword'
+                value: 'New Sword',
             });
 
             await store.addKey(key1);
@@ -144,10 +146,7 @@ describe('TranslationStore', () => {
 
             await store.addWithoutLog(key);
 
-            expect(mockLogger.debug).not.toHaveBeenCalledWith(
-                'Translation key added',
-                expect.anything()
-            );
+            expect(mockLogger.debug).not.toHaveBeenCalledWith('Translation key added', expect.anything());
             expect(store.getCount()).toBe(1);
         });
     });
@@ -176,26 +175,32 @@ describe('TranslationStore', () => {
 
     describe('getKeysByName', () => {
         it('should return keys by name across languages', async () => {
-            await store.addKey(createTestKey({
-                key: 'item.sword',
-                languageCode: 'en',
-                fullPath: 'en.item.sword'
-            }));
-            await store.addKey(createTestKey({
-                key: 'item.sword',
-                languageCode: 'zh_cn',
-                fullPath: 'zh_cn.item.sword'
-            }));
-            await store.addKey(createTestKey({
-                key: 'item.shield',
-                languageCode: 'en',
-                fullPath: 'en.item.shield'
-            }));
+            await store.addKey(
+                createTestKey({
+                    key: 'item.sword',
+                    languageCode: 'en',
+                    fullPath: 'en.item.sword',
+                }),
+            );
+            await store.addKey(
+                createTestKey({
+                    key: 'item.sword',
+                    languageCode: 'zh_cn',
+                    fullPath: 'zh_cn.item.sword',
+                }),
+            );
+            await store.addKey(
+                createTestKey({
+                    key: 'item.shield',
+                    languageCode: 'en',
+                    fullPath: 'en.item.shield',
+                }),
+            );
 
             const keys = await store.getKeysByName('item.sword');
 
             expect(keys).toHaveLength(2);
-            expect(keys.every(k => k.key === 'item.sword')).toBe(true);
+            expect(keys.every((k) => k.key === 'item.sword')).toBe(true);
         });
 
         it('should return empty array for non-existing key', async () => {
@@ -207,34 +212,42 @@ describe('TranslationStore', () => {
 
     describe('getKeysByLanguage', () => {
         it('should return all keys for a language', async () => {
-            await store.addKey(createTestKey({
-                key: 'item.sword',
-                languageCode: 'en',
-                fullPath: 'en.item.sword'
-            }));
-            await store.addKey(createTestKey({
-                key: 'item.shield',
-                languageCode: 'en',
-                fullPath: 'en.item.shield'
-            }));
-            await store.addKey(createTestKey({
-                key: 'item.sword',
-                languageCode: 'zh_cn',
-                fullPath: 'zh_cn.item.sword'
-            }));
+            await store.addKey(
+                createTestKey({
+                    key: 'item.sword',
+                    languageCode: 'en',
+                    fullPath: 'en.item.sword',
+                }),
+            );
+            await store.addKey(
+                createTestKey({
+                    key: 'item.shield',
+                    languageCode: 'en',
+                    fullPath: 'en.item.shield',
+                }),
+            );
+            await store.addKey(
+                createTestKey({
+                    key: 'item.sword',
+                    languageCode: 'zh_cn',
+                    fullPath: 'zh_cn.item.sword',
+                }),
+            );
 
             const keys = await store.getKeysByLanguage('en');
 
             expect(keys).toHaveLength(2);
-            expect(keys.every(k => k.languageCode === 'en')).toBe(true);
+            expect(keys.every((k) => k.languageCode === 'en')).toBe(true);
         });
 
         it('should be case insensitive', async () => {
-            await store.addKey(createTestKey({
-                key: 'item.sword',
-                languageCode: 'en',
-                fullPath: 'en.item.sword'
-            }));
+            await store.addKey(
+                createTestKey({
+                    key: 'item.sword',
+                    languageCode: 'en',
+                    fullPath: 'en.item.sword',
+                }),
+            );
 
             const keys = await store.getKeysByLanguage('EN');
 
@@ -260,7 +273,7 @@ describe('TranslationStore', () => {
             const keys = await store.searchKeys('item.');
 
             expect(keys).toHaveLength(3);
-            expect(keys.every(k => k.key.startsWith('item.'))).toBe(true);
+            expect(keys.every((k) => k.key.startsWith('item.'))).toBe(true);
         });
 
         it('should be case insensitive', async () => {
@@ -272,17 +285,19 @@ describe('TranslationStore', () => {
         it('should return sorted results', async () => {
             const keys = await store.searchKeys('item.');
 
-            const names = keys.map(k => k.key);
+            const names = keys.map((k) => k.key);
             expect(names).toEqual([...names].sort());
         });
 
         it('should return unique keys (deduplicated)', async () => {
             // 添加同一个 key 的多语言版本
-            await store.addKey(createTestKey({
-                key: 'item.sword',
-                languageCode: 'zh_cn',
-                fullPath: 'zh_cn.item.sword'
-            }));
+            await store.addKey(
+                createTestKey({
+                    key: 'item.sword',
+                    languageCode: 'zh_cn',
+                    fullPath: 'zh_cn.item.sword',
+                }),
+            );
 
             const keys = await store.searchKeys('item.sword');
 
@@ -299,24 +314,30 @@ describe('TranslationStore', () => {
 
     describe('queryKeys', () => {
         beforeEach(async () => {
-            await store.addKey(createTestKey({
-                key: 'item.sword',
-                languageCode: 'en',
-                fullPath: 'en.item.sword',
-                sourceFile: '/test/en.yaml'
-            }));
-            await store.addKey(createTestKey({
-                key: 'item.shield',
-                languageCode: 'en',
-                fullPath: 'en.item.shield',
-                sourceFile: '/test/en.yaml'
-            }));
-            await store.addKey(createTestKey({
-                key: 'item.sword',
-                languageCode: 'zh_cn',
-                fullPath: 'zh_cn.item.sword',
-                sourceFile: '/test/zh_cn.yaml'
-            }));
+            await store.addKey(
+                createTestKey({
+                    key: 'item.sword',
+                    languageCode: 'en',
+                    fullPath: 'en.item.sword',
+                    sourceFile: '/test/en.yaml',
+                }),
+            );
+            await store.addKey(
+                createTestKey({
+                    key: 'item.shield',
+                    languageCode: 'en',
+                    fullPath: 'en.item.shield',
+                    sourceFile: '/test/en.yaml',
+                }),
+            );
+            await store.addKey(
+                createTestKey({
+                    key: 'item.sword',
+                    languageCode: 'zh_cn',
+                    fullPath: 'zh_cn.item.sword',
+                    sourceFile: '/test/zh_cn.yaml',
+                }),
+            );
         });
 
         it('should filter by name pattern', async () => {
@@ -330,12 +351,12 @@ describe('TranslationStore', () => {
             const result = await store.queryKeys({ languageCode: 'en' });
 
             expect(result.items).toHaveLength(2);
-            expect(result.items.every(k => k.languageCode === 'en')).toBe(true);
+            expect(result.items.every((k) => k.languageCode === 'en')).toBe(true);
         });
 
         it('should filter by source file', async () => {
             const result = await store.queryKeys({
-                sourceFile: Uri.file('/test/en.yaml')
+                sourceFile: Uri.file('/test/en.yaml'),
             });
 
             expect(result.items).toHaveLength(2);
@@ -367,7 +388,7 @@ describe('TranslationStore', () => {
         it('should return sorted results', async () => {
             const result = await store.queryKeys({});
 
-            const names = result.items.map(k => k.key);
+            const names = result.items.map((k) => k.key);
             expect(names).toEqual([...names].sort());
         });
     });
@@ -404,7 +425,7 @@ describe('TranslationStore', () => {
                 key: 'item.sword',
                 languageCode: 'en',
                 fullPath: 'en.item.sword',
-                sourceFile: '/test/en.yaml'
+                sourceFile: '/test/en.yaml',
             });
             await store.addKey(key);
 
@@ -423,8 +444,8 @@ describe('TranslationStore', () => {
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Translation key removed',
                 expect.objectContaining({
-                    key: 'to.remove'
-                })
+                    key: 'to.remove',
+                }),
             );
         });
 
@@ -471,8 +492,8 @@ describe('TranslationStore', () => {
                 'Translation keys removed by file',
                 expect.objectContaining({
                     filePath: file,
-                    count: 2
-                })
+                    count: 2,
+                }),
             );
         });
 
@@ -499,12 +520,14 @@ describe('TranslationStore', () => {
 
     describe('clear', () => {
         it('should clear all data and indexes', async () => {
-            await store.addKey(createTestKey({
-                key: 'key1',
-                languageCode: 'en',
-                fullPath: 'en.key1',
-                sourceFile: '/test/en.yaml'
-            }));
+            await store.addKey(
+                createTestKey({
+                    key: 'key1',
+                    languageCode: 'en',
+                    fullPath: 'en.key1',
+                    sourceFile: '/test/en.yaml',
+                }),
+            );
 
             store.clear();
 
@@ -568,7 +591,7 @@ describe('TranslationStore', () => {
             await store.addKey(createTestKey({ fullPath: 'en.key1' }));
             const afterAdd = store.getLastUpdated();
 
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await store.addKey(createTestKey({ fullPath: 'en.key2' }));
 
             expect(store.getLastUpdated().getTime()).toBeGreaterThan(afterAdd.getTime());
@@ -578,7 +601,7 @@ describe('TranslationStore', () => {
             await store.addKey(createTestKey({ fullPath: 'en.key1' }));
             const afterAdd = store.getLastUpdated();
 
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await store.removeKey('en.key1');
 
             expect(store.getLastUpdated().getTime()).toBeGreaterThan(afterAdd.getTime());

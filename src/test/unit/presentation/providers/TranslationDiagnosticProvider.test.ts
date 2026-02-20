@@ -8,40 +8,36 @@
  * - 内联翻译引用检测 (i18n/l10n 标记)
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-    TextDocument,
-    Uri,
-    DiagnosticSeverity
-} from '../../../__mocks__/vscode';
+import { TextDocument, Uri, DiagnosticSeverity } from '../../../__mocks__/vscode';
 import type { TextDocument as VscodeTextDocument } from 'vscode';
 import { TranslationDiagnosticProvider } from '../../../../presentation/providers/TranslationDiagnosticProvider';
 import { ServiceContainer } from '../../../../infrastructure/ServiceContainer';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../../core/interfaces/IConfiguration';
-import { IEventBus } from '../../../../core/interfaces/IEventBus';
-import { IDataStoreService } from '../../../../core/interfaces/IDataStoreService';
-import { ISchemaService } from '../../../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../../../core/interfaces/IYamlPathParser';
-import { PerformanceMonitor } from '../../../../infrastructure/performance/PerformanceMonitor';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../../core/interfaces/IConfiguration';
+import { type IEventBus } from '../../../../core/interfaces/IEventBus';
+import { type IDataStoreService } from '../../../../core/interfaces/IDataStoreService';
+import { type ISchemaService } from '../../../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../../../core/interfaces/IYamlPathParser';
+import { type PerformanceMonitor } from '../../../../infrastructure/performance/PerformanceMonitor';
 import { SERVICE_TOKENS } from '../../../../core/constants/ServiceTokens';
 
 // Mock ServiceContainer
 vi.mock('../../../../infrastructure/ServiceContainer', () => ({
     ServiceContainer: {
-        getService: vi.fn()
-    }
+        getService: vi.fn(),
+    },
 }));
 
 // Mock DiagnosticSeverityConfig
 const mockSeverityConfig = {
     getSeverity: vi.fn().mockReturnValue(DiagnosticSeverity.Warning),
-    shouldIgnore: vi.fn().mockReturnValue(false)
+    shouldIgnore: vi.fn().mockReturnValue(false),
 };
 vi.mock('../../../../infrastructure/config/DiagnosticSeverityConfig', () => ({
     DiagnosticSeverityConfig: class {
         getSeverity = mockSeverityConfig.getSeverity;
         shouldIgnore = mockSeverityConfig.shouldIgnore;
-    }
+    },
 }));
 
 describe('TranslationDiagnosticProvider', () => {
@@ -72,36 +68,36 @@ describe('TranslationDiagnosticProvider', () => {
                 }
                 return defaultValue;
             }),
-            onChange: vi.fn().mockReturnValue({ dispose: vi.fn() })
+            onChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
         } as unknown as IConfiguration;
 
         // 创建 mock event bus
         mockEventBus = {
             publish: vi.fn().mockResolvedValue(undefined),
-            subscribe: vi.fn().mockReturnValue({ dispose: vi.fn() })
+            subscribe: vi.fn().mockReturnValue({ dispose: vi.fn() }),
         } as unknown as IEventBus;
 
         // 创建 mock data store service
         mockDataStoreService = {
-            getTranslationKeysByName: vi.fn().mockResolvedValue([])
+            getTranslationKeysByName: vi.fn().mockResolvedValue([]),
         } as unknown as IDataStoreService;
 
         // 创建 mock schema service
         mockSchemaService = {
             getSchemaForPath: vi.fn().mockResolvedValue(null),
-            getCustomProperty: vi.fn().mockReturnValue(null)
+            getCustomProperty: vi.fn().mockReturnValue(null),
         } as unknown as ISchemaService;
 
         // 创建 mock yaml path parser
         mockYamlPathParser = {
-            parsePath: vi.fn().mockReturnValue([])
+            parsePath: vi.fn().mockReturnValue([]),
         } as unknown as IYamlPathParser;
 
         // 创建 mock performance monitor
         mockPerformanceMonitor = {
             startTimer: vi.fn().mockReturnValue({
-                stop: vi.fn()
-            })
+                stop: vi.fn(),
+            }),
         } as unknown as PerformanceMonitor;
 
         // 配置 ServiceContainer mock
@@ -130,14 +126,14 @@ describe('TranslationDiagnosticProvider', () => {
             if (token === SERVICE_TOKENS.YamlParser) {
                 return {
                     parseDocument: vi.fn().mockResolvedValue(null),
-                    parseText: vi.fn().mockReturnValue(null)
+                    parseText: vi.fn().mockReturnValue(null),
                 };
             }
             if (token === SERVICE_TOKENS.DataConfigLoader) {
                 return {
                     getMiniMessageConstantsConfigSync: vi.fn().mockReturnValue({
-                        commonLanguages: ['en', 'zh_cn', 'ja', 'ko', 'de', 'fr', 'es', 'ru', 'pt_br']
-                    })
+                        commonLanguages: ['en', 'zh_cn', 'ja', 'ko', 'de', 'fr', 'es', 'ru', 'pt_br'],
+                    }),
                 };
             }
             throw new Error(`Service not found: ${token.toString()}`);
@@ -153,11 +149,7 @@ describe('TranslationDiagnosticProvider', () => {
 
     // 辅助函数：创建测试文档
     function createDocument(content: string): VscodeTextDocument {
-        return new TextDocument(
-            Uri.file('/test/file.yaml'),
-            content,
-            'yaml'
-        ) as unknown as VscodeTextDocument;
+        return new TextDocument(Uri.file('/test/file.yaml'), content, 'yaml') as unknown as VscodeTextDocument;
     }
 
     // ========================================
@@ -169,7 +161,7 @@ describe('TranslationDiagnosticProvider', () => {
             const document = new TextDocument(
                 Uri.file('/test/file.txt'),
                 'hello world',
-                'plaintext'
+                'plaintext',
             ) as unknown as VscodeTextDocument;
 
             await provider.updateDiagnostics(document);
@@ -198,8 +190,8 @@ items:
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Diagnostics updated',
                 expect.objectContaining({
-                    file: expect.any(String)
-                })
+                    file: expect.any(String),
+                }),
             );
         });
 
@@ -211,8 +203,8 @@ items:
             expect(mockEventBus.publish).toHaveBeenCalledWith(
                 'translation.diagnostics.updated',
                 expect.objectContaining({
-                    type: 'translation.diagnostics.updated'
-                })
+                    type: 'translation.diagnostics.updated',
+                }),
             );
         });
     });
@@ -267,7 +259,13 @@ items:
             `);
 
             vi.mocked(mockDataStoreService.getTranslationKeysByName).mockResolvedValue([
-                { key: 'existing.key', fullPath: 'en.existing.key', languageCode: 'en', value: 'Existing', sourceFile: '/test/translations.yaml' }
+                {
+                    key: 'existing.key',
+                    fullPath: 'en.existing.key',
+                    languageCode: 'en',
+                    value: 'Existing',
+                    sourceFile: '/test/translations.yaml',
+                },
             ]);
 
             await provider.updateDiagnostics(document);
@@ -289,7 +287,13 @@ items:
             `);
 
             vi.mocked(mockDataStoreService.getTranslationKeysByName).mockResolvedValue([
-                { key: 'empty.key', fullPath: 'en.empty.key', languageCode: 'en', value: '', sourceFile: '/test/translations.yaml' }
+                {
+                    key: 'empty.key',
+                    fullPath: 'en.empty.key',
+                    languageCode: 'en',
+                    value: '',
+                    sourceFile: '/test/translations.yaml',
+                },
             ]);
 
             await provider.updateDiagnostics(document);
@@ -392,7 +396,7 @@ items:
             // 模拟 schema 返回 translation 字段
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.translationKey'
+                'x-completion-provider': 'craftengine.translationKey',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.translationKey');
 
@@ -445,9 +449,7 @@ items:
     name: "<i18n:test.key>"
             `);
 
-            vi.mocked(mockDataStoreService.getTranslationKeysByName).mockRejectedValue(
-                new Error('Service error')
-            );
+            vi.mocked(mockDataStoreService.getTranslationKeysByName).mockRejectedValue(new Error('Service error'));
 
             await expect(provider.updateDiagnostics(document)).resolves.not.toThrow();
 

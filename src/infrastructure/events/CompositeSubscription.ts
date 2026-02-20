@@ -1,4 +1,4 @@
-import { IEventSubscription } from '../../core/interfaces/IEventBus';
+import { type IEventSubscription } from '../../core/interfaces/IEventBus';
 
 /**
  * 组合订阅管理器

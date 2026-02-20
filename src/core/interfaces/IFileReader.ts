@@ -1,4 +1,4 @@
-import { EditorUri } from '../types/EditorTypes';
+import { type EditorUri } from '../types/EditorTypes';
 
 /**
  * 文件类型枚举
@@ -11,7 +11,7 @@ export enum FileType {
     /** 目录 */
     Directory = 2,
     /** 符号链接 */
-    SymbolicLink = 64
+    SymbolicLink = 64,
 }
 
 /**

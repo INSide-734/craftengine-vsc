@@ -23,33 +23,28 @@
  * - model/models (字符串或列表): 简化模型引用
  */
 
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IMinecraftDataService } from '../../core/interfaces/IMinecraftDataService';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IMinecraftDataService } from '../../core/interfaces/IMinecraftDataService';
 import {
-    IDataConfigLoader,
-    IModelPropertiesConfig,
-    IModelPropertyDefinition
+    type IDataConfigLoader,
+    type IModelPropertiesConfig,
+    type IModelPropertyDefinition,
 } from '../../core/interfaces/IDataConfigLoader';
 import {
-    IModelGenerator,
-    IModelGenerationResult,
-    IMinecraftModelJson,
-    IDisplayTransform,
-    DisplayPosition,
-    IModelGenerationConfig,
-    IItemModel,
-    IModelGeneration,
+    type IModelGenerator,
+    type IModelGenerationResult,
+    type IMinecraftModelJson,
+    type IDisplayTransform,
+    type DisplayPosition,
+    type IModelGenerationConfig,
+    type IItemModel,
+    type IModelGeneration,
 } from '../../core/interfaces/IModelGenerator';
 import { ServiceNotInitializedError } from '../../core/errors/ExtensionErrors';
-import { createAsyncInitializer, AsyncInitializer } from '../../core/utils';
-import {
-    createItemModel,
-    normalizeModelPath,
-} from './model/ItemModel';
-import { SimplifiedModelReader } from './model/simplified/SimplifiedModelReader';
-import {
-    GeneratedModelReaderInstances,
-} from './model/simplified/GeneratedModelReader';
+import { createAsyncInitializer, type AsyncInitializer } from '../../core/utils';
+import { createItemModel, normalizeModelPath } from './model/ItemModel';
+import { type SimplifiedModelReader } from './model/simplified/SimplifiedModelReader';
+import { GeneratedModelReaderInstances } from './model/simplified/GeneratedModelReader';
 import { BowModelReaderInstance } from './model/simplified/BowModelReader';
 import { CrossbowModelReaderInstance } from './model/simplified/CrossbowModelReader';
 import { ConditionModelReaderInstances } from './model/simplified/ConditionModelReader';
@@ -330,10 +325,7 @@ export class ModelGenerationService implements IModelGenerator {
      * @param id - 物品 Key
      * @returns 转换后的完整模型配置，如果不适用则返回 undefined
      */
-    private processSimplifiedConfig(
-        config: ItemConfig,
-        id: Key
-    ): Record<string, unknown> | undefined {
+    private processSimplifiedConfig(config: ItemConfig, id: Key): Record<string, unknown> | undefined {
         // 如果 model 已经是完整的对象配置，直接返回
         if (config.model && typeof config.model === 'object' && !Array.isArray(config.model)) {
             const modelObj = config.model as Record<string, unknown>;
@@ -352,9 +344,7 @@ export class ModelGenerationService implements IModelGenerator {
         // 处理 texture/textures 配置
         const textureConfig = config.texture ?? config.textures;
         if (textureConfig) {
-            const textures = Array.isArray(textureConfig)
-                ? textureConfig
-                : [textureConfig];
+            const textures = Array.isArray(textureConfig) ? textureConfig : [textureConfig];
 
             if (textures.length > 0) {
                 // 获取可选的模型路径列表
@@ -414,7 +404,7 @@ export class ModelGenerationService implements IModelGenerator {
         if (this.minecraftDataService.isLoaded() && !this.minecraftDataService.isValidItem(material)) {
             this.logger.warn('Unknown material type, using default model reader', {
                 material,
-                validMaterials: 'use IMinecraftDataService.getItemNames() to get valid materials'
+                validMaterials: 'use IMinecraftDataService.getItemNames() to get valid materials',
             });
         }
 
@@ -539,7 +529,7 @@ export class ModelGenerationService implements IModelGenerator {
             if (this.minecraftDataService.isLoaded() && !this.minecraftDataService.isValidItem(material)) {
                 this.logger.warn('Invalid material for default model path', {
                     material: config.material,
-                    itemId: _itemId
+                    itemId: _itemId,
                 });
                 return undefined;
             }
@@ -553,17 +543,12 @@ export class ModelGenerationService implements IModelGenerator {
     /**
      * 生成自定义模型 JSON
      */
-    private generateCustomModelJson(
-        config: ItemConfig,
-        _itemId: string
-    ): IMinecraftModelJson | undefined {
+    private generateCustomModelJson(config: ItemConfig, _itemId: string): IMinecraftModelJson | undefined {
         // 检查是否有 generation 配置
         if (typeof config.model === 'object' && config.model !== null) {
             const modelConfig = config.model as Record<string, unknown>;
             if (modelConfig.generation) {
-                return this.buildModelFromGeneration(
-                    modelConfig.generation as IModelGenerationConfig
-                );
+                return this.buildModelFromGeneration(modelConfig.generation as IModelGenerationConfig);
             }
         }
 
@@ -582,14 +567,14 @@ export class ModelGenerationService implements IModelGenerator {
         if (gen.textures) {
             model.textures = gen.textures;
             this.logger.debug('Using explicit textures from generation config', {
-                textures: gen.textures
+                textures: gen.textures,
             });
         } else if (gen.parent) {
             // 如果没有显式指定纹理，尝试从 parent 路径推断
             const inferredTextures = this.inferTexturesFromParent(gen.parent);
             this.logger.debug('Inferring textures from parent', {
                 parent: gen.parent,
-                inferredTextures
+                inferredTextures,
             });
             if (inferredTextures) {
                 model.textures = inferredTextures;
@@ -658,7 +643,7 @@ export class ModelGenerationService implements IModelGenerator {
      * 构建显示位置配置
      */
     private buildDisplayConfig(
-        display: Partial<Record<DisplayPosition, IDisplayTransform>>
+        display: Partial<Record<DisplayPosition, IDisplayTransform>>,
     ): IMinecraftModelJson['display'] {
         const result: Record<string, IDisplayTransform> = {};
 

@@ -1,10 +1,10 @@
-import { EditorUri } from '../../../core/types/EditorTypes';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IFileReader } from '../../../core/interfaces/IFileReader';
-import { IYamlScanner, IYamlScanResult, IYamlScanOptions } from '../../../core/interfaces/IYamlScanner';
-import { IYamlParser } from '../../../core/interfaces/IYamlParser';
-import { IBuiltinItemLoader } from '../../../core/interfaces/IItemId';
-import { IEventBus } from '../../../core/interfaces/IEventBus';
+import { type EditorUri } from '../../../core/types/EditorTypes';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IFileReader } from '../../../core/interfaces/IFileReader';
+import { type IYamlScanner, type IYamlScanResult, type IYamlScanOptions } from '../../../core/interfaces/IYamlScanner';
+import { type IYamlParser } from '../../../core/interfaces/IYamlParser';
+import { type IBuiltinItemLoader } from '../../../core/interfaces/IItemId';
+import { type IEventBus } from '../../../core/interfaces/IEventBus';
 import { TemplateStore } from './TemplateStore';
 import { TranslationStore } from './TranslationStore';
 import { TranslationReferenceStore } from './TranslationReferenceStore';
@@ -73,12 +73,14 @@ export class FileIndexingOrchestrator {
             batchSize?: number;
             lockCleanupIntervalMs?: number;
             lockExpiryMs?: number;
-        }
+        },
     ) {
         this.maxRetries = fileIndexingConfig?.maxRetries ?? FileIndexingOrchestrator.DEFAULT_MAX_RETRIES;
-        this.retryBaseDelayMs = fileIndexingConfig?.retryBaseDelayMs ?? FileIndexingOrchestrator.DEFAULT_RETRY_BASE_DELAY_MS;
+        this.retryBaseDelayMs =
+            fileIndexingConfig?.retryBaseDelayMs ?? FileIndexingOrchestrator.DEFAULT_RETRY_BASE_DELAY_MS;
         this.batchSize = fileIndexingConfig?.batchSize ?? FileIndexingOrchestrator.DEFAULT_BATCH_SIZE;
-        this.lockCleanupIntervalMs = fileIndexingConfig?.lockCleanupIntervalMs ?? FileIndexingOrchestrator.DEFAULT_LOCK_CLEANUP_INTERVAL_MS;
+        this.lockCleanupIntervalMs =
+            fileIndexingConfig?.lockCleanupIntervalMs ?? FileIndexingOrchestrator.DEFAULT_LOCK_CLEANUP_INTERVAL_MS;
         this.lockExpiryMs = fileIndexingConfig?.lockExpiryMs ?? FileIndexingOrchestrator.DEFAULT_LOCK_EXPIRY_MS;
         this.templateStore = new TemplateStore(logger, eventBus);
         this.translationStore = new TranslationStore(logger, eventBus);
@@ -86,9 +88,13 @@ export class FileIndexingOrchestrator {
         this.itemStore = new ItemStore(logger, builtinItemLoader, eventBus);
         this.categoryStore = new CategoryStore(logger, eventBus);
         this.documentProcessor = new DocumentProcessor(
-            logger, this.templateStore, this.translationStore,
-            this.itemStore, this.categoryStore, new TemplateParserService(logger),
-            this.translationReferenceStore
+            logger,
+            this.templateStore,
+            this.translationStore,
+            this.itemStore,
+            this.categoryStore,
+            new TemplateParserService(logger),
+            this.translationReferenceStore,
         );
 
         // 启动文件锁定期清理
@@ -226,7 +232,7 @@ export class FileIndexingOrchestrator {
                 this.itemStore.clear();
                 await this.categoryStore.clearCategories();
 
-                await new Promise(resolve => setTimeout(resolve, delay));
+                await new Promise((resolve) => setTimeout(resolve, delay));
             }
 
             try {
@@ -237,7 +243,7 @@ export class FileIndexingOrchestrator {
                 this.logger.warn('Data store initialization attempt failed', {
                     attempt: attempt + 1,
                     maxAttempts: this.maxRetries + 1,
-                    error: lastError.message
+                    error: lastError.message,
                 });
             }
         }
@@ -261,11 +267,11 @@ export class FileIndexingOrchestrator {
         const [scanResult] = await Promise.all([
             this.getScanResult(),
             // 提前开始加载 Minecraft 内置物品（不等待扫描完成）
-            this.itemStore.loadMinecraftBuiltinItems().catch(error => {
+            this.itemStore.loadMinecraftBuiltinItems().catch((error) => {
                 this.logger.warn('Failed to load Minecraft builtin items', {
-                    error: error instanceof Error ? error.message : String(error)
+                    error: error instanceof Error ? error.message : String(error),
                 });
-            })
+            }),
         ]);
 
         // 批量并行处理文档
@@ -274,16 +280,18 @@ export class FileIndexingOrchestrator {
             const batch = documents.slice(i, i + this.batchSize);
 
             // 并行处理当前批次
-            await Promise.all(batch.map(async (document) => {
-                try {
-                    await this.documentProcessor.processDocument(document.sourceFile, document.content);
-                } catch (error) {
-                    this.logger.warn('Failed to process document', {
-                        file: document.sourceFile.fsPath,
-                        error: error instanceof Error ? error.message : String(error)
-                    });
-                }
-            }));
+            await Promise.all(
+                batch.map(async (document) => {
+                    try {
+                        await this.documentProcessor.processDocument(document.sourceFile, document.content);
+                    } catch (error) {
+                        this.logger.warn('Failed to process document', {
+                            file: document.sourceFile.fsPath,
+                            error: error instanceof Error ? error.message : String(error),
+                        });
+                    }
+                }),
+            );
         }
 
         this.initialized = true;
@@ -297,7 +305,7 @@ export class FileIndexingOrchestrator {
             languageCount: this.translationStore.getLanguageCount(),
             namespaceCount: this.itemStore.getNamespaceCount(),
             builtinItemsLoaded: this.itemStore.isBuiltinItemsLoaded(),
-            duration: `${(performance.now() - startTime).toFixed(2)}ms`
+            duration: `${(performance.now() - startTime).toFixed(2)}ms`,
         });
     }
 
@@ -349,7 +357,7 @@ export class FileIndexingOrchestrator {
         } catch (error) {
             this.logger.warn('Failed to process file change', {
                 file: fileUri.fsPath,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             });
         }
     }

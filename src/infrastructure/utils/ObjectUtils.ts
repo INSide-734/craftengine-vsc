@@ -25,7 +25,7 @@
 export function getNestedValue<T = unknown>(
     obj: Record<string, unknown>,
     path: string,
-    defaultValue?: T
+    defaultValue?: T,
 ): T | undefined {
     const keys = path.split('.');
     let current: unknown = obj;
@@ -59,11 +59,7 @@ export function getNestedValue<T = unknown>(
  * // obj = { a: { b: { c: 1 } } }
  * ```
  */
-export function setNestedValue(
-    obj: Record<string, unknown>,
-    path: string,
-    value: unknown
-): void {
+export function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
     const keys = path.split('.');
     const lastKey = keys.pop()!;
     let current = obj;
@@ -94,24 +90,29 @@ export function setNestedValue(
  * // obj = { a: { b: {} } }
  * ```
  */
-export function deleteNestedValue(
-    obj: Record<string, unknown>,
-    path: string
-): boolean {
+export function deleteNestedValue(obj: Record<string, unknown>, path: string): boolean {
     const keys = path.split('.');
     const lastKey = keys.pop()!;
     let current: unknown = obj;
 
     for (const key of keys) {
-        if (current === null || current === undefined ||
-            typeof current !== 'object' || !(key in (current as Record<string, unknown>))) {
+        if (
+            current === null ||
+            current === undefined ||
+            typeof current !== 'object' ||
+            !(key in (current as Record<string, unknown>))
+        ) {
             return false;
         }
         current = (current as Record<string, unknown>)[key];
     }
 
-    if (current !== null && current !== undefined &&
-        typeof current === 'object' && lastKey in (current as Record<string, unknown>)) {
+    if (
+        current !== null &&
+        current !== undefined &&
+        typeof current === 'object' &&
+        lastKey in (current as Record<string, unknown>)
+    ) {
         delete (current as Record<string, unknown>)[lastKey];
         return true;
     }
@@ -138,8 +139,12 @@ export function hasNestedPath(obj: Record<string, unknown>, path: string): boole
     let current: unknown = obj;
 
     for (const key of keys) {
-        if (current === null || current === undefined ||
-            typeof current !== 'object' || !(key in (current as Record<string, unknown>))) {
+        if (
+            current === null ||
+            current === undefined ||
+            typeof current !== 'object' ||
+            !(key in (current as Record<string, unknown>))
+        ) {
             return false;
         }
         current = (current as Record<string, unknown>)[key];
@@ -197,10 +202,7 @@ export function deepClone<T>(obj: T): T {
  * // { a: { b: 3, c: 2, d: 4 } }
  * ```
  */
-export function deepMerge<T extends Record<string, unknown>>(
-    target: T,
-    ...sources: Partial<T>[]
-): T {
+export function deepMerge<T extends Record<string, unknown>>(target: T, ...sources: Partial<T>[]): T {
     if (!sources.length) {
         return deepClone(target);
     }
@@ -219,7 +221,7 @@ export function deepMerge<T extends Record<string, unknown>>(
             if (isPlainObject(sourceValue) && isPlainObject(targetValue)) {
                 (result as Record<string, unknown>)[key] = deepMerge(
                     targetValue as Record<string, unknown>,
-                    sourceValue as Record<string, unknown>
+                    sourceValue as Record<string, unknown>,
                 );
             } else {
                 (result as Record<string, unknown>)[key] = deepClone(sourceValue);
@@ -268,10 +270,7 @@ export function isPlainObject(value: unknown): value is Record<string, unknown> 
  * pick(obj, ['a', 'c']); // { a: 1, c: 3 }
  * ```
  */
-export function pick<T extends Record<string, unknown>, K extends keyof T>(
-    obj: T,
-    keys: K[]
-): Pick<T, K> {
+export function pick<T extends Record<string, unknown>, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
     const result = {} as Pick<T, K>;
     for (const key of keys) {
         if (key in obj) {
@@ -296,10 +295,7 @@ export function pick<T extends Record<string, unknown>, K extends keyof T>(
  * omit(obj, ['b']); // { a: 1, c: 3 }
  * ```
  */
-export function omit<T extends Record<string, unknown>, K extends keyof T>(
-    obj: T,
-    keys: K[]
-): Omit<T, K> {
+export function omit<T extends Record<string, unknown>, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
     const result = { ...obj };
     for (const key of keys) {
         delete result[key];
@@ -342,10 +338,7 @@ export function isEmpty(obj: Record<string, unknown> | null | undefined): boolea
  * getAllPaths(obj); // ['a.b', 'a.c.d', 'e']
  * ```
  */
-export function getAllPaths(
-    obj: Record<string, unknown>,
-    prefix: string = ''
-): string[] {
+export function getAllPaths(obj: Record<string, unknown>, prefix: string = ''): string[] {
     const paths: string[] = [];
 
     for (const key of Object.keys(obj)) {
@@ -397,10 +390,7 @@ export function unflatten(obj: Record<string, unknown>): Record<string, unknown>
  * flatten(nested); // { 'a.b.c': 1, 'a.d': 2 }
  * ```
  */
-export function flatten(
-    obj: Record<string, unknown>,
-    prefix: string = ''
-): Record<string, unknown> {
+export function flatten(obj: Record<string, unknown>, prefix: string = ''): Record<string, unknown> {
     const result: Record<string, unknown> = {};
 
     for (const key of Object.keys(obj)) {

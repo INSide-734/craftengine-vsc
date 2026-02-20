@@ -4,9 +4,9 @@
  * 移植自 craft-engine 的 Holder.Reference
  */
 
-import { Key } from '../utils/Key';
-import { ResourceKey } from './ResourceKey';
-import { Holder, HolderKind, HolderOwner } from './Holder';
+import { type Key } from '../utils/Key';
+import { type ResourceKey } from './ResourceKey';
+import { type Holder, HolderKind, type HolderOwner } from './Holder';
 
 /**
  * 持有者引用
@@ -16,11 +16,7 @@ export class HolderReference<T> implements Holder<T> {
     private _key: ResourceKey<T> | undefined;
     private _value: T | undefined;
 
-    constructor(
-        owner: HolderOwner<T>,
-        key?: ResourceKey<T>,
-        value?: T
-    ) {
+    constructor(owner: HolderOwner<T>, key?: ResourceKey<T>, value?: T) {
         this.owner = owner;
         this._key = key;
         this._value = value;
@@ -36,11 +32,7 @@ export class HolderReference<T> implements Holder<T> {
     /**
      * 创建常量持有者引用
      */
-    static createConstant<T>(
-        owner: HolderOwner<T>,
-        registryKey: ResourceKey<T>,
-        value: T
-    ): HolderReference<T> {
+    static createConstant<T>(owner: HolderOwner<T>, registryKey: ResourceKey<T>, value: T): HolderReference<T> {
         return new ConstantHolderReference<T>(owner, registryKey, value);
     }
 
@@ -90,9 +82,7 @@ export class HolderReference<T> implements Holder<T> {
      */
     bindKey(registryKey: ResourceKey<T>): void {
         if (this._key !== undefined && !registryKey.equals(this._key)) {
-            throw new Error(
-                `Can't change holder key: existing=${this._key}, new=${registryKey}`
-            );
+            throw new Error(`Can't change holder key: existing=${this._key}, new=${registryKey}`);
         }
         this._key = registryKey;
     }

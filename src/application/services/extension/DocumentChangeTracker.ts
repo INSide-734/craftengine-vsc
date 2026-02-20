@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 
 /**
  * 文档变更追踪信息
@@ -37,7 +37,7 @@ export class DocumentChangeTracker {
             changeInfo = {
                 changedLines: new Set<number>(),
                 timestamp: Date.now(),
-                version: event.document.version
+                version: event.document.version,
             };
         } else {
             changeInfo.version = event.document.version;

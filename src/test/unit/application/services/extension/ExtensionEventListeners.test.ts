@@ -8,9 +8,9 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ExtensionEventListeners } from '../../../../../application/services/extension/ExtensionEventListeners';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../../../core/interfaces/IEventBus';
-import { ExtensionStatistics } from '../../../../../application/services/extension/ExtensionStatistics';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../../../core/interfaces/IEventBus';
+import { type ExtensionStatistics } from '../../../../../application/services/extension/ExtensionStatistics';
 import { EVENT_TYPES } from '../../../../../core/constants/ServiceTokens';
 
 describe('ExtensionEventListeners', () => {
@@ -50,11 +50,7 @@ describe('ExtensionEventListeners', () => {
             incrementProcessedDocuments: vi.fn(),
         } as unknown as ExtensionStatistics;
 
-        listeners = new ExtensionEventListeners(
-            mockLogger,
-            mockEventBus,
-            mockStatistics
-        );
+        listeners = new ExtensionEventListeners(mockLogger, mockEventBus, mockStatistics);
     });
 
     // ========================================
@@ -76,50 +72,35 @@ describe('ExtensionEventListeners', () => {
 
         it('should subscribe to performance metric events', () => {
             listeners.setup();
-            expect(mockEventBus.subscribe).toHaveBeenCalledWith(
-                EVENT_TYPES.PerformanceMetric,
-                expect.any(Function)
-            );
+            expect(mockEventBus.subscribe).toHaveBeenCalledWith(EVENT_TYPES.PerformanceMetric, expect.any(Function));
         });
 
         it('should subscribe to template wildcard events', () => {
             listeners.setup();
-            expect(mockEventBus.subscribe).toHaveBeenCalledWith(
-                'template.*',
-                expect.any(Function)
-            );
+            expect(mockEventBus.subscribe).toHaveBeenCalledWith('template.*', expect.any(Function));
         });
 
         it('should subscribe to completion.provided events', () => {
             listeners.setup();
-            expect(mockEventBus.subscribe).toHaveBeenCalledWith(
-                'completion.provided',
-                expect.any(Function)
-            );
+            expect(mockEventBus.subscribe).toHaveBeenCalledWith('completion.provided', expect.any(Function));
         });
 
         it('should subscribe to document.processed events', () => {
             listeners.setup();
-            expect(mockEventBus.subscribe).toHaveBeenCalledWith(
-                'document.processed',
-                expect.any(Function)
-            );
+            expect(mockEventBus.subscribe).toHaveBeenCalledWith('document.processed', expect.any(Function));
         });
 
         it('should subscribe to extension.configuration.changed events', () => {
             listeners.setup();
             expect(mockEventBus.subscribe).toHaveBeenCalledWith(
                 'extension.configuration.changed',
-                expect.any(Function)
+                expect.any(Function),
             );
         });
 
         it('should subscribe to file.created events', () => {
             listeners.setup();
-            expect(mockEventBus.subscribe).toHaveBeenCalledWith(
-                'file.created',
-                expect.any(Function)
-            );
+            expect(mockEventBus.subscribe).toHaveBeenCalledWith('file.created', expect.any(Function));
         });
     });
 
@@ -163,7 +144,7 @@ describe('ExtensionEventListeners', () => {
                     metric: 'completion.time',
                     value: 50,
                     unit: 'ms',
-                })
+                }),
             );
         });
 
@@ -183,7 +164,7 @@ describe('ExtensionEventListeners', () => {
                     key: 'diagnostics.enabled',
                     oldValue: true,
                     newValue: false,
-                })
+                }),
             );
         });
 
@@ -196,9 +177,7 @@ describe('ExtensionEventListeners', () => {
                 newValue: 'error',
             });
 
-            expect(mockLogger.debug).toHaveBeenCalledWith(
-                'Diagnostics configuration changed, may need to refresh'
-            );
+            expect(mockLogger.debug).toHaveBeenCalledWith('Diagnostics configuration changed, may need to refresh');
         });
 
         it('should log completion config change debug message', () => {
@@ -210,9 +189,7 @@ describe('ExtensionEventListeners', () => {
                 newValue: 100,
             });
 
-            expect(mockLogger.debug).toHaveBeenCalledWith(
-                'Completion configuration changed'
-            );
+            expect(mockLogger.debug).toHaveBeenCalledWith('Completion configuration changed');
         });
 
         it('should log template events', () => {
@@ -225,7 +202,7 @@ describe('ExtensionEventListeners', () => {
                 'Template event received',
                 expect.objectContaining({
                     eventType: 'template.created',
-                })
+                }),
             );
         });
     });

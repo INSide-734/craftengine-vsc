@@ -19,11 +19,7 @@ describe('SimplifiedModelReader', () => {
 
         describe('convertFromTextures', () => {
             it('should convert single texture to model', () => {
-                const result = reader.convertFromTextures(
-                    ['custom:item/my_texture'],
-                    [],
-                    id
-                );
+                const result = reader.convertFromTextures(['custom:item/my_texture'], [], id);
 
                 expect(result).not.toBeNull();
                 expect(result.type).toBe('model');
@@ -31,31 +27,19 @@ describe('SimplifiedModelReader', () => {
             });
 
             it('should use auto model path when no paths provided', () => {
-                const result = reader.convertFromTextures(
-                    ['texture1'],
-                    [],
-                    id
-                );
+                const result = reader.convertFromTextures(['texture1'], [], id);
 
                 expect(result.path).toBe('custom:item/my_item');
             });
 
             it('should use provided model path when specified', () => {
-                const result = reader.convertFromTextures(
-                    ['texture1'],
-                    ['custom:path/to/model'],
-                    id
-                );
+                const result = reader.convertFromTextures(['texture1'], ['custom:path/to/model'], id);
 
                 expect(result.path).toBe('custom:path/to/model');
             });
 
             it('should convert 2 textures to layers', () => {
-                const result = reader.convertFromTextures(
-                    ['texture1', 'texture2'],
-                    [],
-                    id
-                );
+                const result = reader.convertFromTextures(['texture1', 'texture2'], [], id);
 
                 const generation = result.generation as Record<string, unknown>;
                 const textures = generation.textures as Record<string, string>;
@@ -64,11 +48,7 @@ describe('SimplifiedModelReader', () => {
             });
 
             it('should convert multiple textures to layers', () => {
-                const result = reader.convertFromTextures(
-                    ['texture1', 'texture2', 'texture3'],
-                    [],
-                    id
-                );
+                const result = reader.convertFromTextures(['texture1', 'texture2', 'texture3'], [], id);
 
                 const generation = result.generation as Record<string, unknown>;
                 const textures = generation.textures as Record<string, string>;
@@ -78,11 +58,7 @@ describe('SimplifiedModelReader', () => {
             });
 
             it('should use generated parent model', () => {
-                const result = reader.convertFromTextures(
-                    ['texture1'],
-                    [],
-                    id
-                );
+                const result = reader.convertFromTextures(['texture1'], [], id);
 
                 const generation = result.generation as Record<string, unknown>;
                 expect(generation.parent).toBe('item/generated');
@@ -90,11 +66,7 @@ describe('SimplifiedModelReader', () => {
 
             it('should throw error when more than 1 model path provided', () => {
                 expect(() => {
-                    reader.convertFromTextures(
-                        ['texture1'],
-                        ['path1', 'path2'],
-                        id
-                    );
+                    reader.convertFromTextures(['texture1'], ['path1', 'path2'], id);
                 }).toThrow(SimplifiedModelConfigError);
             });
         });
@@ -108,17 +80,11 @@ describe('SimplifiedModelReader', () => {
             });
 
             it('should return composite for multiple models', () => {
-                const result = reader.convertFromModels([
-                    'custom:item/model1',
-                    'custom:item/model2',
-                ]);
+                const result = reader.convertFromModels(['custom:item/model1', 'custom:item/model2']);
 
                 expect(result).not.toBeNull();
                 expect(result!.type).toBe('composite');
-                expect(result!.models).toEqual([
-                    'custom:item/model1',
-                    'custom:item/model2',
-                ]);
+                expect(result!.models).toEqual(['custom:item/model1', 'custom:item/model2']);
             });
         });
     });
@@ -128,11 +94,7 @@ describe('SimplifiedModelReader', () => {
         const id = Key.of('custom:my_sword');
 
         it('should use handheld parent model', () => {
-            const result = reader.convertFromTextures(
-                ['texture1'],
-                [],
-                id
-            );
+            const result = reader.convertFromTextures(['texture1'], [], id);
 
             const generation = result.generation as Record<string, unknown>;
             expect(generation.parent).toBe('item/handheld');
@@ -155,11 +117,7 @@ describe('SimplifiedModelReader', () => {
             });
 
             it('should generate condition model for bow', () => {
-                const result = reader.convertFromTextures(
-                    ['t0', 't1', 't2', 't3'],
-                    [],
-                    id
-                );
+                const result = reader.convertFromTextures(['t0', 't1', 't2', 't3'], [], id);
 
                 expect(result).not.toBeNull();
                 expect(result.type).toBe('condition');

@@ -7,5 +7,5 @@ export {
     SCHEMA_METADATA,
     SCHEMA_RESOLUTION,
     SCHEMA_CACHE,
-    VERSION_CONDITION
+    VERSION_CONDITION,
 } from '../../../core/constants/SchemaConstants';

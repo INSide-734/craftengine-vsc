@@ -1,19 +1,22 @@
 import {
-    HoverProvider,
-    TextDocument,
-    Position,
+    type HoverProvider,
+    type TextDocument,
+    type Position,
     Hover,
     MarkdownString,
     Range,
-    CancellationToken
+    type CancellationToken,
 } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { ITemplateService } from '../../core/interfaces/ITemplateService';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IConfiguration } from '../../core/interfaces/IConfiguration';
+import { type ITemplateService } from '../../core/interfaces/ITemplateService';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../core/interfaces/IConfiguration';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
-import { IExtendedParameterTypeDefinition, IExtendedTypeService } from '../../core/interfaces/IExtendedParameterType';
-import { IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
+import {
+    type IExtendedParameterTypeDefinition,
+    type IExtendedTypeService,
+} from '../../core/interfaces/IExtendedParameterType';
+import { type IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
 import { YamlHelper } from '../../infrastructure/yaml/YamlHelper';
 import { buildTemplateMarkdown } from './helpers/TemplateDocumentationBuilder';
 
@@ -35,13 +38,15 @@ export class TemplateHoverProvider implements HoverProvider {
         this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild('HoverProvider');
         this.configuration = ServiceContainer.getService<IConfiguration>(SERVICE_TOKENS.Configuration);
         this.performanceMonitor = ServiceContainer.getService<IPerformanceMonitor>(SERVICE_TOKENS.PerformanceMonitor);
-        this.extendedTypeService = ServiceContainer.getService<IExtendedTypeService>(SERVICE_TOKENS.ExtendedTypeService);
+        this.extendedTypeService = ServiceContainer.getService<IExtendedTypeService>(
+            SERVICE_TOKENS.ExtendedTypeService,
+        );
     }
 
     async provideHover(
         document: TextDocument,
         position: Position,
-        token?: CancellationToken
+        token?: CancellationToken,
     ): Promise<Hover | undefined> {
         const timer = this.performanceMonitor.startTimer('hover.provide');
 
@@ -64,7 +69,7 @@ export class TemplateHoverProvider implements HoverProvider {
             const searchResults = await this.templateService.searchTemplates({
                 prefix: templateInfo.name,
                 limit: 1,
-                fuzzy: false
+                fuzzy: false,
             });
 
             if (searchResults.length === 0) {
@@ -76,7 +81,7 @@ export class TemplateHoverProvider implements HoverProvider {
                 document,
                 position,
                 lineText: document.lineAt(position).text,
-                indentLevel: this.getIndentLevel(document.lineAt(position).text)
+                indentLevel: this.getIndentLevel(document.lineAt(position).text),
             });
 
             if (!isAvailable) {
@@ -148,11 +153,11 @@ export class TemplateHoverProvider implements HoverProvider {
         md.appendMarkdown('### 📋 Properties\n\n');
         md.appendMarkdown('| Property | Status |\n|:---------|:------:|\n');
 
-        typeInfo.requiredProperties.forEach(prop => {
+        typeInfo.requiredProperties.forEach((prop) => {
             md.appendMarkdown(`| \`${prop}\` | 🔴 Required |\n`);
         });
 
-        typeInfo.optionalProperties.forEach(prop => {
+        typeInfo.optionalProperties.forEach((prop) => {
             md.appendMarkdown(`| \`${prop}\` | 🟡 Optional |\n`);
         });
 
@@ -171,7 +176,10 @@ export class TemplateHoverProvider implements HoverProvider {
         return md;
     }
 
-    private getTemplateNameAtPosition(document: TextDocument, position: Position): { name: string; range: Range } | undefined {
+    private getTemplateNameAtPosition(
+        document: TextDocument,
+        position: Position,
+    ): { name: string; range: Range } | undefined {
         const lineText = document.lineAt(position).text;
 
         if (YamlHelper.isInComment(lineText, position.character)) {
@@ -194,7 +202,7 @@ export class TemplateHoverProvider implements HoverProvider {
             if (position.character >= startPos && position.character <= endPos) {
                 return {
                     name: templateName,
-                    range: new Range(position.line, startPos, position.line, endPos)
+                    range: new Range(position.line, startPos, position.line, endPos),
                 };
             }
         }
@@ -212,7 +220,7 @@ export class TemplateHoverProvider implements HoverProvider {
                 if (this.isInTemplateArray(document, position.line)) {
                     return {
                         name: templateName,
-                        range: new Range(position.line, startPos, position.line, endPos)
+                        range: new Range(position.line, startPos, position.line, endPos),
                     };
                 }
             }

@@ -5,10 +5,7 @@
  */
 
 import { MinecraftVersion, MinecraftVersions } from './MinecraftVersion';
-import {
-    IRevision,
-    IMinecraftVersionInfo,
-} from '../../../../core/interfaces/IModelGenerator';
+import { type IRevision, type IMinecraftVersionInfo } from '../../../../core/interfaces/IModelGenerator';
 
 /**
  * 未来版本常量
@@ -86,7 +83,9 @@ export class SinceRevision implements Revision {
     }
 
     equals(other: Revision | null | undefined): boolean {
-        if (!other || !(other instanceof SinceRevision)) {return false;}
+        if (!other || !(other instanceof SinceRevision)) {
+            return false;
+        }
         return this._minVersion.equals(other._minVersion);
     }
 
@@ -151,9 +150,10 @@ export class FromToRevision implements Revision {
     }
 
     equals(other: Revision | null | undefined): boolean {
-        if (!other || !(other instanceof FromToRevision)) {return false;}
-        return this._minVersion.equals(other._minVersion) &&
-               this._maxVersion.equals(other._maxVersion);
+        if (!other || !(other instanceof FromToRevision)) {
+            return false;
+        }
+        return this._minVersion.equals(other._minVersion) && this._maxVersion.equals(other._maxVersion);
     }
 
     hashCode(): number {

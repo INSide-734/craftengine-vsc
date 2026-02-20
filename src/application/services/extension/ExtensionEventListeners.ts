@@ -1,7 +1,7 @@
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IEventBus, IEventSubscription } from '../../../core/interfaces/IEventBus';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IEventBus, type IEventSubscription } from '../../../core/interfaces/IEventBus';
 import { EVENT_TYPES } from '../../../core/constants/ServiceTokens';
-import { ExtensionStatistics } from './ExtensionStatistics';
+import { type ExtensionStatistics } from './ExtensionStatistics';
 
 /**
  * 扩展事件监听器管理器
@@ -19,7 +19,7 @@ export class ExtensionEventListeners {
     constructor(
         private readonly logger: ILogger,
         private readonly eventBus: IEventBus,
-        private readonly statistics: ExtensionStatistics
+        private readonly statistics: ExtensionStatistics,
     ) {}
 
     /**
@@ -51,13 +51,16 @@ export class ExtensionEventListeners {
      * 设置性能指标事件监听器
      */
     private setupPerformanceMetricListener(): void {
-        const sub = this.eventBus.subscribe<{ metric: string; value: number; unit: string }>(EVENT_TYPES.PerformanceMetric, (event) => {
-            this.logger.debug('Performance metric recorded', {
-                metric: event.metric,
-                value: event.value,
-                unit: event.unit
-            });
-        });
+        const sub = this.eventBus.subscribe<{ metric: string; value: number; unit: string }>(
+            EVENT_TYPES.PerformanceMetric,
+            (event) => {
+                this.logger.debug('Performance metric recorded', {
+                    metric: event.metric,
+                    value: event.value,
+                    unit: event.unit,
+                });
+            },
+        );
         this.subscriptions.push(sub);
     }
 
@@ -68,7 +71,7 @@ export class ExtensionEventListeners {
         const sub = this.eventBus.subscribe<{ type: string; timestamp: Date }>('template.*', (event) => {
             this.logger.debug('Template event received', {
                 eventType: event.type,
-                timestamp: event.timestamp.toISOString()
+                timestamp: event.timestamp.toISOString(),
             });
         });
         this.subscriptions.push(sub);
@@ -81,7 +84,7 @@ export class ExtensionEventListeners {
         const sub = this.eventBus.subscribe<{ itemCount: number }>('completion.provided', (event) => {
             this.statistics.incrementCompletionsProvided();
             this.logger.debug('Completion provided event', {
-                itemCount: event.itemCount
+                itemCount: event.itemCount,
             });
         });
         this.subscriptions.push(sub);
@@ -94,7 +97,7 @@ export class ExtensionEventListeners {
         const sub = this.eventBus.subscribe<{ uri: string }>('document.processed', (event) => {
             this.statistics.incrementProcessedDocuments();
             this.logger.debug('Document processed event', {
-                documentUri: event.uri
+                documentUri: event.uri,
             });
         });
         this.subscriptions.push(sub);
@@ -104,20 +107,23 @@ export class ExtensionEventListeners {
      * 设置配置变更事件监听器
      */
     private setupConfigurationChangeListener(): void {
-        const sub = this.eventBus.subscribe<{ key: string; oldValue: unknown; newValue: unknown }>('extension.configuration.changed', (event) => {
-            this.logger.info('Configuration changed', {
-                key: event.key,
-                oldValue: event.oldValue,
-                newValue: event.newValue
-            });
+        const sub = this.eventBus.subscribe<{ key: string; oldValue: unknown; newValue: unknown }>(
+            'extension.configuration.changed',
+            (event) => {
+                this.logger.info('Configuration changed', {
+                    key: event.key,
+                    oldValue: event.oldValue,
+                    newValue: event.newValue,
+                });
 
-            // 根据配置类型记录调试信息
-            if (event.key?.startsWith('diagnostics.')) {
-                this.logger.debug('Diagnostics configuration changed, may need to refresh');
-            } else if (event.key?.startsWith('completion.')) {
-                this.logger.debug('Completion configuration changed');
-            }
-        });
+                // 根据配置类型记录调试信息
+                if (event.key?.startsWith('diagnostics.')) {
+                    this.logger.debug('Diagnostics configuration changed, may need to refresh');
+                } else if (event.key?.startsWith('completion.')) {
+                    this.logger.debug('Completion configuration changed');
+                }
+            },
+        );
         this.subscriptions.push(sub);
     }
 
@@ -128,10 +134,9 @@ export class ExtensionEventListeners {
         const sub = this.eventBus.subscribe<{ type: string; uri?: { fsPath: string } }>('file.created', (event) => {
             this.logger.debug('File system event', {
                 eventType: event.type,
-                file: event.uri?.fsPath
+                file: event.uri?.fsPath,
             });
         });
         this.subscriptions.push(sub);
     }
 }
-

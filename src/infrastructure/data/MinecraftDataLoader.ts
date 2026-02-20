@@ -1,6 +1,6 @@
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
-import { IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IMinecraftVersionService } from '../../core/interfaces/IMinecraftVersionService';
+import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { ServiceContainer } from '../ServiceContainer';
 import { HttpUtils } from '../utils/HttpUtils';
@@ -170,14 +170,11 @@ export class MinecraftDataLoader {
     private readonly minecraftAssetsMirrorUrls: string[];
 
     constructor() {
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild('MinecraftDataLoader');
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild('MinecraftDataLoader');
         this.versionService = ServiceContainer.getService<IMinecraftVersionService>(
-            SERVICE_TOKENS.MinecraftVersionService
+            SERVICE_TOKENS.MinecraftVersionService,
         );
-        this.configLoader = ServiceContainer.getService<IDataConfigLoader>(
-            SERVICE_TOKENS.DataConfigLoader
-        );
+        this.configLoader = ServiceContainer.getService<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
 
         // 从预加载的配置中获取值
         const timingConfig = this.configLoader.getTimingConfigSync();
@@ -202,7 +199,7 @@ export class MinecraftDataLoader {
         this.logger.debug('MinecraftDataLoader initialized', {
             requestTimeout: this.requestTimeout,
             prismarineBaseUrl: this.prismarineBaseUrl,
-            minecraftAssetsBaseUrl: this.minecraftAssetsBaseUrl
+            minecraftAssetsBaseUrl: this.minecraftAssetsBaseUrl,
         });
     }
 
@@ -285,7 +282,11 @@ export class MinecraftDataLoader {
     async loadSounds(version: string): Promise<string[]> {
         try {
             const urls = this.buildSoundUrls(version);
-            const data = await HttpUtils.fetchFromMultipleSources<Record<string, unknown>>(urls, this.requestTimeout, this.logger);
+            const data = await HttpUtils.fetchFromMultipleSources<Record<string, unknown>>(
+                urls,
+                this.requestTimeout,
+                this.logger,
+            );
 
             if (!data) {
                 this.logger.warn('Failed to load sounds data', { version });
@@ -296,7 +297,7 @@ export class MinecraftDataLoader {
             const soundNames = Object.keys(data);
             this.logger.info('Sounds loaded successfully', {
                 version,
-                count: soundNames.length
+                count: soundNames.length,
             });
 
             return soundNames;
@@ -354,7 +355,11 @@ export class MinecraftDataLoader {
         try {
             // 加载标签列表
             const listUrl = this.buildTagListUrl(version, tagType);
-            const tagList = await HttpUtils.fetchFromMultipleSources<string[]>([listUrl], this.requestTimeout, this.logger);
+            const tagList = await HttpUtils.fetchFromMultipleSources<string[]>(
+                [listUrl],
+                this.requestTimeout,
+                this.logger,
+            );
 
             if (!tagList || tagList.length === 0) {
                 this.logger.warn('Failed to load tag list or empty', { version, tagType });
@@ -368,11 +373,15 @@ export class MinecraftDataLoader {
                 const promises = batch.map(async (tagFileName) => {
                     const tagName = tagFileName.replace('.json', '');
                     const tagUrl = this.buildTagContentUrl(version, tagType, tagFileName);
-                    const tagData = await HttpUtils.fetchFromMultipleSources<TagData>([tagUrl], this.requestTimeout, this.logger);
+                    const tagData = await HttpUtils.fetchFromMultipleSources<TagData>(
+                        [tagUrl],
+                        this.requestTimeout,
+                        this.logger,
+                    );
 
                     if (tagData && tagData.values) {
                         // 规范化值（移除命名空间或 # 前缀）
-                        const normalizedValues = tagData.values.map(v => {
+                        const normalizedValues = tagData.values.map((v) => {
                             // 处理嵌套标签引用（以 # 开头）
                             if (v.startsWith('#')) {
                                 return v; // 保留标签引用
@@ -390,7 +399,7 @@ export class MinecraftDataLoader {
             this.logger.info('Tags loaded successfully', {
                 version,
                 tagType,
-                count: result.size
+                count: result.size,
             });
 
             return result;
@@ -492,7 +501,7 @@ export class MinecraftDataLoader {
             this.logger.debug('Data file loaded successfully', {
                 version,
                 fileName,
-                itemCount: Array.isArray(data) ? data.length : 'N/A'
+                itemCount: Array.isArray(data) ? data.length : 'N/A',
             });
 
             return data;
@@ -551,5 +560,4 @@ export class MinecraftDataLoader {
     private buildTagContentUrl(version: string, tagType: string, tagFileName: string): string {
         return `${this.minecraftAssetsBaseUrl}/${version}/data/minecraft/tags/${tagType}/${tagFileName}`;
     }
-
 }

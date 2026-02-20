@@ -3,7 +3,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 // Mock VSCode before any imports that use it
 vi.mock('vscode', () => {
     class MockRelativePattern {
-        constructor(public base: string, public pattern: string) {}
+        constructor(
+            public base: string,
+            public pattern: string,
+        ) {}
     }
 
     return {
@@ -28,8 +31,8 @@ vi.mock('vscode', () => {
 });
 
 import { VSCodeFileWatcher } from '../../../../infrastructure/filesystem/FileWatcher';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../../core/interfaces/IEventBus';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../../core/interfaces/IEventBus';
 import { Uri, workspace } from 'vscode';
 
 describe('VSCodeFileWatcher', () => {
@@ -80,7 +83,7 @@ describe('VSCodeFileWatcher', () => {
             expect(workspace.createFileSystemWatcher).toHaveBeenCalled();
             expect(mockLogger.info).toHaveBeenCalledWith(
                 'Started watching path',
-                expect.objectContaining({ path: testPath })
+                expect.objectContaining({ path: testPath }),
             );
         });
 
@@ -232,4 +235,3 @@ describe('VSCodeFileWatcher', () => {
         });
     });
 });
-

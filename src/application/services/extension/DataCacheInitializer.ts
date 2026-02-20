@@ -1,7 +1,7 @@
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../core/interfaces/IEventBus';
-import { IDataStoreService, IDataStoreStatistics } from '../../../core/interfaces/IDataStoreService';
-import { IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../core/interfaces/IEventBus';
+import { type IDataStoreService, type IDataStoreStatistics } from '../../../core/interfaces/IDataStoreService';
+import { type IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
 import { DataStatus } from '../../../core/types/DomainEvents';
 
 /**
@@ -21,9 +21,9 @@ export class DataCacheInitializer {
         private readonly dataStoreService: IDataStoreService,
         private readonly performanceMonitor: IPerformanceMonitor,
         private readonly generateEventId: () => string,
-        private readonly cacheWarmupFn?: () => Promise<void>
+        private readonly cacheWarmupFn?: () => Promise<void>,
     ) {
-        this.initialScanCompleted = new Promise<void>(resolve => {
+        this.initialScanCompleted = new Promise<void>((resolve) => {
             this.completeInitialScan = resolve;
         });
     }
@@ -32,14 +32,15 @@ export class DataCacheInitializer {
      * 初始化数据缓存
      */
     async initialize(): Promise<void> {
-        if (this.disposed) {return;}
+        if (this.disposed) {
+            return;
+        }
 
         try {
             this.logger.info('Initializing data cache...');
 
             // 执行初始扫描（等待完成）
             await this.performInitialScan();
-
         } catch (error) {
             this.logger.error('Failed to start data cache initialization', error as Error);
         }
@@ -61,7 +62,9 @@ export class DataCacheInitializer {
      * 执行初始扫描
      */
     private async performInitialScan(): Promise<void> {
-        if (this.disposed) {return;}
+        if (this.disposed) {
+            return;
+        }
 
         this.scanInProgress = true;
         const timer = this.performanceMonitor.startTimer('extension.initialScan');
@@ -71,12 +74,16 @@ export class DataCacheInitializer {
             // 发布加载中状态
             await this.publishDataStatusEvent(DataStatus.Loading);
 
-            if (this.disposed) {return;}
+            if (this.disposed) {
+                return;
+            }
 
             // 使用 DataStoreService 统一初始化（模板 + 翻译 + 物品 + 分类）
             await this.dataStoreService.initialize();
 
-            if (this.disposed) {return;}
+            if (this.disposed) {
+                return;
+            }
 
             // 获取完整统计信息
             const stats = await this.dataStoreService.getStatistics();
@@ -85,9 +92,9 @@ export class DataCacheInitializer {
             this.outputDiagnostics(stats);
 
             // 预热关键缓存（后台执行，不阻塞主流程）
-            this.warmupCaches().catch(error => {
+            this.warmupCaches().catch((error) => {
                 this.logger.warn('Cache warmup failed', {
-                    error: error instanceof Error ? error.message : String(error)
+                    error: error instanceof Error ? error.message : String(error),
                 });
             });
 
@@ -96,14 +103,13 @@ export class DataCacheInitializer {
 
             // 发布就绪状态
             await this.publishDataStatusEvent(DataStatus.Ready);
-
         } catch (error) {
             this.logger.error('Initial data scan failed', error as Error);
 
             // 发布数据状态变更事件，通知扫描失败
             await this.publishDataStatusEvent(
                 DataStatus.Failed,
-                error instanceof Error ? error.message : String(error)
+                error instanceof Error ? error.message : String(error),
             );
         } finally {
             timer.stop();
@@ -123,7 +129,7 @@ export class DataCacheInitializer {
             itemCount: stats.itemCount,
             categoryCount: stats.categoryCount,
             languageCount: stats.languageCount,
-            namespaceCount: stats.namespaceCount
+            namespaceCount: stats.namespaceCount,
         });
     }
 
@@ -131,7 +137,9 @@ export class DataCacheInitializer {
      * 发布扫描完成事件
      */
     private async publishScanCompletedEvent(stats: IDataStoreStatistics): Promise<void> {
-        if (this.disposed) {return;}
+        if (this.disposed) {
+            return;
+        }
 
         await this.eventBus.publish('data.scan.completed', {
             id: this.generateEventId(),
@@ -144,7 +152,7 @@ export class DataCacheInitializer {
             itemsFound: stats.itemCount,
             categoriesFound: stats.categoryCount,
             languageCount: stats.languageCount,
-            namespaceCount: stats.namespaceCount
+            namespaceCount: stats.namespaceCount,
         });
     }
 
@@ -152,7 +160,9 @@ export class DataCacheInitializer {
      * 发布数据状态变更事件
      */
     private async publishDataStatusEvent(status: DataStatus, error?: string): Promise<void> {
-        if (this.disposed) {return;}
+        if (this.disposed) {
+            return;
+        }
 
         await this.eventBus.publish('data.status.changed', {
             id: this.generateEventId(),
@@ -160,7 +170,7 @@ export class DataCacheInitializer {
             timestamp: new Date(),
             source: 'DataCacheInitializer',
             status,
-            error
+            error,
         });
     }
 
@@ -170,7 +180,9 @@ export class DataCacheInitializer {
      * 在初始化完成后预热各种缓存，提高首次补全响应速度
      */
     private async warmupCaches(): Promise<void> {
-        if (this.disposed || !this.cacheWarmupFn) {return;}
+        if (this.disposed || !this.cacheWarmupFn) {
+            return;
+        }
 
         this.logger.info('Warming up caches...');
         const startTime = performance.now();
@@ -179,13 +191,13 @@ export class DataCacheInitializer {
             await this.cacheWarmupFn();
         } catch (error) {
             this.logger.warn('Cache warmup failed', {
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             });
         }
 
         const duration = performance.now() - startTime;
         this.logger.info('Cache warmup completed', {
-            duration: `${duration.toFixed(2)}ms`
+            duration: `${duration.toFixed(2)}ms`,
         });
     }
 }

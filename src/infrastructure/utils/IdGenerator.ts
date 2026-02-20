@@ -31,8 +31,8 @@ export function generateUUID(): string {
 
     // 回退到手动生成
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
 }
@@ -92,11 +92,7 @@ export function generateTimestampId(randomLength: number = 6): string {
  * generateSequenceId('item', 42, 6); // 'item_000042'
  * ```
  */
-export function generateSequenceId(
-    prefix: string,
-    sequence: number,
-    padding: number = 4
-): string {
+export function generateSequenceId(prefix: string, sequence: number, padding: number = 4): string {
     return `${prefix}_${sequence.toString().padStart(padding, '0')}`;
 }
 
@@ -125,7 +121,7 @@ export class IdGenerator {
      */
     constructor(
         private readonly prefix: string = '',
-        startFrom: number = 1
+        startFrom: number = 1,
     ) {
         this.counter = startFrom - 1;
     }

@@ -1,8 +1,8 @@
-import { EditorUri } from '../types/EditorTypes';
+import { type EditorUri } from '../types/EditorTypes';
 
 /**
  * 物品类型
- * 
+ *
  * - item: 普通物品（items 节点）
  * - block: 方块（blocks 节点）
  * - furniture: 家具（furniture 节点）
@@ -11,7 +11,7 @@ export type ItemType = 'item' | 'block' | 'furniture';
 
 /**
  * 物品 ID 信息
- * 
+ *
  * 表示在 items/blocks/furniture section 中定义的物品
  */
 export interface IItemId {
@@ -55,47 +55,47 @@ export interface IItemIdRepository {
      * 获取所有物品 ID
      */
     getAllItems(): Promise<IItemId[]>;
-    
+
     /**
      * 根据完整 ID 获取物品
      */
     getItemById(id: string): Promise<IItemId | undefined>;
-    
+
     /**
      * 搜索物品（支持前缀匹配）
      */
     searchItems(prefix: string): Promise<IItemId[]>;
-    
+
     /**
      * 根据命名空间获取物品
      */
     getItemsByNamespace(namespace: string): Promise<IItemId[]>;
-    
+
     /**
      * 获取物品数量
      */
     getItemCount(): Promise<number>;
-    
+
     /**
      * 添加物品
      */
     addItem(item: IItemId): Promise<void>;
-    
+
     /**
      * 批量添加物品
      */
     addItems(items: IItemId[]): Promise<void>;
-    
+
     /**
      * 删除物品
      */
     removeItem(id: string): Promise<void>;
-    
+
     /**
      * 根据文件删除物品
      */
     removeItemsByFile(sourceFile: EditorUri): Promise<void>;
-    
+
     /**
      * 清空所有物品
      */
@@ -115,6 +115,3 @@ export interface IBuiltinItemLoader {
      */
     loadBuiltinItems(): Promise<IItemId[]>;
 }
-
-
-

@@ -115,12 +115,7 @@ describe('ItemModel', () => {
 
     describe('ConditionItemModel', () => {
         it('should have correct type', () => {
-            const model = new ConditionItemModel(
-                'using_item',
-                {},
-                new EmptyItemModel(),
-                new EmptyItemModel()
-            );
+            const model = new ConditionItemModel('using_item', {}, new EmptyItemModel(), new EmptyItemModel());
             expect(model.type).toBe(MODEL_TYPES.CONDITION);
         });
 
@@ -141,7 +136,7 @@ describe('ItemModel', () => {
                 'custom_model_data',
                 { index: 0 },
                 new EmptyItemModel(),
-                new EmptyItemModel()
+                new EmptyItemModel(),
             );
 
             const json = model.toJson();
@@ -234,9 +229,7 @@ describe('ItemModel', () => {
         it('should aggregate modelsToGenerate from entries and fallback', () => {
             const gen1 = { path: 'path1', parentModelPath: 'parent1' };
             const genFallback = { path: 'fallback', parentModelPath: 'parent' };
-            const entries = [
-                { threshold: 0.5, model: new BaseItemModel('path1', [], gen1) },
-            ];
+            const entries = [{ threshold: 0.5, model: new BaseItemModel('path1', [], gen1) }];
             const fallback = new BaseItemModel('fallback', [], genFallback);
             const model = new RangeDispatchItemModel('property', {}, 1, entries, fallback);
 
@@ -321,10 +314,7 @@ describe('ItemModel', () => {
         it('should create CompositeItemModel for composite config', () => {
             const model = createItemModel({
                 type: 'composite',
-                models: [
-                    { type: 'empty' },
-                    { path: 'minecraft:item/diamond' },
-                ],
+                models: [{ type: 'empty' }, { path: 'minecraft:item/diamond' }],
             });
             expect(model).toBeInstanceOf(CompositeItemModel);
         });
@@ -343,9 +333,7 @@ describe('ItemModel', () => {
             const model = createItemModel({
                 type: 'select',
                 property: 'charge_type',
-                cases: [
-                    { when: 'arrow', model: { type: 'empty' } },
-                ],
+                cases: [{ when: 'arrow', model: { type: 'empty' } }],
             });
             expect(model).toBeInstanceOf(SelectItemModel);
         });
@@ -355,9 +343,7 @@ describe('ItemModel', () => {
                 type: 'range_dispatch',
                 property: 'use_duration',
                 scale: 0.05,
-                entries: [
-                    { threshold: 0.5, model: { type: 'empty' } },
-                ],
+                entries: [{ threshold: 0.5, model: { type: 'empty' } }],
             });
             expect(model).toBeInstanceOf(RangeDispatchItemModel);
         });

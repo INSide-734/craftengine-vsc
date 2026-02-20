@@ -1,12 +1,6 @@
-import {
-    TextDocument,
-    CodeAction,
-    CodeActionKind,
-    WorkspaceEdit,
-    Diagnostic
-} from 'vscode';
+import { type TextDocument, CodeAction, CodeActionKind, WorkspaceEdit, type Diagnostic } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { IDataStoreService } from '../../core/interfaces/IDataStoreService';
+import { type IDataStoreService } from '../../core/interfaces/IDataStoreService';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { CategoryDiagnosticProvider } from './CategoryDiagnosticProvider';
 import { BaseCodeActionProvider } from './BaseCodeActionProvider';
@@ -23,9 +17,7 @@ export class CategoryCodeActionProvider extends BaseCodeActionProvider {
     private readonly dataStoreService: IDataStoreService;
 
     /** 提供的 CodeAction 类型 */
-    static readonly providedCodeActionKinds = [
-        CodeActionKind.QuickFix
-    ];
+    static readonly providedCodeActionKinds = [CodeActionKind.QuickFix];
 
     protected readonly diagnosticSource = CategoryDiagnosticProvider.DIAGNOSTIC_SOURCE;
 
@@ -37,10 +29,7 @@ export class CategoryCodeActionProvider extends BaseCodeActionProvider {
     /**
      * 为诊断创建修复操作
      */
-    protected async createFixActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    protected async createFixActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
 
         // 提取诊断代码值
@@ -48,7 +37,7 @@ export class CategoryCodeActionProvider extends BaseCodeActionProvider {
 
         switch (codeValue) {
             case CATEGORY_NOT_FOUND.code:
-                actions.push(...await this.createUnknownCategoryActions(document, diagnostic));
+                actions.push(...(await this.createUnknownCategoryActions(document, diagnostic)));
                 break;
 
             default:
@@ -63,10 +52,7 @@ export class CategoryCodeActionProvider extends BaseCodeActionProvider {
     /**
      * 创建未知分类的修复操作
      */
-    private async createUnknownCategoryActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]> {
+    private async createUnknownCategoryActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
         const categoryId = extractTextFromRange(document, diagnostic.range);
 
@@ -79,16 +65,13 @@ export class CategoryCodeActionProvider extends BaseCodeActionProvider {
             const allCategories = await this.dataStoreService.getAllCategories();
             const similarCategories = findSimilarStrings(
                 categoryId,
-                allCategories.map(c => c.id),
-                { threshold: 0.4 }
-            ).map(result => result.item);
+                allCategories.map((c) => c.id),
+                { threshold: 0.4 },
+            ).map((result) => result.item);
 
             // 为每个相似分类创建替换操作
             for (const similarId of similarCategories.slice(0, 5)) {
-                const action = new CodeAction(
-                    `Change '${categoryId}' to '${similarId}'`,
-                    CodeActionKind.QuickFix
-                );
+                const action = new CodeAction(`Change '${categoryId}' to '${similarId}'`, CodeActionKind.QuickFix);
 
                 action.diagnostics = [diagnostic];
                 action.isPreferred = similarCategories[0] === similarId;
@@ -110,16 +93,16 @@ export class CategoryCodeActionProvider extends BaseCodeActionProvider {
             if (existingWithoutHash) {
                 const action = new CodeAction(
                     `Use existing category '${existingWithoutHash.id}'`,
-                    CodeActionKind.QuickFix
+                    CodeActionKind.QuickFix,
                 );
                 action.diagnostics = [diagnostic];
                 action.isPreferred = true;
-                
+
                 const edit = new WorkspaceEdit();
                 edit.replace(document.uri, diagnostic.range, existingWithoutHash.id);
                 action.edit = edit;
-                
-                actions.unshift(action);  // 放在最前面
+
+                actions.unshift(action); // 放在最前面
             }
         }
 
@@ -132,7 +115,4 @@ export class CategoryCodeActionProvider extends BaseCodeActionProvider {
     private createGenericActions(_diagnostic: Diagnostic): CodeAction[] {
         return [];
     }
-
 }
-
-

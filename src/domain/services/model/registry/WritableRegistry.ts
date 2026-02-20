@@ -4,9 +4,9 @@
  * 移植自 craft-engine 的 WritableRegistry
  */
 
-import { ResourceKey } from './ResourceKey';
-import { Registry } from './Registry';
-import { HolderReference } from './HolderReference';
+import { type ResourceKey } from './ResourceKey';
+import { type Registry } from './Registry';
+import { type HolderReference } from './HolderReference';
 
 /**
  * 可写注册表接口

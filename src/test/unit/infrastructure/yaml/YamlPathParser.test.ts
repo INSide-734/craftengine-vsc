@@ -9,8 +9,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { YamlPathParser } from '../../../../infrastructure/yaml/YamlPathParser';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { TextDocument, Position } from 'vscode';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type TextDocument, Position } from 'vscode';
 
 describe('YamlPathParser', () => {
     let parser: YamlPathParser;
@@ -26,7 +26,7 @@ describe('YamlPathParser', () => {
             lineAt: vi.fn((line: number) => ({
                 text: lines[line] || '',
                 lineNumber: line,
-                range: { start: { line, character: 0 }, end: { line, character: lines[line]?.length || 0 } }
+                range: { start: { line, character: 0 }, end: { line, character: lines[line]?.length || 0 } },
             })),
             offsetAt: vi.fn((position: Position) => {
                 let offset = 0;
@@ -48,7 +48,7 @@ describe('YamlPathParser', () => {
                 return new Position(lines.length - 1, 0);
             }),
             lineCount: lines.length,
-            uri: { fsPath: '/test/file.yaml' }
+            uri: { fsPath: '/test/file.yaml' },
         } as unknown as TextDocument;
     }
 

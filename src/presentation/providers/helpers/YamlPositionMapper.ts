@@ -1,5 +1,5 @@
-import { TextDocument, Range, Position } from 'vscode';
-import { ILogger } from '../../../core/interfaces/ILogger';
+import { type TextDocument, Range, Position } from 'vscode';
+import { type ILogger } from '../../../core/interfaces/ILogger';
 import * as yaml from 'yaml';
 
 /**
@@ -41,10 +41,7 @@ export class YamlPositionMapper {
      * @param document VSCode 文本文档
      * @returns 路径到位置信息的映射
      */
-    buildPositionMap(
-        astDocument: yaml.Document.Parsed,
-        document: TextDocument
-    ): Map<string, IPositionInfo> {
+    buildPositionMap(astDocument: yaml.Document.Parsed, document: TextDocument): Map<string, IPositionInfo> {
         const positionMap = new Map<string, IPositionInfo>();
 
         this.visitNode(astDocument.contents as yaml.Node, [], positionMap, document);
@@ -60,7 +57,7 @@ export class YamlPositionMapper {
         path: string[],
         positionMap: Map<string, IPositionInfo>,
         document: TextDocument,
-        keyNode?: yaml.Node
+        keyNode?: yaml.Node,
     ): void {
         if (!node || !node.range) {
             return;
@@ -87,7 +84,7 @@ export class YamlPositionMapper {
                 start: startPos,
                 end: endPos,
                 range,
-                keyRange
+                keyRange,
             });
         } catch (error) {
             // 位置超出范围时忽略
@@ -109,7 +106,7 @@ export class YamlPositionMapper {
         node: yaml.YAMLMap,
         path: string[],
         positionMap: Map<string, IPositionInfo>,
-        document: TextDocument
+        document: TextDocument,
     ): void {
         for (const item of node.items) {
             if (item.key && yaml.isScalar(item.key)) {
@@ -120,13 +117,7 @@ export class YamlPositionMapper {
 
                 if (item.value) {
                     // 有值：正常处理
-                    this.visitNode(
-                        item.value as yaml.Node,
-                        currentPath,
-                        positionMap,
-                        document,
-                        item.key as yaml.Node
-                    );
+                    this.visitNode(item.value as yaml.Node, currentPath, positionMap, document, item.key as yaml.Node);
                 } else if (item.key.range) {
                     // 无值（null/空）：也要添加到位置映射，使用键的位置
                     this.addEmptyValuePosition(item.key, currentPath, positionMap, document);
@@ -142,16 +133,11 @@ export class YamlPositionMapper {
         node: yaml.YAMLSeq,
         path: string[],
         positionMap: Map<string, IPositionInfo>,
-        document: TextDocument
+        document: TextDocument,
     ): void {
         node.items.forEach((item, index) => {
             if (item) {
-                this.visitNode(
-                    item as yaml.Node,
-                    [...path, String(index)],
-                    positionMap,
-                    document
-                );
+                this.visitNode(item as yaml.Node, [...path, String(index)], positionMap, document);
             }
         });
     }
@@ -162,10 +148,7 @@ export class YamlPositionMapper {
     private extractKeyText(keyNode: yaml.Scalar, document: TextDocument): string {
         if (keyNode.range) {
             const [keyStart, keyEnd] = keyNode.range;
-            return document.getText(new Range(
-                document.positionAt(keyStart),
-                document.positionAt(keyEnd)
-            ));
+            return document.getText(new Range(document.positionAt(keyStart), document.positionAt(keyEnd)));
         }
         return String(keyNode.value);
     }
@@ -180,7 +163,7 @@ export class YamlPositionMapper {
         keyNode: yaml.Scalar,
         currentPath: string[],
         positionMap: Map<string, IPositionInfo>,
-        document: TextDocument
+        document: TextDocument,
     ): void {
         if (!keyNode.range) {
             return;
@@ -214,18 +197,18 @@ export class YamlPositionMapper {
                 start: colonRange.start,
                 end: colonRange.end,
                 range: colonRange,
-                keyRange
+                keyRange,
             });
 
             this.logger.debug('Added empty value to position map', {
                 path: pathKey,
                 line: colonRange.start.line + 1,
-                character: colonRange.start.character
+                character: colonRange.start.character,
             });
         } catch (error) {
             this.logger.debug('Failed to add empty value position', {
                 path: currentPath.join('.'),
-                error
+                error,
             });
         }
     }

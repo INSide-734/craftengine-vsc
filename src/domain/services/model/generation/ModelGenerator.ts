@@ -4,7 +4,7 @@
  * 移植自 craft-engine 的 ModelGenerator 接口
  */
 
-import { ModelGeneration } from './ModelGeneration';
+import { type ModelGeneration } from './ModelGeneration';
 
 /**
  * 模型生成器接口

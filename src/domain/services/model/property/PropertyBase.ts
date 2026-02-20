@@ -125,7 +125,7 @@ export class PropertyRegistry<T extends Property> {
     private createFromRegistry<R>(
         data: Record<string, unknown>,
         registry: Map<string, R>,
-        creator: (handler: R, data: Record<string, unknown>) => T
+        creator: (handler: R, data: Record<string, unknown>) => T,
     ): T {
         const type = String(data[this.propertyKey] ?? '');
         const key = Key.withDefaultNamespace(type, 'minecraft');

@@ -1,10 +1,10 @@
-import { EditorUri } from '../types/EditorTypes';
-import { ITemplate } from './ITemplate';
-import { ITranslationKey, ITranslationReference } from './ITranslation';
+import { type EditorUri } from '../types/EditorTypes';
+import { type ITemplate } from './ITemplate';
+import { type ITranslationKey, type ITranslationReference } from './ITranslation';
 import { ITemplateQuery } from './ITemplateRepository';
-import { IItemId, IItemIdQuery } from './IItemId';
-import { ICategory, ICategoryQuery } from './ICategory';
-import { IDataStoreLifecycle } from './IDataStoreLifecycle';
+import { type IItemId, IItemIdQuery } from './IItemId';
+import { type ICategory, ICategoryQuery } from './ICategory';
+import { type IDataStoreLifecycle } from './IDataStoreLifecycle';
 
 // 重导出查询类型以便使用者可以从此模块导入
 export { ITemplateQuery, IItemIdQuery, ICategoryQuery };

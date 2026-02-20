@@ -6,10 +6,10 @@
  */
 
 import {
-    IItemModel,
-    ItemModelConfig,
-    IModelGeneration,
-    IModelGenerationConfig,
+    type IItemModel,
+    type ItemModelConfig,
+    type IModelGeneration,
+    type IModelGenerationConfig,
 } from '../../../core/interfaces/IModelGenerator';
 import { createTints } from './Tint';
 import {
@@ -62,10 +62,7 @@ function extractPropertyArgs(cfg: Record<string, unknown>, knownKeys: string[]):
 /**
  * 过滤并映射配置数组
  */
-function filterAndMapConfig<T>(
-    config: unknown,
-    mapper: (item: Record<string, unknown>) => T
-): T[] {
+function filterAndMapConfig<T>(config: unknown, mapper: (item: Record<string, unknown>) => T): T[] {
     if (!Array.isArray(config)) {
         return [];
     }
@@ -163,11 +160,7 @@ function createBaseItemModel(cfg: Record<string, unknown>): BaseItemModel {
         modelGeneration = createModelGeneration(path, gen);
     }
 
-    return new BaseItemModel(
-        normalizeModelPath(path),
-        tints,
-        modelGeneration
-    );
+    return new BaseItemModel(normalizeModelPath(path), tints, modelGeneration);
 }
 
 /**
@@ -178,7 +171,7 @@ function createCompositeItemModel(cfg: Record<string, unknown>): CompositeItemMo
     if (!Array.isArray(modelsConfig)) {
         return new CompositeItemModel([]);
     }
-    const models = modelsConfig.map(m => createItemModel(m));
+    const models = modelsConfig.map((m) => createItemModel(m));
     return new CompositeItemModel(models);
 }
 
@@ -197,7 +190,7 @@ function createConditionItemModel(cfg: Record<string, unknown>): ConditionItemMo
         property,
         propertyArgs,
         createItemModel(onTrueConfig),
-        createItemModel(onFalseConfig)
+        createItemModel(onFalseConfig),
     );
 }
 
@@ -209,7 +202,7 @@ function createSelectItemModel(cfg: Record<string, unknown>): SelectItemModel {
     const knownKeys = ['type', 'property', 'cases', 'fallback'];
     const propertyArgs = extractPropertyArgs(cfg, knownKeys);
 
-    const cases = filterAndMapConfig(cfg['cases'], c => ({
+    const cases = filterAndMapConfig(cfg['cases'], (c) => ({
         when: c['when'],
         model: createItemModel(c['model']),
     }));
@@ -226,7 +219,7 @@ function createRangeDispatchItemModel(cfg: Record<string, unknown>): RangeDispat
     const knownKeys = ['type', 'property', 'scale', 'entries', 'fallback'];
     const propertyArgs = extractPropertyArgs(cfg, knownKeys);
 
-    const entries = filterAndMapConfig(cfg['entries'], e => ({
+    const entries = filterAndMapConfig(cfg['entries'], (e) => ({
         threshold: Number(e['threshold'] ?? 0),
         model: createItemModel(e['model']),
     }));

@@ -10,7 +10,7 @@ import {
     UniqueIdGenerator,
     getCurrentTimestamp,
     calculateUptime,
-    formatDuration
+    formatDuration,
 } from '../../../../infrastructure/utils/IdGenerator';
 
 describe('IdGenerator module', () => {
@@ -48,9 +48,7 @@ describe('IdGenerator module', () => {
     describe('generateUUID', () => {
         it('should generate valid UUID v4 format', () => {
             const uuid = generateUUID();
-            expect(uuid).toMatch(
-                /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
-            );
+            expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
         });
 
         it('should generate unique UUIDs', () => {

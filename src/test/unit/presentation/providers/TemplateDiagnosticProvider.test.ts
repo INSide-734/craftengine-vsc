@@ -8,41 +8,37 @@
  * - Schema 驱动的诊断
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-    TextDocument,
-    Uri,
-    DiagnosticSeverity
-} from '../../../__mocks__/vscode';
+import { TextDocument, Uri, DiagnosticSeverity } from '../../../__mocks__/vscode';
 import type { TextDocument as VscodeTextDocument } from 'vscode';
 import { TemplateDiagnosticProvider } from '../../../../presentation/providers/TemplateDiagnosticProvider';
 import { ServiceContainer } from '../../../../infrastructure/ServiceContainer';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../../core/interfaces/IConfiguration';
-import { IEventBus } from '../../../../core/interfaces/IEventBus';
-import { ITemplateService } from '../../../../core/interfaces/ITemplateService';
-import { ISchemaService } from '../../../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../../../core/interfaces/IYamlPathParser';
-import { PerformanceMonitor } from '../../../../infrastructure/performance/PerformanceMonitor';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../../core/interfaces/IConfiguration';
+import { type IEventBus } from '../../../../core/interfaces/IEventBus';
+import { type ITemplateService } from '../../../../core/interfaces/ITemplateService';
+import { type ISchemaService } from '../../../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../../../core/interfaces/IYamlPathParser';
+import { type PerformanceMonitor } from '../../../../infrastructure/performance/PerformanceMonitor';
 import { SERVICE_TOKENS } from '../../../../core/constants/ServiceTokens';
 
 // Mock ServiceContainer
 vi.mock('../../../../infrastructure/ServiceContainer', () => ({
     ServiceContainer: {
         getService: vi.fn(),
-        tryGetService: vi.fn()
-    }
+        tryGetService: vi.fn(),
+    },
 }));
 
 // Mock DiagnosticSeverityConfig
 const mockSeverityConfig = {
     getSeverity: vi.fn().mockReturnValue(DiagnosticSeverity.Error),
-    shouldIgnore: vi.fn().mockReturnValue(false)
+    shouldIgnore: vi.fn().mockReturnValue(false),
 };
 vi.mock('../../../../infrastructure/config/DiagnosticSeverityConfig', () => ({
     DiagnosticSeverityConfig: class {
         getSeverity = mockSeverityConfig.getSeverity;
         shouldIgnore = mockSeverityConfig.shouldIgnore;
-    }
+    },
 }));
 
 describe('TemplateDiagnosticProvider', () => {
@@ -73,13 +69,13 @@ describe('TemplateDiagnosticProvider', () => {
                 }
                 return defaultValue;
             }),
-            onChange: vi.fn().mockReturnValue({ dispose: vi.fn() })
+            onChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
         } as unknown as IConfiguration;
 
         // 创建 mock event bus
         mockEventBus = {
             publish: vi.fn().mockResolvedValue(undefined),
-            subscribe: vi.fn().mockReturnValue({ unsubscribe: vi.fn(), isActive: vi.fn().mockReturnValue(true) })
+            subscribe: vi.fn().mockReturnValue({ unsubscribe: vi.fn(), isActive: vi.fn().mockReturnValue(true) }),
         } as unknown as IEventBus;
 
         // 创建 mock template service
@@ -87,26 +83,26 @@ describe('TemplateDiagnosticProvider', () => {
             parseDocument: vi.fn().mockResolvedValue({ templates: [], errors: [] }),
             searchTemplates: vi.fn().mockResolvedValue([]),
             validateTemplateUsage: vi.fn().mockResolvedValue({ isValid: true, errors: [], warnings: [] }),
-            getSuggestions: vi.fn().mockResolvedValue([])
+            getSuggestions: vi.fn().mockResolvedValue([]),
         } as unknown as ITemplateService;
 
         // 创建 mock schema service
         mockSchemaService = {
             getSchemaForPath: vi.fn().mockResolvedValue(null),
             getCustomProperty: vi.fn().mockReturnValue(null),
-            hasSchemaForPath: vi.fn().mockReturnValue(false)
+            hasSchemaForPath: vi.fn().mockReturnValue(false),
         } as unknown as ISchemaService;
 
         // 创建 mock yaml path parser
         mockYamlPathParser = {
-            parsePath: vi.fn().mockReturnValue([])
+            parsePath: vi.fn().mockReturnValue([]),
         } as unknown as IYamlPathParser;
 
         // 创建 mock performance monitor
         mockPerformanceMonitor = {
             startTimer: vi.fn().mockReturnValue({
-                stop: vi.fn()
-            })
+                stop: vi.fn(),
+            }),
         } as unknown as PerformanceMonitor;
 
         // 配置 ServiceContainer mock
@@ -135,7 +131,7 @@ describe('TemplateDiagnosticProvider', () => {
             if (token === SERVICE_TOKENS.ExtendedTypeService) {
                 return {
                     getType: vi.fn().mockReturnValue(undefined),
-                    getAllTypes: vi.fn().mockReturnValue([])
+                    getAllTypes: vi.fn().mockReturnValue([]),
                 };
             }
             throw new Error(`Service not found: ${token.toString()}`);
@@ -154,11 +150,7 @@ describe('TemplateDiagnosticProvider', () => {
 
     // 辅助函数：创建测试文档
     function createDocument(content: string): VscodeTextDocument {
-        return new TextDocument(
-            Uri.file('/test/file.yaml'),
-            content,
-            'yaml'
-        ) as unknown as VscodeTextDocument;
+        return new TextDocument(Uri.file('/test/file.yaml'), content, 'yaml') as unknown as VscodeTextDocument;
     }
 
     // ========================================
@@ -170,7 +162,7 @@ describe('TemplateDiagnosticProvider', () => {
             const document = new TextDocument(
                 Uri.file('/test/file.txt'),
                 'hello world',
-                'plaintext'
+                'plaintext',
             ) as unknown as VscodeTextDocument;
 
             await provider.updateDiagnostics(document);
@@ -199,7 +191,7 @@ items:
             // 模拟 schema 返回 template 字段
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.templateName'
+                'x-completion-provider': 'craftengine.templateName',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.templateName');
 
@@ -218,7 +210,7 @@ items:
             // 模拟 schema 返回 template 字段
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.templateName'
+                'x-completion-provider': 'craftengine.templateName',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.templateName');
             vi.mocked(mockTemplateService.searchTemplates).mockResolvedValue([]);
@@ -236,26 +228,30 @@ items:
             `);
 
             // 模拟存在的模板
-            vi.mocked(mockTemplateService.searchTemplates).mockResolvedValue([{
-                template: {
-                    id: 'tpl-1',
-                    name: 'default:sword',
-                    parameters: [],
-                    content: {},
-                    sourceFile: Uri.file('/test/templates.yaml'),
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    usageCount: 0,
-                    getRequiredParameters: () => [],
-                    getOptionalParameters: () => [],
-                    hasParameter: () => false,
-                    getParameter: () => undefined,
-                    validateParameters: () => ({ isValid: true, errors: [], warnings: [] }),
-                    recordUsage: function() { return this; }
+            vi.mocked(mockTemplateService.searchTemplates).mockResolvedValue([
+                {
+                    template: {
+                        id: 'tpl-1',
+                        name: 'default:sword',
+                        parameters: [],
+                        content: {},
+                        sourceFile: Uri.file('/test/templates.yaml'),
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        usageCount: 0,
+                        getRequiredParameters: () => [],
+                        getOptionalParameters: () => [],
+                        hasParameter: () => false,
+                        getParameter: () => undefined,
+                        validateParameters: () => ({ isValid: true, errors: [], warnings: [] }),
+                        recordUsage: function () {
+                            return this;
+                        },
+                    },
+                    score: 1.0,
+                    reason: 'exact match',
                 },
-                score: 1.0,
-                reason: 'exact match'
-            }]);
+            ]);
 
             await provider.updateDiagnostics(document);
 
@@ -278,33 +274,43 @@ items:
             `);
 
             // 模拟带有必需参数的模板
-            vi.mocked(mockTemplateService.searchTemplates).mockResolvedValue([{
-                template: {
-                    id: 'tpl-1',
-                    name: 'default:sword',
-                    parameters: [
-                        { name: 'requiredParam', required: true },
-                        { name: 'optionalParam', required: false }
-                    ],
-                    content: {},
-                    sourceFile: Uri.file('/test/templates.yaml'),
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    usageCount: 0,
-                    getRequiredParameters: () => [{ name: 'requiredParam', required: true }],
-                    getOptionalParameters: () => [{ name: 'optionalParam', required: false }],
-                    hasParameter: (name: string) => name === 'requiredParam' || name === 'optionalParam',
-                    getParameter: () => undefined,
-                    validateParameters: () => ({
-                        isValid: false,
-                        errors: [{ parameter: 'requiredParam', message: 'Missing requiredParam', type: 'missing' as const }],
-                        warnings: []
-                    }),
-                    recordUsage: function() { return this; }
+            vi.mocked(mockTemplateService.searchTemplates).mockResolvedValue([
+                {
+                    template: {
+                        id: 'tpl-1',
+                        name: 'default:sword',
+                        parameters: [
+                            { name: 'requiredParam', required: true },
+                            { name: 'optionalParam', required: false },
+                        ],
+                        content: {},
+                        sourceFile: Uri.file('/test/templates.yaml'),
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        usageCount: 0,
+                        getRequiredParameters: () => [{ name: 'requiredParam', required: true }],
+                        getOptionalParameters: () => [{ name: 'optionalParam', required: false }],
+                        hasParameter: (name: string) => name === 'requiredParam' || name === 'optionalParam',
+                        getParameter: () => undefined,
+                        validateParameters: () => ({
+                            isValid: false,
+                            errors: [
+                                {
+                                    parameter: 'requiredParam',
+                                    message: 'Missing requiredParam',
+                                    type: 'missing' as const,
+                                },
+                            ],
+                            warnings: [],
+                        }),
+                        recordUsage: function () {
+                            return this;
+                        },
+                    },
+                    score: 1.0,
+                    reason: 'exact match',
                 },
-                score: 1.0,
-                reason: 'exact match'
-            }]);
+            ]);
 
             await provider.updateDiagnostics(document);
 
@@ -435,9 +441,7 @@ items:
             `);
 
             // 模拟服务抛出错误
-            vi.mocked(mockTemplateService.searchTemplates).mockRejectedValue(
-                new Error('Service error')
-            );
+            vi.mocked(mockTemplateService.searchTemplates).mockRejectedValue(new Error('Service error'));
 
             await expect(provider.updateDiagnostics(document)).resolves.not.toThrow();
         });

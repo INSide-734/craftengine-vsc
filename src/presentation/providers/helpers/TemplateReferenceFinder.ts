@@ -5,18 +5,12 @@
  * 模板参数提取和相似模板建议
  */
 
-import {
-    TextDocument,
-    Range,
-    Position,
-    DiagnosticRelatedInformation,
-    Location
-} from 'vscode';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { ITemplateService, ITemplateMatch } from '../../../core/interfaces/ITemplateService';
-import { ISchemaService } from '../../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../../core/interfaces/IYamlPathParser';
-import { TemplateParameterRecord } from '../../../core/interfaces/ITemplate';
+import { type TextDocument, Range, Position, DiagnosticRelatedInformation, Location } from 'vscode';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type ITemplateService, type ITemplateMatch } from '../../../core/interfaces/ITemplateService';
+import { type ISchemaService } from '../../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../../core/interfaces/IYamlPathParser';
+import { type TemplateParameterRecord } from '../../../core/interfaces/ITemplate';
 import { YamlHelper } from '../../../infrastructure/yaml/YamlHelper';
 import { calculateSimilarity, getIndentLevel } from '../../../infrastructure/utils';
 
@@ -49,7 +43,7 @@ export class TemplateReferenceFinder {
         logger: ILogger,
         templateService: ITemplateService,
         schemaService: ISchemaService,
-        yamlPathParser: IYamlPathParser
+        yamlPathParser: IYamlPathParser,
     ) {
         this.logger = logger;
         this.templateService = templateService;
@@ -109,7 +103,10 @@ export class TemplateReferenceFinder {
             }
 
             // 计算模板名称的范围
-            const valueStart = colonIndex + 1 + (line.substring(colonIndex + 1).length - line.substring(colonIndex + 1).trimStart().length);
+            const valueStart =
+                colonIndex +
+                1 +
+                (line.substring(colonIndex + 1).length - line.substring(colonIndex + 1).trimStart().length);
             const valueEnd = valueStart + value.length;
 
             // 获取缩进信息用于查找参数
@@ -121,7 +118,7 @@ export class TemplateReferenceFinder {
                 range: new Range(i, valueStart, i, valueEnd),
                 parameters,
                 line: i,
-                type: 'direct'
+                type: 'direct',
             });
         }
 
@@ -155,7 +152,7 @@ export class TemplateReferenceFinder {
             return completionProvider === TemplateReferenceFinder.TEMPLATE_NAME_PROVIDER;
         } catch (error) {
             this.logger.debug('Error checking schema for template field', {
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             });
             return false;
         }
@@ -167,7 +164,7 @@ export class TemplateReferenceFinder {
     async extractTemplateParameters(
         lines: string[],
         startLine: number,
-        baseIndent: number
+        baseIndent: number,
     ): Promise<TemplateParameterRecord> {
         const parameters: TemplateParameterRecord = {};
 
@@ -243,7 +240,7 @@ export class TemplateReferenceFinder {
     async findSimilarTemplatesSuggestions(
         templateName: string,
         document: TextDocument,
-        range: Range
+        range: Range,
     ): Promise<DiagnosticRelatedInformation[]> {
         const relatedInfo: DiagnosticRelatedInformation[] = [];
 
@@ -251,23 +248,20 @@ export class TemplateReferenceFinder {
             const allTemplates = await this.templateService.searchTemplates({
                 prefix: '',
                 limit: 1000,
-                fuzzy: true
+                fuzzy: true,
             });
             const similarTemplates = this.findSimilarNames(
                 templateName,
-                allTemplates.map((m: ITemplateMatch) => m.template.name)
+                allTemplates.map((m: ITemplateMatch) => m.template.name),
             );
 
             // 添加相似模板建议（最多3个）
             for (const similarName of similarTemplates.slice(0, 3)) {
                 relatedInfo.push(
                     new DiagnosticRelatedInformation(
-                        new Location(
-                            document.uri,
-                            range
-                        ),
-                        `Did you mean template: ${similarName}?`
-                    )
+                        new Location(document.uri, range),
+                        `Did you mean template: ${similarName}?`,
+                    ),
                 );
             }
         } catch (error) {
@@ -290,12 +284,12 @@ export class TemplateReferenceFinder {
         const SIMILARITY_THRESHOLD = 0.6;
 
         return names
-            .map(name => ({
+            .map((name) => ({
                 name,
-                score: calculateSimilarity(target.toLowerCase(), name.toLowerCase())
+                score: calculateSimilarity(target.toLowerCase(), name.toLowerCase()),
             }))
-            .filter(item => item.score > SIMILARITY_THRESHOLD)
+            .filter((item) => item.score > SIMILARITY_THRESHOLD)
             .sort((a, b) => b.score - a.score)
-            .map(item => item.name);
+            .map((item) => item.name);
     }
 }

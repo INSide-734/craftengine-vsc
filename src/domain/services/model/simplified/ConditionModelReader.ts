@@ -4,8 +4,8 @@
  * 移植自 craft-engine 的 ConditionModelReader
  */
 
-import { Key } from '../utils/Key';
-import { SimplifiedModelReader } from './SimplifiedModelReader';
+import { type Key } from '../utils/Key';
+import { type SimplifiedModelReader } from './SimplifiedModelReader';
 import { SimplifiedModelConfigError } from './GeneratedModelReader';
 
 /**
@@ -23,11 +23,7 @@ export class ConditionModelReader implements SimplifiedModelReader {
         this.suffix = suffix;
     }
 
-    convertFromTextures(
-        textures: string[],
-        optionalModelPaths: string[],
-        id: Key
-    ): Record<string, unknown> | null {
+    convertFromTextures(textures: string[], optionalModelPaths: string[], id: Key): Record<string, unknown> | null {
         // 如果 model 为空，返回 null
         if (this.model === '') {
             return null;
@@ -37,7 +33,7 @@ export class ConditionModelReader implements SimplifiedModelReader {
             throw new SimplifiedModelConfigError(
                 'warning.config.item.simplified_model.invalid_texture',
                 '2',
-                String(textures.length)
+                String(textures.length),
             );
         }
 
@@ -46,7 +42,7 @@ export class ConditionModelReader implements SimplifiedModelReader {
             throw new SimplifiedModelConfigError(
                 'warning.config.item.simplified_model.invalid_model',
                 '2',
-                String(optionalModelPaths.length)
+                String(optionalModelPaths.length),
             );
         }
 
@@ -57,18 +53,14 @@ export class ConditionModelReader implements SimplifiedModelReader {
             type: 'condition',
             property: this.property,
             'on-false': {
-                path: autoModel
-                    ? `${namespace}:item/${value}`
-                    : optionalModelPaths[0],
+                path: autoModel ? `${namespace}:item/${value}` : optionalModelPaths[0],
                 generation: {
                     parent: `item/${this.model}`,
                     textures: { layer0: textures[0] },
                 },
             },
             'on-true': {
-                path: autoModel
-                    ? `${namespace}:item/${value}${this.suffix}`
-                    : optionalModelPaths[1],
+                path: autoModel ? `${namespace}:item/${value}${this.suffix}` : optionalModelPaths[1],
                 generation: {
                     parent: `item/${this.model}`,
                     textures: { layer0: textures[1] },
@@ -82,7 +74,7 @@ export class ConditionModelReader implements SimplifiedModelReader {
             throw new SimplifiedModelConfigError(
                 'warning.config.item.simplified_model.invalid_model',
                 '2',
-                String(models.length)
+                String(models.length),
             );
         }
 

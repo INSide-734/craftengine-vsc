@@ -9,27 +9,27 @@
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { YamlScanner } from '../../../../infrastructure/yaml/YamlScanner';
-import { IYamlParser } from '../../../../core/interfaces/IYamlParser';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IYamlDocument, IYamlParseResult } from '../../../../core/interfaces/IYamlDocument';
+import { type IYamlParser } from '../../../../core/interfaces/IYamlParser';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IYamlDocument, type IYamlParseResult } from '../../../../core/interfaces/IYamlDocument';
 import { Uri, workspace } from 'vscode';
 import * as fs from 'fs/promises';
 
 // Mock fs/promises
 vi.mock('fs/promises', () => ({
     readFile: vi.fn(),
-    stat: vi.fn()
+    stat: vi.fn(),
 }));
 
 // Mock vscode workspace
 vi.mock('vscode', () => ({
     Uri: {
         file: vi.fn((path: string) => ({ fsPath: path, path })),
-        parse: vi.fn((path: string) => ({ fsPath: path, path }))
+        parse: vi.fn((path: string) => ({ fsPath: path, path })),
     },
     workspace: {
-        findFiles: vi.fn()
-    }
+        findFiles: vi.fn(),
+    },
 }));
 
 describe('YamlScanner', () => {
@@ -45,15 +45,15 @@ describe('YamlScanner', () => {
             root: {
                 type: 'object',
                 value: { key: 'value' },
-                path: []
+                path: [],
             },
             errors: [],
             success: true,
             metadata: {
                 sourceFile,
                 totalLines: 1,
-                parsedAt: new Date()
-            }
+                parsedAt: new Date(),
+            },
         };
     }
 
@@ -70,7 +70,7 @@ describe('YamlScanner', () => {
             hasPath: vi.fn(() => false),
             getTopLevelKeys: vi.fn(() => ['key']),
             isValid: vi.fn(() => true),
-            getErrors: vi.fn(() => [])
+            getErrors: vi.fn(() => []),
         };
     }
 
@@ -88,7 +88,7 @@ describe('YamlScanner', () => {
 
         mockParser = {
             parseText: vi.fn(),
-            createDocument: vi.fn()
+            createDocument: vi.fn(),
         } as unknown as IYamlParser;
 
         scanner = new YamlScanner(mockParser, mockLogger);
@@ -107,10 +107,7 @@ describe('YamlScanner', () => {
 
     describe('scanWorkspace', () => {
         it('should scan workspace and return results', async () => {
-            const mockFiles = [
-                Uri.file('/workspace/test1.yaml'),
-                Uri.file('/workspace/test2.yml')
-            ];
+            const mockFiles = [Uri.file('/workspace/test1.yaml'), Uri.file('/workspace/test2.yml')];
 
             vi.mocked(workspace.findFiles).mockResolvedValue(mockFiles);
             vi.mocked(fs.readFile).mockResolvedValue('key: value');
@@ -129,28 +126,20 @@ describe('YamlScanner', () => {
             vi.mocked(workspace.findFiles).mockResolvedValue([]);
 
             await scanner.scanWorkspace({
-                pattern: 'src/**/*.yaml'
+                pattern: 'src/**/*.yaml',
             });
 
-            expect(workspace.findFiles).toHaveBeenCalledWith(
-                'src/**/*.yaml',
-                '**/node_modules/**',
-                undefined
-            );
+            expect(workspace.findFiles).toHaveBeenCalledWith('src/**/*.yaml', '**/node_modules/**', undefined);
         });
 
         it('should use custom exclude pattern', async () => {
             vi.mocked(workspace.findFiles).mockResolvedValue([]);
 
             await scanner.scanWorkspace({
-                exclude: '**/dist/**'
+                exclude: '**/dist/**',
             });
 
-            expect(workspace.findFiles).toHaveBeenCalledWith(
-                '**/*.{yaml,yml}',
-                '**/dist/**',
-                undefined
-            );
+            expect(workspace.findFiles).toHaveBeenCalledWith('**/*.{yaml,yml}', '**/dist/**', undefined);
         });
 
         it('should skip files exceeding max size', async () => {
@@ -162,7 +151,7 @@ describe('YamlScanner', () => {
             vi.mocked(fs.readFile).mockResolvedValue(largeContent);
 
             const result = await scanner.scanWorkspace({
-                maxFileSize: 10 * 1024 * 1024 // 10MB
+                maxFileSize: 10 * 1024 * 1024, // 10MB
             });
 
             expect(result.documents).toHaveLength(0);
@@ -186,17 +175,14 @@ describe('YamlScanner', () => {
             vi.mocked(mockParser.parseText).mockRejectedValue(new Error('Parse error'));
 
             const result = await scanner.scanWorkspace({
-                skipInvalid: true
+                skipInvalid: true,
             });
 
             expect(result.failed).toHaveLength(0);
         });
 
         it('should report progress', async () => {
-            const mockFiles = [
-                Uri.file('/workspace/test1.yaml'),
-                Uri.file('/workspace/test2.yaml')
-            ];
+            const mockFiles = [Uri.file('/workspace/test1.yaml'), Uri.file('/workspace/test2.yaml')];
             vi.mocked(workspace.findFiles).mockResolvedValue(mockFiles);
             vi.mocked(fs.readFile).mockResolvedValue('key: value');
             vi.mocked(mockParser.parseText).mockResolvedValue(createMockParseResult(mockFiles[0]));
@@ -205,7 +191,7 @@ describe('YamlScanner', () => {
             const onProgress = vi.fn();
 
             await scanner.scanWorkspace({
-                onProgress
+                onProgress,
             });
 
             // 进度回调可能被调用
@@ -213,10 +199,7 @@ describe('YamlScanner', () => {
         });
 
         it('should calculate statistics', async () => {
-            const mockFiles = [
-                Uri.file('/workspace/test1.yaml'),
-                Uri.file('/workspace/test2.yaml')
-            ];
+            const mockFiles = [Uri.file('/workspace/test1.yaml'), Uri.file('/workspace/test2.yaml')];
             vi.mocked(workspace.findFiles).mockResolvedValue(mockFiles);
             vi.mocked(fs.readFile).mockResolvedValue('key: value');
             vi.mocked(mockParser.parseText).mockResolvedValue(createMockParseResult(mockFiles[0]));
@@ -311,10 +294,7 @@ describe('YamlScanner', () => {
     describe('scanDirectory', () => {
         it('should scan directory for YAML files', async () => {
             const directory = Uri.file('/workspace/config');
-            const mockFiles = [
-                Uri.file('/workspace/config/test1.yaml'),
-                Uri.file('/workspace/config/test2.yml')
-            ];
+            const mockFiles = [Uri.file('/workspace/config/test1.yaml'), Uri.file('/workspace/config/test2.yml')];
 
             vi.mocked(workspace.findFiles).mockResolvedValue(mockFiles);
             vi.mocked(fs.readFile).mockResolvedValue('key: value');
@@ -332,7 +312,7 @@ describe('YamlScanner', () => {
             vi.mocked(workspace.findFiles).mockResolvedValue([]);
 
             await scanner.scanDirectory(directory, {
-                pattern: 'data/**/*.yaml'
+                pattern: 'data/**/*.yaml',
             });
 
             expect(workspace.findFiles).toHaveBeenCalled();
@@ -365,7 +345,7 @@ describe('YamlScanner', () => {
             const file = Uri.file('/workspace/test.yaml');
             vi.mocked(fs.stat).mockResolvedValue({
                 isFile: () => true,
-                size: 1000
+                size: 1000,
             } as any);
 
             const result = await scanner.isValidYamlFile(file);
@@ -377,7 +357,7 @@ describe('YamlScanner', () => {
             const file = Uri.file('/workspace/test.yml');
             vi.mocked(fs.stat).mockResolvedValue({
                 isFile: () => true,
-                size: 1000
+                size: 1000,
             } as any);
 
             const result = await scanner.isValidYamlFile(file);
@@ -397,7 +377,7 @@ describe('YamlScanner', () => {
             const file = Uri.file('/workspace/folder.yaml');
             vi.mocked(fs.stat).mockResolvedValue({
                 isFile: () => false,
-                size: 0
+                size: 0,
             } as any);
 
             const result = await scanner.isValidYamlFile(file);
@@ -409,7 +389,7 @@ describe('YamlScanner', () => {
             const file = Uri.file('/workspace/large.yaml');
             vi.mocked(fs.stat).mockResolvedValue({
                 isFile: () => true,
-                size: 20 * 1024 * 1024 // 20MB
+                size: 20 * 1024 * 1024, // 20MB
             } as any);
 
             const result = await scanner.isValidYamlFile(file);

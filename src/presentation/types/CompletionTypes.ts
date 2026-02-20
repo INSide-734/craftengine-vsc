@@ -1,4 +1,4 @@
-import { CompletionItem } from 'vscode';
+import { type CompletionItem } from 'vscode';
 
 /**
  * 扩展 CompletionItem 类型，添加策略标识和 Schema 提供者 ID

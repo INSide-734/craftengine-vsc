@@ -62,5 +62,4 @@ import type { IMinecraftDataValidator } from './IMinecraftDataValidator';
  * }
  * ```
  */
-export interface IMinecraftDataService
-    extends IMinecraftDataLoader, IMinecraftDataQuery, IMinecraftDataValidator {}
+export interface IMinecraftDataService extends IMinecraftDataLoader, IMinecraftDataQuery, IMinecraftDataValidator {}

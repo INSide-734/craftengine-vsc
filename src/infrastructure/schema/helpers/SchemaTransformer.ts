@@ -1,11 +1,10 @@
-import { JSONSchema7 } from 'json-schema';
-import { JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
+import { type JSONSchema7 } from 'json-schema';
+import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
 
 /**
  * 版本条件键的正则模式
  */
-const VERSION_CONDITION_PATTERN =
-    '^\\$\\$(>=|<=|>|<|=)?\\d+\\.\\d+(\\.\\d+)?(~\\d+\\.\\d+(\\.\\d+)?)?$';
+const VERSION_CONDITION_PATTERN = '^\\$\\$(>=|<=|>|<|=)?\\d+\\.\\d+(\\.\\d+)?(~\\d+\\.\\d+(\\.\\d+)?)?$';
 
 /**
  * Schema 运行时变换器
@@ -47,9 +46,10 @@ export class SchemaTransformer {
 
         // 检查当前对象是否支持版本条件
         if (schema['x-supports-version-condition'] === true && schema.properties) {
-            for (const propSchema of Object.values(schema.properties)) {
+            const props = schema.properties as Record<string, unknown>;
+            for (const [key, propSchema] of Object.entries(props)) {
                 if (propSchema && typeof propSchema === 'object') {
-                    this.expandPropertyForVersionCondition(propSchema as JsonSchemaNode);
+                    props[key] = this.expandPropertyForVersionCondition(propSchema as JsonSchemaNode);
                 }
             }
         }
@@ -117,42 +117,37 @@ export class SchemaTransformer {
      * 扩展单个属性以支持版本条件对象
      *
      * 将 { type: "string" } 转换为 oneOf: [{ type: "string" }, { 版本条件对象 }]
+     * 返回新对象，不变异传入的 propSchema。
      */
-    private expandPropertyForVersionCondition(propSchema: JsonSchemaNode): void {
+    private expandPropertyForVersionCondition(propSchema: JsonSchemaNode): JsonSchemaNode {
         // 如果已经是 oneOf/anyOf，假设已经正确配置
         if (propSchema.oneOf || propSchema.anyOf) {
-            return;
+            return propSchema;
         }
 
-        if (propSchema.type) {
-            const originalSchema = { ...propSchema };
-
-            // 清除原有属性，准备重构为 oneOf
-            delete propSchema.type;
-            delete propSchema.pattern;
-            delete propSchema.enum;
-            delete propSchema.format;
-            delete propSchema.minimum;
-            delete propSchema.maximum;
-            delete propSchema.minLength;
-            delete propSchema.maxLength;
-            delete propSchema.$ref;
-
-            // 构建版本条件对象 Schema
-            const versionConditionSchema = {
-                type: 'object',
-                patternProperties: {
-                    [VERSION_CONDITION_PATTERN]: {},
-                    '^default$': {}
-                },
-                additionalProperties: false
-            };
-
-            propSchema.oneOf = [
-                originalSchema,
-                versionConditionSchema
-            ];
+        if (!propSchema.type) {
+            return propSchema;
         }
+
+        // 提取元数据属性（保留在外层）和类型相关属性（放入 oneOf 第一项）
+        const { description, title, ...typeRelatedProps } = propSchema;
+
+        // 构建版本条件对象 Schema
+        const versionConditionSchema: JsonSchemaNode = {
+            type: 'object',
+            patternProperties: {
+                [VERSION_CONDITION_PATTERN]: {},
+                '^default$': {},
+            },
+            additionalProperties: false,
+        };
+
+        // 返回新对象
+        return {
+            ...(description !== undefined ? { description } : {}),
+            ...(title !== undefined ? { title } : {}),
+            oneOf: [typeRelatedProps, versionConditionSchema],
+        };
     }
 
     /**
@@ -167,12 +162,16 @@ export class SchemaTransformer {
             schema.additionalProperties = value;
         }
 
-        ['properties', 'patternProperties', 'definitions', '$defs', 'allOf', 'anyOf', 'oneOf'].forEach(key => {
+        ['properties', 'patternProperties', 'definitions', '$defs', 'allOf', 'anyOf', 'oneOf'].forEach((key) => {
             if (schema[key]) {
                 if (Array.isArray(schema[key])) {
-                    (schema[key] as JsonSchemaNode[]).forEach((s: JsonSchemaNode) => this.setAdditionalPropertiesRecursive(s, value));
+                    (schema[key] as JsonSchemaNode[]).forEach((s: JsonSchemaNode) =>
+                        this.setAdditionalPropertiesRecursive(s, value),
+                    );
                 } else if (typeof schema[key] === 'object') {
-                    Object.values(schema[key] as Record<string, JsonSchemaNode>).forEach((s: JsonSchemaNode) => this.setAdditionalPropertiesRecursive(s, value));
+                    Object.values(schema[key] as Record<string, JsonSchemaNode>).forEach((s: JsonSchemaNode) =>
+                        this.setAdditionalPropertiesRecursive(s, value),
+                    );
                 }
             }
         });

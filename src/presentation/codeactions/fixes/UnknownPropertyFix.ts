@@ -4,15 +4,8 @@
  * 为 "additionalProperties" 错误提供删除或重命名的快速修复
  */
 
-import {
-    CodeAction,
-    CodeActionKind,
-    Diagnostic,
-    Range,
-    TextDocument,
-    WorkspaceEdit
-} from 'vscode';
-import { IQuickFixProvider } from './IQuickFixProvider';
+import { CodeAction, CodeActionKind, type Diagnostic, Range, type TextDocument, WorkspaceEdit } from 'vscode';
+import { type IQuickFixProvider } from './IQuickFixProvider';
 import { QUICK_FIX_MESSAGES } from '../../../core/constants/DiagnosticMessages';
 import { findSimilarStrings } from '../../../core/utils/StringSimilarityUtils';
 
@@ -97,7 +90,7 @@ export class UnknownPropertyFix implements IQuickFixProvider {
     private createRemovePropertyFix(
         diagnostic: Diagnostic,
         document: TextDocument,
-        propertyName: string
+        propertyName: string,
     ): CodeAction | undefined {
         // 计算要删除的范围（整行，包括换行符）
         const deleteRange = this.calculateDeleteRange(diagnostic, document);
@@ -105,10 +98,7 @@ export class UnknownPropertyFix implements IQuickFixProvider {
             return undefined;
         }
 
-        const fix = new CodeAction(
-            QUICK_FIX_MESSAGES.removeUnknownProperty(propertyName),
-            CodeActionKind.QuickFix
-        );
+        const fix = new CodeAction(QUICK_FIX_MESSAGES.removeUnknownProperty(propertyName), CodeActionKind.QuickFix);
 
         fix.edit = new WorkspaceEdit();
         fix.edit.delete(document.uri, deleteRange);
@@ -149,9 +139,10 @@ export class UnknownPropertyFix implements IQuickFixProvider {
 
         // 删除从当前行开始到结束行（包括换行符）
         const startPos = currentLine.range.start;
-        const endPos = endLine < document.lineCount - 1
-            ? document.lineAt(endLine + 1).range.start
-            : document.lineAt(endLine).range.end;
+        const endPos =
+            endLine < document.lineCount - 1
+                ? document.lineAt(endLine + 1).range.start
+                : document.lineAt(endLine).range.end;
 
         return new Range(startPos, endPos);
     }
@@ -167,21 +158,14 @@ export class UnknownPropertyFix implements IQuickFixProvider {
     /**
      * 创建重命名修复操作
      */
-    private createRenameFixes(
-        diagnostic: Diagnostic,
-        document: TextDocument,
-        unknownProperty: string
-    ): CodeAction[] {
+    private createRenameFixes(diagnostic: Diagnostic, document: TextDocument, unknownProperty: string): CodeAction[] {
         const fixes: CodeAction[] = [];
 
         // 查找相似的已知属性
         const similarProperties = this.findSimilarProperties(unknownProperty);
 
         for (const suggestion of similarProperties.slice(0, 3)) {
-            const fix = new CodeAction(
-                QUICK_FIX_MESSAGES.renameTo(suggestion),
-                CodeActionKind.QuickFix
-            );
+            const fix = new CodeAction(QUICK_FIX_MESSAGES.renameTo(suggestion), CodeActionKind.QuickFix);
 
             fix.edit = new WorkspaceEdit();
 
@@ -222,12 +206,7 @@ export class UnknownPropertyFix implements IQuickFixProvider {
         const keyStart = keyPart.indexOf(keyMatch[1]);
         const keyEnd = keyStart + keyMatch[1].length;
 
-        return new Range(
-            diagnostic.range.start.line,
-            keyStart,
-            diagnostic.range.start.line,
-            keyEnd
-        );
+        return new Range(diagnostic.range.start.line, keyStart, diagnostic.range.start.line, keyEnd);
     }
 
     /**
@@ -240,7 +219,7 @@ export class UnknownPropertyFix implements IQuickFixProvider {
 
         return findSimilarStrings(unknownProperty, this.knownProperties, {
             threshold: 0.3,
-            maxResults: 3
-        }).map(r => r.item);
+            maxResults: 3,
+        }).map((r) => r.item);
     }
 }

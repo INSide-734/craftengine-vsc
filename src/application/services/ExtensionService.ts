@@ -1,16 +1,16 @@
-import { ExtensionContext } from 'vscode';
-import { 
-    IExtensionService, 
-    ExtensionState, 
-    IExtensionStatistics 
+import { type ExtensionContext } from 'vscode';
+import {
+    type IExtensionService,
+    ExtensionState,
+    type IExtensionStatistics,
 } from '../../core/interfaces/IExtensionService';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IConfiguration } from '../../core/interfaces/IConfiguration';
-import { IEventBus } from '../../core/interfaces/IEventBus';
-import { IDataStoreService } from '../../core/interfaces/IDataStoreService';
-import { IFileWatcher } from '../../core/interfaces/IFileWatcher';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../core/interfaces/IConfiguration';
+import { type IEventBus } from '../../core/interfaces/IEventBus';
+import { type IDataStoreService } from '../../core/interfaces/IDataStoreService';
+import { type IFileWatcher } from '../../core/interfaces/IFileWatcher';
 import { EVENT_TYPES } from '../../core/constants/ServiceTokens';
-import { IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
+import { type IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
 import { generateEventId } from '../../core/utils';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
@@ -21,15 +21,15 @@ import {
     DataFileHandler,
     DataCacheInitializer,
     ExtensionEventListeners,
-    ExtensionFileWatcherManager
+    ExtensionFileWatcherManager,
 } from './extension';
 
 /**
  * 扩展服务实现
- * 
+ *
  * 作为应用层的核心服务，管理整个扩展的生命周期、状态和核心功能。
  * 协调各子模块的初始化、配置、文件监控和健康检查。
- * 
+ *
  * @remarks
  * ExtensionService 的主要职责：
  * - 扩展生命周期管理（初始化、激活、停用）
@@ -38,16 +38,16 @@ import {
  * - 事件监听和发布
  * - 模板缓存管理
  * - 文件监控管理
- * 
-     * 该服务遵循组合模式，将复杂功能分解到多个子组件中：
-     * - ExtensionStatistics: 统计信息管理
-     * - ExtensionHealthChecker: 健康状态检查
-     * - ExtensionConfigurationManager: 配置管理
-     * - DataFileHandler: 数据文件处理（模板+翻译）
-     * - DataCacheInitializer: 数据缓存初始化
-     * - ExtensionEventListeners: 事件监听管理
-     * - ExtensionFileWatcherManager: 文件监控管理
- * 
+ *
+ * 该服务遵循组合模式，将复杂功能分解到多个子组件中：
+ * - ExtensionStatistics: 统计信息管理
+ * - ExtensionHealthChecker: 健康状态检查
+ * - ExtensionConfigurationManager: 配置管理
+ * - DataFileHandler: 数据文件处理（模板+翻译）
+ * - DataCacheInitializer: 数据缓存初始化
+ * - ExtensionEventListeners: 事件监听管理
+ * - ExtensionFileWatcherManager: 文件监控管理
+ *
  * @example
  * ```typescript
  * // 创建扩展服务实例
@@ -59,21 +59,21 @@ import {
  *     fileWatcher,
  *     performanceMonitor
  * );
- * 
+ *
  * // 初始化扩展
  * await extensionService.initialize(context);
- * 
+ *
  * // 激活扩展
  * await extensionService.activate();
- * 
+ *
  * // 获取扩展统计信息
  * const stats = await extensionService.getStatistics();
  * console.log(`Active templates: ${stats.activeTemplatesCount}`);
- * 
+ *
  * // 检查健康状态
  * const health = await extensionService.checkHealth();
  * console.log(`Health status: ${health.healthy ? 'OK' : 'Error'}`);
- * 
+ *
  * // 停用扩展
  * await extensionService.deactivate();
  * ```
@@ -83,7 +83,7 @@ export class ExtensionService implements IExtensionService {
     private state: ExtensionState = ExtensionState.Inactive;
     /** VSCode 扩展上下文 */
     private context?: ExtensionContext;
-    
+
     // 子组件
     private statistics!: ExtensionStatistics;
     private healthChecker!: ExtensionHealthChecker;
@@ -92,12 +92,12 @@ export class ExtensionService implements IExtensionService {
     private cacheInitializer!: DataCacheInitializer;
     private eventListeners!: ExtensionEventListeners;
     private fileWatcherManager!: ExtensionFileWatcherManager;
-    
+
     public readonly initialScanCompleted: Promise<void>;
-    
+
     /**
      * 构造扩展服务
-     * 
+     *
      * @param logger 日志记录器
      * @param configuration 配置管理器
      * @param eventBus 事件总线
@@ -111,49 +111,46 @@ export class ExtensionService implements IExtensionService {
         private readonly eventBus: IEventBus,
         private readonly dataStoreService: IDataStoreService,
         private readonly fileWatcher: IFileWatcher,
-        private readonly performanceMonitor: IPerformanceMonitor
+        private readonly performanceMonitor: IPerformanceMonitor,
     ) {
         // 初始化子组件
         this.initializeComponents();
-        
+
         // 代理初始扫描完成的 Promise
         this.initialScanCompleted = this.cacheInitializer.initialScanCompleted;
     }
-    
+
     /**
      * 初始化子组件
      */
     private initializeComponents(): void {
         // 统计管理器
-        this.statistics = new ExtensionStatistics(
-            this.performanceMonitor,
-            this.logger.createChild('Statistics')
-        );
-        
+        this.statistics = new ExtensionStatistics(this.performanceMonitor, this.logger.createChild('Statistics'));
+
         // 健康检查器
         this.healthChecker = new ExtensionHealthChecker(
             this.logger.createChild('HealthChecker'),
             this.configuration,
             this.dataStoreService,
-            this.fileWatcher
+            this.fileWatcher,
         );
-        
+
         // 配置管理器
         this.configManager = new ExtensionConfigurationManager(
             this.logger.createChild('ConfigurationManager'),
             this.configuration,
             this.eventBus,
-            generateEventId
+            generateEventId,
         );
-        
+
         // 数据文件处理器（统一处理模板和翻译）
         this.fileHandler = new DataFileHandler(
             this.logger.createChild('DataFileHandler'),
             this.eventBus,
             this.dataStoreService,
-            generateEventId
+            generateEventId,
         );
-        
+
         // 数据缓存初始化器
         this.cacheInitializer = new DataCacheInitializer(
             this.logger.createChild('DataCacheInitializer'),
@@ -161,51 +158,50 @@ export class ExtensionService implements IExtensionService {
             this.dataStoreService,
             this.performanceMonitor,
             generateEventId,
-            () => this.warmupCaches()
+            () => this.warmupCaches(),
         );
-        
+
         // 事件监听器管理器
         this.eventListeners = new ExtensionEventListeners(
             this.logger.createChild('EventListeners'),
             this.eventBus,
-            this.statistics
+            this.statistics,
         );
-        
+
         // 文件监控管理器
         this.fileWatcherManager = new ExtensionFileWatcherManager(
             this.logger.createChild('FileWatcherManager'),
             this.configuration,
             this.fileWatcher,
-            this.fileHandler
+            this.fileHandler,
         );
     }
-    
+
     /**
      * 初始化扩展
      */
     async initialize(context: ExtensionContext): Promise<void> {
         const timer = this.performanceMonitor.startTimer('extension.initialize');
-        
+
         try {
             this.state = ExtensionState.Initializing;
             this.context = context;
-            
+
             this.logger.info('Initializing CraftEngine extension');
-            
+
             // 1. 初始化配置
             await this.configManager.initialize();
-            
+
             // 2. 设置文件监控
             await this.fileWatcherManager.setup();
-            
+
             // 3. 设置事件监听器
             this.eventListeners.setup();
-            
+
             // 4. 初始化数据缓存（模板 + 翻译）
             await this.cacheInitializer.initialize();
-            
+
             this.logger.info('CraftEngine extension initialized successfully');
-            
         } catch (error) {
             this.state = ExtensionState.Error;
             this.logger.error('Failed to initialize extension', error as Error);
@@ -214,37 +210,36 @@ export class ExtensionService implements IExtensionService {
             timer.stop();
         }
     }
-    
+
     /**
      * 激活扩展
      */
     async activate(): Promise<void> {
         const timer = this.performanceMonitor.startTimer('extension.activate');
-        
+
         try {
             if (this.state !== ExtensionState.Initializing) {
                 throw new Error(`Cannot activate from state: ${this.state}`);
             }
-            
+
             this.state = ExtensionState.Active;
             const activationTime = new Date();
-            
+
             // 设置激活时间
             this.statistics.setActivationTime(activationTime);
-            
+
             this.logger.info('CraftEngine extension activated', {
-                activationTime: activationTime.toISOString()
+                activationTime: activationTime.toISOString(),
             });
-            
+
             // 发布激活事件
             await this.eventBus.publish(EVENT_TYPES.ExtensionActivated, {
                 id: generateEventId(),
                 type: EVENT_TYPES.ExtensionActivated,
                 timestamp: activationTime,
                 source: 'ExtensionService',
-                activationTime: timer.getElapsed()
+                activationTime: timer.getElapsed(),
             });
-            
         } catch (error) {
             this.state = ExtensionState.Error;
             this.logger.error('Failed to activate extension', error as Error);
@@ -253,7 +248,7 @@ export class ExtensionService implements IExtensionService {
             timer.stop();
         }
     }
-    
+
     /**
      * 停用扩展
      */
@@ -289,47 +284,46 @@ export class ExtensionService implements IExtensionService {
             this.state = ExtensionState.Inactive;
 
             this.logger.info('CraftEngine extension deactivated');
-
         } catch (error) {
             this.logger.error('Error during extension deactivation', error as Error);
             throw error;
         }
     }
-    
+
     /**
      * 获取扩展状态
      */
     getState(): ExtensionState {
         return this.state;
     }
-    
+
     /**
      * 获取统计信息
      */
     getStatistics(): IExtensionStatistics {
         return this.statistics.getStatistics();
     }
-    
+
     /**
      * 重启扩展
      */
     async restart(): Promise<void> {
         this.logger.info('Restarting CraftEngine extension');
-        
+
         if (this.state === ExtensionState.Active) {
             await this.deactivate();
         }
-        
+
         if (this.context) {
             await this.initialize(this.context);
             await this.activate();
         } else {
             throw new Error('Cannot restart: no context available');
         }
-        
+
         this.logger.info('CraftEngine extension restarted');
     }
-    
+
     /**
      * 检查扩展健康状态
      */
@@ -343,19 +337,14 @@ export class ExtensionService implements IExtensionService {
      * 由 DataCacheInitializer 回调调用，在 Application 层桥接 Infrastructure 服务
      */
     private async warmupCaches(): Promise<void> {
-        const results = await Promise.allSettled([
-            this.warmupWorkspaceScanCache(),
-            this.warmupSchemaCache()
-        ]);
+        const results = await Promise.allSettled([this.warmupWorkspaceScanCache(), this.warmupSchemaCache()]);
 
-        const successCount = results.filter(r => r.status === 'fulfilled').length;
+        const successCount = results.filter((r) => r.status === 'fulfilled').length;
         this.logger.debug('Cache warmup results', { successCount, totalCount: results.length });
     }
 
     private async warmupWorkspaceScanCache(): Promise<void> {
-        const cache = ServiceContainer.tryGetService<{ warmup(): Promise<void> }>(
-            SERVICE_TOKENS.WorkspaceScanCache
-        );
+        const cache = ServiceContainer.tryGetService<{ warmup(): Promise<void> }>(SERVICE_TOKENS.WorkspaceScanCache);
         if (cache) {
             await cache.warmup();
         }
@@ -364,12 +353,10 @@ export class ExtensionService implements IExtensionService {
     private async warmupSchemaCache(): Promise<void> {
         const commonPaths = ['items', 'templates', 'categories', 'events', 'recipes'];
         const schemaService = ServiceContainer.tryGetService<{ getSchemaForPath(path: string[]): Promise<unknown> }>(
-            SERVICE_TOKENS.SchemaService
+            SERVICE_TOKENS.SchemaService,
         );
         if (schemaService) {
-            await Promise.all(
-                commonPaths.map(path => schemaService.getSchemaForPath([path]).catch(() => {}))
-            );
+            await Promise.all(commonPaths.map((path) => schemaService.getSchemaForPath([path]).catch(() => {})));
         }
     }
 }

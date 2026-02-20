@@ -1,4 +1,4 @@
-import { IMinecraftTag } from '../../core/interfaces/IMinecraftDataService';
+import { type IMinecraftTag } from '../../core/interfaces/IMinecraftDataService';
 
 /**
  * Minecraft 标签数据缓存
@@ -32,7 +32,7 @@ export class MinecraftTagCache {
         itemTags: IMinecraftTag[],
         entityTags: IMinecraftTag[],
         fluidTags: IMinecraftTag[],
-        gameEventTags: IMinecraftTag[]
+        gameEventTags: IMinecraftTag[],
     ): void {
         this.blockTags = blockTags;
         this.itemTags = itemTags;
@@ -43,38 +43,44 @@ export class MinecraftTagCache {
     }
     getTags(type: IMinecraftTag['type']): IMinecraftTag[] {
         switch (type) {
-            case 'blocks': return this.blockTags;
-            case 'items': return this.itemTags;
-            case 'entity_types': return this.entityTags;
-            case 'fluids': return this.fluidTags;
-            case 'game_events': return this.gameEventTags;
-            default: return [];
+            case 'blocks':
+                return this.blockTags;
+            case 'items':
+                return this.itemTags;
+            case 'entity_types':
+                return this.entityTags;
+            case 'fluids':
+                return this.fluidTags;
+            case 'game_events':
+                return this.gameEventTags;
+            default:
+                return [];
         }
     }
 
     getAllTags(): IMinecraftTag[] {
-        return [
-            ...this.blockTags,
-            ...this.itemTags,
-            ...this.entityTags,
-            ...this.fluidTags,
-            ...this.gameEventTags
-        ];
+        return [...this.blockTags, ...this.itemTags, ...this.entityTags, ...this.fluidTags, ...this.gameEventTags];
     }
 
     getTagNames(type: IMinecraftTag['type']): string[] {
-        return this.getTags(type).map(t => t.name);
+        return this.getTags(type).map((t) => t.name);
     }
 
     isValidTag(type: IMinecraftTag['type'], name: string): boolean {
         const normalizedName = this.normalizeTagName(name);
         switch (type) {
-            case 'blocks': return this.blockTagSet.has(normalizedName);
-            case 'items': return this.itemTagSet.has(normalizedName);
-            case 'entity_types': return this.entityTagSet.has(normalizedName);
-            case 'fluids': return this.fluidTagSet.has(normalizedName);
-            case 'game_events': return this.gameEventTagSet.has(normalizedName);
-            default: return false;
+            case 'blocks':
+                return this.blockTagSet.has(normalizedName);
+            case 'items':
+                return this.itemTagSet.has(normalizedName);
+            case 'entity_types':
+                return this.entityTagSet.has(normalizedName);
+            case 'fluids':
+                return this.fluidTagSet.has(normalizedName);
+            case 'game_events':
+                return this.gameEventTagSet.has(normalizedName);
+            default:
+                return false;
         }
     }
 
@@ -99,11 +105,11 @@ export class MinecraftTagCache {
         this.tagValueIndex.clear();
 
         const tagSetMap: Array<{ tags: IMinecraftTag[]; set: Set<string>; type: string }> = [
-            { tags: this.blockTags, set: this.blockTagSet = new Set(), type: 'blocks' },
-            { tags: this.itemTags, set: this.itemTagSet = new Set(), type: 'items' },
-            { tags: this.entityTags, set: this.entityTagSet = new Set(), type: 'entity_types' },
-            { tags: this.fluidTags, set: this.fluidTagSet = new Set(), type: 'fluids' },
-            { tags: this.gameEventTags, set: this.gameEventTagSet = new Set(), type: 'game_events' }
+            { tags: this.blockTags, set: (this.blockTagSet = new Set()), type: 'blocks' },
+            { tags: this.itemTags, set: (this.itemTagSet = new Set()), type: 'items' },
+            { tags: this.entityTags, set: (this.entityTagSet = new Set()), type: 'entity_types' },
+            { tags: this.fluidTags, set: (this.fluidTagSet = new Set()), type: 'fluids' },
+            { tags: this.gameEventTags, set: (this.gameEventTagSet = new Set()), type: 'game_events' },
         ];
 
         for (const { tags, set, type } of tagSetMap) {

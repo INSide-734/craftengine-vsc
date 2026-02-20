@@ -1,13 +1,13 @@
-import { EditorUri } from '../../../core/types/EditorTypes';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { ICategory, ICategoryRepository } from '../../../core/interfaces/ICategory';
-import { IEventBus } from '../../../core/interfaces/IEventBus';
+import { type EditorUri } from '../../../core/types/EditorTypes';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type ICategory, type ICategoryRepository } from '../../../core/interfaces/ICategory';
+import { type IEventBus } from '../../../core/interfaces/IEventBus';
 import { EVENT_TYPES } from '../../../core/constants/ServiceTokens';
 import { generateEventId } from '../../../core/utils';
 
 /**
  * 分类存储
- * 
+ *
  * 管理用户在 categories: section 中定义的分类
  */
 export class CategoryStore implements ICategoryRepository {
@@ -17,25 +17,25 @@ export class CategoryStore implements ICategoryRepository {
     private readonly namespaceIndex = new Map<string, Set<string>>();
     /** 文件索引：文件路径 -> 分类 ID 集合 */
     private readonly fileIndex = new Map<string, Set<string>>();
-    
+
     constructor(
         private readonly logger: ILogger,
-        private readonly eventBus?: IEventBus
+        private readonly eventBus?: IEventBus,
     ) {
         this.logger = logger.createChild('CategoryStore');
     }
-    
+
     // ========================================
     // 查询接口
     // ========================================
-    
+
     /**
      * 获取所有分类
      */
     async getAllCategories(): Promise<ICategory[]> {
         return Array.from(this.categories.values());
     }
-    
+
     /**
      * 根据完整 ID 获取分类（支持带或不带 # 前缀）
      */
@@ -44,17 +44,18 @@ export class CategoryStore implements ICategoryRepository {
         const normalizedId = id.startsWith('#') ? id : `#${id}`;
         return this.categories.get(normalizedId);
     }
-    
+
     /**
      * 搜索分类（支持前缀匹配）
      */
     async searchCategories(prefix: string): Promise<ICategory[]> {
         const normalizedPrefix = prefix.startsWith('#') ? prefix.toLowerCase() : `#${prefix.toLowerCase()}`;
-        
-        return Array.from(this.categories.values())
-            .filter(category => category.id.toLowerCase().startsWith(normalizedPrefix));
+
+        return Array.from(this.categories.values()).filter((category) =>
+            category.id.toLowerCase().startsWith(normalizedPrefix),
+        );
     }
-    
+
     /**
      * 根据命名空间获取分类
      */
@@ -63,7 +64,7 @@ export class CategoryStore implements ICategoryRepository {
         if (!ids) {
             return [];
         }
-        
+
         const result: ICategory[] = [];
         for (const id of ids) {
             const category = this.categories.get(id);
@@ -73,14 +74,14 @@ export class CategoryStore implements ICategoryRepository {
         }
         return result;
     }
-    
+
     /**
      * 获取分类数量
      */
     async getCategoryCount(): Promise<number> {
         return this.categories.size;
     }
-    
+
     /**
      * 检查分类是否存在
      */
@@ -88,19 +89,19 @@ export class CategoryStore implements ICategoryRepository {
         const normalizedId = id.startsWith('#') ? id : `#${id}`;
         return this.categories.has(normalizedId);
     }
-    
+
     // ========================================
     // 修改接口
     // ========================================
-    
+
     /**
      * 添加分类
      */
     async addCategory(category: ICategory): Promise<void> {
         this.addCategoryInternal(category);
-        await this.publishCategoryCreated(this.categories.get(
-            category.id.startsWith('#') ? category.id : `#${category.id}`
-        )!);
+        await this.publishCategoryCreated(
+            this.categories.get(category.id.startsWith('#') ? category.id : `#${category.id}`)!,
+        );
     }
 
     /**
@@ -118,7 +119,7 @@ export class CategoryStore implements ICategoryRepository {
         }
 
         this.logger.debug('Categories batch added', {
-            count: categories.length
+            count: categories.length,
         });
     }
 
@@ -128,14 +129,14 @@ export class CategoryStore implements ICategoryRepository {
     async removeCategory(id: string): Promise<void> {
         const normalizedId = id.startsWith('#') ? id : `#${id}`;
         const category = this.categories.get(normalizedId);
-        
+
         if (!category) {
             return;
         }
-        
+
         // 从主索引删除
         this.categories.delete(normalizedId);
-        
+
         // 从命名空间索引删除
         const namespaceSet = this.namespaceIndex.get(category.namespace);
         if (namespaceSet) {
@@ -144,7 +145,7 @@ export class CategoryStore implements ICategoryRepository {
                 this.namespaceIndex.delete(category.namespace);
             }
         }
-        
+
         // 从文件索引删除
         const fileSet = this.fileIndex.get(category.sourceFile);
         if (fileSet) {
@@ -153,32 +154,32 @@ export class CategoryStore implements ICategoryRepository {
                 this.fileIndex.delete(category.sourceFile);
             }
         }
-        
+
         this.logger.debug('Category removed', { id: normalizedId });
         await this.publishCategoryDeleted(normalizedId);
     }
-    
+
     /**
      * 根据文件删除分类
      */
     async removeCategoriesByFile(sourceFile: EditorUri): Promise<void> {
         const fileSet = this.fileIndex.get(sourceFile.fsPath);
-        
+
         if (!fileSet) {
             return;
         }
-        
+
         const idsToRemove = Array.from(fileSet);
         for (const id of idsToRemove) {
             await this.removeCategory(id);
         }
-        
+
         this.logger.debug('Categories removed by file', {
             file: sourceFile.fsPath,
-            count: idsToRemove.length
+            count: idsToRemove.length,
         });
     }
-    
+
     /**
      * 清空所有分类
      */
@@ -192,11 +193,11 @@ export class CategoryStore implements ICategoryRepository {
         this.logger.debug('All categories cleared', { count });
         await this.publishCategoryCleared(count);
     }
-    
+
     // ========================================
     // 统计方法
     // ========================================
-    
+
     /**
      * 获取统计信息
      */
@@ -204,7 +205,7 @@ export class CategoryStore implements ICategoryRepository {
         return {
             total: this.categories.size,
             namespaces: this.namespaceIndex.size,
-            files: this.fileIndex.size
+            files: this.fileIndex.size,
         };
     }
 
@@ -219,7 +220,7 @@ export class CategoryStore implements ICategoryRepository {
         // 确保 ID 带 # 前缀
         const normalizedCategory = {
             ...category,
-            id: category.id.startsWith('#') ? category.id : `#${category.id}`
+            id: category.id.startsWith('#') ? category.id : `#${category.id}`,
         };
 
         this.categories.set(normalizedCategory.id, normalizedCategory);
@@ -242,7 +243,7 @@ export class CategoryStore implements ICategoryRepository {
 
         this.logger.debug('Category added', {
             id: normalizedCategory.id,
-            namespace: normalizedCategory.namespace
+            namespace: normalizedCategory.namespace,
         });
 
         return normalizedCategory;
@@ -253,39 +254,43 @@ export class CategoryStore implements ICategoryRepository {
     // ========================================
 
     private async publishCategoryCreated(category: ICategory): Promise<void> {
-        if (!this.eventBus) { return; }
+        if (!this.eventBus) {
+            return;
+        }
         await this.eventBus.publish(EVENT_TYPES.CategoryCreated, {
             id: generateEventId('cat'),
             type: EVENT_TYPES.CategoryCreated,
             timestamp: new Date(),
             source: 'CategoryStore',
             aggregateId: category.id,
-            category
+            category,
         });
     }
 
     private async publishCategoryDeleted(categoryId: string): Promise<void> {
-        if (!this.eventBus) { return; }
+        if (!this.eventBus) {
+            return;
+        }
         await this.eventBus.publish(EVENT_TYPES.CategoryDeleted, {
             id: generateEventId('cat'),
             type: EVENT_TYPES.CategoryDeleted,
             timestamp: new Date(),
             source: 'CategoryStore',
             aggregateId: categoryId,
-            categoryId
+            categoryId,
         });
     }
 
     private async publishCategoryCleared(count: number): Promise<void> {
-        if (!this.eventBus) { return; }
+        if (!this.eventBus) {
+            return;
+        }
         await this.eventBus.publish(EVENT_TYPES.CategoryCleared, {
             id: generateEventId('cat'),
             type: EVENT_TYPES.CategoryCleared,
             timestamp: new Date(),
             source: 'CategoryStore',
-            count
+            count,
         });
     }
 }
-
-

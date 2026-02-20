@@ -4,11 +4,7 @@
  * 移植自 craft-engine 的 Tint 系统，支持多种着色类型。
  */
 
-import {
-    TintConfig,
-    TintType,
-    TintValue,
-} from '../../../core/interfaces/IModelGenerator';
+import { type TintConfig, type TintType, type TintValue } from '../../../core/interfaces/IModelGenerator';
 
 // ============================================
 // Tint 接口
@@ -46,11 +42,7 @@ export function parseTintValue(value: unknown): TintValue {
         return value;
     }
     if (Array.isArray(value) && value.length === 3) {
-        return [
-            Number(value[0]),
-            Number(value[1]),
-            Number(value[2]),
-        ] as [number, number, number];
+        return [Number(value[0]), Number(value[1]), Number(value[2])] as [number, number, number];
     }
     // 默认返回 0
     return 0;
@@ -165,10 +157,7 @@ export class SimpleDefaultTint implements Tint {
 
     static fromConfig(type: TintType, config: Record<string, unknown>): SimpleDefaultTint {
         const value = config['default'];
-        return new SimpleDefaultTint(
-            type,
-            value !== undefined ? parseTintValue(value) : undefined
-        );
+        return new SimpleDefaultTint(type, value !== undefined ? parseTintValue(value) : undefined);
     }
 }
 
@@ -187,29 +176,29 @@ let TINT_FACTORIES: Record<string, (config: Record<string, unknown>) => Tint> | 
 function buildDefaultTintFactories(): Record<string, (config: Record<string, unknown>) => Tint> {
     return {
         'minecraft:constant': ConstantTint.fromConfig,
-        'constant': ConstantTint.fromConfig,
+        constant: ConstantTint.fromConfig,
         'minecraft:custom_model_data': CustomModelDataTint.fromConfig,
-        'custom_model_data': CustomModelDataTint.fromConfig,
+        custom_model_data: CustomModelDataTint.fromConfig,
         'minecraft:grass': GrassTint.fromConfig,
-        'grass': GrassTint.fromConfig,
+        grass: GrassTint.fromConfig,
         'minecraft:dye': (c) => SimpleDefaultTint.fromConfig('minecraft:dye', c),
-        'dye': (c) => SimpleDefaultTint.fromConfig('minecraft:dye', c),
+        dye: (c) => SimpleDefaultTint.fromConfig('minecraft:dye', c),
         'minecraft:firework': (c) => SimpleDefaultTint.fromConfig('minecraft:firework', c),
-        'firework': (c) => SimpleDefaultTint.fromConfig('minecraft:firework', c),
+        firework: (c) => SimpleDefaultTint.fromConfig('minecraft:firework', c),
         'minecraft:map_color': (c) => SimpleDefaultTint.fromConfig('minecraft:map_color', c),
-        'map_color': (c) => SimpleDefaultTint.fromConfig('minecraft:map_color', c),
+        map_color: (c) => SimpleDefaultTint.fromConfig('minecraft:map_color', c),
         'minecraft:potion': (c) => SimpleDefaultTint.fromConfig('minecraft:potion', c),
-        'potion': (c) => SimpleDefaultTint.fromConfig('minecraft:potion', c),
+        potion: (c) => SimpleDefaultTint.fromConfig('minecraft:potion', c),
         'minecraft:team': (c) => SimpleDefaultTint.fromConfig('minecraft:team', c),
-        'team': (c) => SimpleDefaultTint.fromConfig('minecraft:team', c),
+        team: (c) => SimpleDefaultTint.fromConfig('minecraft:team', c),
     };
 }
 
 /** 专用工厂类映射 */
 const SPECIAL_FACTORY_MAP: Record<string, (config: Record<string, unknown>) => Tint> = {
-    'constant': ConstantTint.fromConfig,
-    'custom_model_data': CustomModelDataTint.fromConfig,
-    'grass': GrassTint.fromConfig,
+    constant: ConstantTint.fromConfig,
+    custom_model_data: CustomModelDataTint.fromConfig,
+    grass: GrassTint.fromConfig,
 };
 
 /**
@@ -280,7 +269,5 @@ export function createTints(configs: unknown[]): Tint[] {
     if (!Array.isArray(configs)) {
         return [];
     }
-    return configs
-        .filter((c): c is Record<string, unknown> => typeof c === 'object' && c !== null)
-        .map(createTint);
+    return configs.filter((c): c is Record<string, unknown> => typeof c === 'object' && c !== null).map(createTint);
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MinecraftBuiltinItemLoader } from '../../../../infrastructure/data/MinecraftBuiltinItemLoader';
-import { IMinecraftVersionService } from '../../../../core/interfaces/IMinecraftVersionService';
-import { ILogger } from '../../../../core/interfaces/ILogger';
+import { type IMinecraftVersionService } from '../../../../core/interfaces/IMinecraftVersionService';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
 import { ServiceContainer } from '../../../../infrastructure/ServiceContainer';
 import { SERVICE_TOKENS } from '../../../../core/constants/ServiceTokens';
 
@@ -35,14 +35,14 @@ vi.mock('../../../../infrastructure/utils/HttpUtils.js', () => {
                     try {
                         logger?.debug('Attempting to fetch from source', {
                             sourceType,
-                            url: mockMaskUrlFn(url)
+                            url: mockMaskUrlFn(url),
                         });
 
                         const data = await mockFetchJsonFn(url, timeout);
 
                         logger?.debug('Successfully fetched from source', {
                             sourceType,
-                            url: mockMaskUrlFn(url)
+                            url: mockMaskUrlFn(url),
                         });
 
                         return data;
@@ -54,19 +54,19 @@ vi.mock('../../../../infrastructure/utils/HttpUtils.js', () => {
                             sourceType,
                             url: mockMaskUrlFn(url),
                             error: errorMessage,
-                            remainingSources: urls.length - i - 1
+                            remainingSources: urls.length - i - 1,
                         });
                     }
                 }
 
                 logger?.warn('All data sources failed', {
                     attemptedSources: urls.length,
-                    errors
+                    errors,
                 });
 
                 return null;
-            }
-        }
+            },
+        },
     };
 });
 
@@ -90,12 +90,7 @@ describe('MinecraftBuiltinItemLoader', () => {
     // Mock 的物品列表响应
     const mockItemListResponse = {
         directories: [],
-        files: [
-            'diamond.json',
-            'diamond_sword.json',
-            'iron_ingot.json',
-            'gold_block.json'
-        ]
+        files: ['diamond.json', 'diamond_sword.json', 'iron_ingot.json', 'gold_block.json'],
     };
 
     beforeEach(async () => {
@@ -111,7 +106,7 @@ describe('MinecraftBuiltinItemLoader', () => {
             debug: vi.fn(),
             warn: vi.fn(),
             error: vi.fn(),
-            createChild: vi.fn().mockReturnThis()
+            createChild: vi.fn().mockReturnThis(),
         } as any;
 
         // Mock MinecraftVersionService
@@ -122,7 +117,7 @@ describe('MinecraftBuiltinItemLoader', () => {
             isValidVersion: vi.fn(),
             compareVersions: vi.fn(),
             isValidVersionFormat: vi.fn(),
-            getSuggestedVersions: vi.fn()
+            getSuggestedVersions: vi.fn(),
         };
 
         // Mock ServiceContainer
@@ -137,51 +132,55 @@ describe('MinecraftBuiltinItemLoader', () => {
                 return {
                     getTimingConfigSync: vi.fn().mockReturnValue({
                         cache: {
-                            minecraftDataCacheTTL: 3600000
+                            minecraftDataCacheTTL: 3600000,
                         },
                         network: {
-                            requestTimeout: 10000
-                        }
+                            requestTimeout: 10000,
+                        },
                     }),
                     getDataSourcesConfigSync: vi.fn().mockReturnValue({
                         sources: {
                             minecraftAssets: {
-                                primary: 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads',
+                                primary:
+                                    'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads',
                                 mirrors: [
-                                    'https://gh.llkk.cc/https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads'
+                                    'https://gh.llkk.cc/https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads',
                                 ],
                                 endpoints: {
-                                    builtinItems: '{version}/assets/minecraft/items/_list.json'
-                                }
-                            }
+                                    builtinItems: '{version}/assets/minecraft/items/_list.json',
+                                },
+                            },
                         },
                         builtinSource: {
-                            identifier: '<minecraft:builtin>'
-                        }
+                            identifier: '<minecraft:builtin>',
+                        },
                     }),
                     loadPerformanceConfig: vi.fn().mockResolvedValue({
-                        network: { requestTimeout: 10000 }
+                        network: { requestTimeout: 10000 },
                     }),
                     loadDataSourcesConfig: vi.fn().mockResolvedValue({
                         sources: {
                             minecraftAssets: {
-                                primary: 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads',
+                                primary:
+                                    'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads',
                                 mirrors: [
-                                    'https://gh.llkk.cc/https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads'
+                                    'https://gh.llkk.cc/https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads',
                                 ],
                                 endpoints: {
-                                    builtinItems: '{version}/assets/minecraft/items/_list.json'
-                                }
-                            }
+                                    builtinItems: '{version}/assets/minecraft/items/_list.json',
+                                },
+                            },
                         },
                         builtinSource: {
-                            identifier: '<minecraft:builtin>'
-                        }
+                            identifier: '<minecraft:builtin>',
+                        },
                     }),
-                    getDataSourceUrls: vi.fn().mockResolvedValue([
-                        'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/items/_list.json',
-                        'https://gh.llkk.cc/https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/items/_list.json'
-                    ])
+                    getDataSourceUrls: vi
+                        .fn()
+                        .mockResolvedValue([
+                            'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/items/_list.json',
+                            'https://gh.llkk.cc/https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads/1.21.11/assets/minecraft/items/_list.json',
+                        ]),
                 } as any;
             }
             return null as any;
@@ -242,20 +241,20 @@ describe('MinecraftBuiltinItemLoader', () => {
                 namespace: 'minecraft',
                 name: 'diamond',
                 sourceFile: '<minecraft:builtin>@1.21.11',
-                lineNumber: 0
+                lineNumber: 0,
             });
 
             expect(items[1]).toMatchObject({
                 id: 'minecraft:diamond_sword',
                 namespace: 'minecraft',
-                name: 'diamond_sword'
+                name: 'diamond_sword',
             });
         });
 
         it('should fallback to mirror when main source fails', async () => {
             mockFetchJsonFallback([
                 { success: false, error: new Error('Main source failed') },
-                { success: true, data: mockItemListResponse }
+                { success: true, data: mockItemListResponse },
             ]);
 
             const items = await loader.loadBuiltinItems();
@@ -270,7 +269,7 @@ describe('MinecraftBuiltinItemLoader', () => {
         it('should try all mirrors before giving up', async () => {
             mockFetchJsonFallback([
                 { success: false, error: new Error('Failed') },
-                { success: false, error: new Error('Failed') }
+                { success: false, error: new Error('Failed') },
             ]);
 
             const items = await loader.loadBuiltinItems();
@@ -281,9 +280,7 @@ describe('MinecraftBuiltinItemLoader', () => {
         });
 
         it('should return empty array when version service fails', async () => {
-            vi.mocked(mockVersionService.getLatestRelease).mockRejectedValue(
-                new Error('Version service error')
-            );
+            vi.mocked(mockVersionService.getLatestRelease).mockRejectedValue(new Error('Version service error'));
 
             const items = await loader.loadBuiltinItems();
 
@@ -317,44 +314,31 @@ describe('MinecraftBuiltinItemLoader', () => {
         it('should convert file names correctly', async () => {
             mockFetchJsonSuccess({
                 directories: [],
-                files: [
-                    'diamond_pickaxe.json',
-                    'golden_apple.json',
-                    'netherite_sword.json'
-                ]
+                files: ['diamond_pickaxe.json', 'golden_apple.json', 'netherite_sword.json'],
             });
 
             const items = await loader.loadBuiltinItems();
 
             expect(items).toHaveLength(3);
-            expect(items.map(i => i.name)).toEqual([
-                'diamond_pickaxe',
-                'golden_apple',
-                'netherite_sword'
-            ]);
+            expect(items.map((i) => i.name)).toEqual(['diamond_pickaxe', 'golden_apple', 'netherite_sword']);
         });
 
         it('should skip non-json files', async () => {
             mockFetchJsonSuccess({
                 directories: [],
-                files: [
-                    'diamond.json',
-                    'readme.txt',
-                    'iron_ingot.json',
-                    'config.yaml'
-                ]
+                files: ['diamond.json', 'readme.txt', 'iron_ingot.json', 'config.yaml'],
             });
 
             const items = await loader.loadBuiltinItems();
 
             expect(items).toHaveLength(2);
-            expect(items.map(i => i.name)).toEqual(['diamond', 'iron_ingot']);
+            expect(items.map((i) => i.name)).toEqual(['diamond', 'iron_ingot']);
         });
 
         it('should handle empty file list', async () => {
             mockFetchJsonSuccess({
                 directories: [],
-                files: []
+                files: [],
             });
 
             const items = await loader.loadBuiltinItems();
@@ -362,10 +346,10 @@ describe('MinecraftBuiltinItemLoader', () => {
             expect(items).toEqual([]);
 
             // 验证仍然记录成功日志
-            expect(mockLogger.info).toHaveBeenCalledWith(
-                'Minecraft builtin items loaded successfully',
-                { version: '1.21.11', count: 0 }
-            );
+            expect(mockLogger.info).toHaveBeenCalledWith('Minecraft builtin items loaded successfully', {
+                version: '1.21.11',
+                count: 0,
+            });
         });
 
         it('should use correct version in source file path', async () => {
@@ -387,9 +371,7 @@ describe('MinecraftBuiltinItemLoader', () => {
 
             // 验证日志中的 URL 是脱敏的
             const debugCalls = vi.mocked(mockLogger.debug).mock.calls;
-            const urlLogs = debugCalls.filter(call =>
-                call[0].includes('Attempting to fetch from source')
-            );
+            const urlLogs = debugCalls.filter((call) => call[0].includes('Attempting to fetch from source'));
 
             expect(urlLogs.length).toBeGreaterThan(0);
 
@@ -423,7 +405,7 @@ describe('MinecraftBuiltinItemLoader', () => {
             // 让主站失败，触发镜像
             mockFetchJsonFallback([
                 { success: false, error: new Error('Main failed') },
-                { success: true, data: mockItemListResponse }
+                { success: true, data: mockItemListResponse },
             ]);
 
             await loader.loadBuiltinItems();
@@ -443,7 +425,7 @@ describe('MinecraftBuiltinItemLoader', () => {
         it('should not throw error when all sources fail', async () => {
             mockFetchJsonFallback([
                 { success: false, error: new Error('Failed') },
-                { success: false, error: new Error('Failed') }
+                { success: false, error: new Error('Failed') },
             ]);
 
             // 不应抛出异常，应返回空数组

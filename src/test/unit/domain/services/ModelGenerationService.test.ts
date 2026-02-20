@@ -6,9 +6,9 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ModelGenerationService } from '../../../../domain/services/ModelGenerationService';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IMinecraftDataService } from '../../../../core/interfaces/IMinecraftDataService';
-import { IDataConfigLoader } from '../../../../core/interfaces/IDataConfigLoader';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IMinecraftDataService } from '../../../../core/interfaces/IMinecraftDataService';
+import { type IDataConfigLoader } from '../../../../core/interfaces/IDataConfigLoader';
 
 // ============================================
 // Mock Logger
@@ -52,9 +52,7 @@ const createMockMinecraftDataService = (): IMinecraftDataService => ({
     getBiomeNames: vi.fn().mockReturnValue([]),
     getSoundNames: vi.fn().mockReturnValue([]),
     getBlockNames: vi.fn().mockReturnValue([]),
-    getItemNames: vi.fn().mockReturnValue([
-        'paper', 'diamond', 'bow', 'crossbow', 'fishing_rod', 'elytra', 'shield'
-    ]),
+    getItemNames: vi.fn().mockReturnValue(['paper', 'diamond', 'bow', 'crossbow', 'fishing_rod', 'elytra', 'shield']),
     getAttributeNames: vi.fn().mockReturnValue([]),
     getDamageTypeNames: vi.fn().mockReturnValue([]),
     getGameEventNames: vi.fn().mockReturnValue([]),

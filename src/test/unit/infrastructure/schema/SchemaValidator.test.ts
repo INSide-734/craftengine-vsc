@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SchemaValidator } from '../../../../infrastructure/schema/SchemaValidator';
 import { ServiceContainer } from '../../../../infrastructure/ServiceContainer';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { ISchemaParser } from '../../../../core/interfaces/ISchemaParser';
-import { IConfiguration } from '../../../../core/interfaces/IConfiguration';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type ISchemaParser } from '../../../../core/interfaces/ISchemaParser';
+import { type IConfiguration } from '../../../../core/interfaces/IConfiguration';
 import { SERVICE_TOKENS } from '../../../../core/constants/ServiceTokens';
 
 vi.mock('../../../../infrastructure/ServiceContainer', () => ({
     ServiceContainer: {
-        getService: vi.fn()
-    }
+        getService: vi.fn(),
+    },
 }));
 
 describe('SchemaValidator', () => {
@@ -33,25 +33,25 @@ describe('SchemaValidator', () => {
                     type: 'object',
                     properties: {
                         name: { type: 'string' },
-                        value: { type: 'number' }
+                        value: { type: 'number' },
                     },
-                    required: ['name']
+                    required: ['name'],
                 },
                 resolved: {
                     type: 'object',
                     properties: {
                         name: { type: 'string' },
-                        value: { type: 'number' }
+                        value: { type: 'number' },
                     },
-                    required: ['name']
+                    required: ['name'],
                 },
-                dependencies: []
+                dependencies: [],
             }),
             resolveRef: vi.fn(),
             findSchemaForContext: vi.fn(),
             extractProperties: vi.fn(),
             extractEnumValues: vi.fn(),
-            clearCache: vi.fn()
+            clearCache: vi.fn(),
         } as unknown as ISchemaParser;
 
         mockConfig = {
@@ -185,7 +185,7 @@ describe('SchemaValidator', () => {
         it('should clear validation cache', () => {
             validator.clearCache();
 
-            expect(mockLogger.debug).toHaveBeenCalledWith('Validation cache cleared');
+            expect(mockLogger.debug).toHaveBeenCalledWith('Validation cache cleared (including Ajv internal cache)');
         });
     });
 });

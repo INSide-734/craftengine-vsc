@@ -1,12 +1,12 @@
-import { 
-    IDependencyContainer, 
-    ServiceLifetime, 
-    ServiceFactory 
+import {
+    type IDependencyContainer,
+    ServiceLifetime,
+    type ServiceFactory,
 } from '../../core/interfaces/IDependencyContainer';
-import { 
-    DependencyInjectionError, 
-    ServiceNotRegisteredError, 
-    CircularDependencyError 
+import {
+    DependencyInjectionError,
+    ServiceNotRegisteredError,
+    CircularDependencyError,
 } from '../../core/errors/ExtensionErrors';
 
 /**
@@ -37,7 +37,7 @@ export class DependencyContainer implements IDependencyContainer {
     register<T>(
         token: string | symbol,
         implementation: new (...args: unknown[]) => T,
-        lifetime: ServiceLifetime = ServiceLifetime.Transient
+        lifetime: ServiceLifetime = ServiceLifetime.Transient,
     ): void {
         this.ensureNotDisposed();
 
@@ -50,7 +50,7 @@ export class DependencyContainer implements IDependencyContainer {
             token,
             implementation,
             lifetime,
-            dependencies: []
+            dependencies: [],
         });
         this.registrationOrder.push(token);
     }
@@ -70,7 +70,7 @@ export class DependencyContainer implements IDependencyContainer {
             token,
             instance,
             lifetime: ServiceLifetime.Singleton,
-            dependencies: []
+            dependencies: [],
         });
 
         this.instances.set(token, instance);
@@ -83,7 +83,7 @@ export class DependencyContainer implements IDependencyContainer {
     registerFactory<T>(
         token: string | symbol,
         factory: ServiceFactory<T>,
-        lifetime: ServiceLifetime = ServiceLifetime.Transient
+        lifetime: ServiceLifetime = ServiceLifetime.Transient,
     ): void {
         this.ensureNotDisposed();
 
@@ -96,7 +96,7 @@ export class DependencyContainer implements IDependencyContainer {
             token,
             factory,
             lifetime,
-            dependencies: []
+            dependencies: [],
         });
         this.registrationOrder.push(token);
     }
@@ -106,15 +106,12 @@ export class DependencyContainer implements IDependencyContainer {
      */
     resolve<T>(token: string | symbol): T {
         this.ensureNotDisposed();
-        
+
         const service = this.tryResolve<T>(token);
         if (service === undefined) {
-            throw new ServiceNotRegisteredError(
-                this.getTokenName(token),
-                { token: token.toString() }
-            );
+            throw new ServiceNotRegisteredError(this.getTokenName(token), { token: token.toString() });
         }
-        
+
         return service;
     }
 
@@ -123,19 +120,19 @@ export class DependencyContainer implements IDependencyContainer {
      */
     tryResolve<T>(token: string | symbol): T | undefined {
         this.ensureNotDisposed();
-        
+
         if (!this.isRegistered(token)) {
             return undefined;
         }
 
         // 检查循环依赖
         if (this.resolutionStack.includes(token)) {
-            const cycle = [...this.resolutionStack, token].map(t => this.getTokenName(t));
+            const cycle = [...this.resolutionStack, token].map((t) => this.getTokenName(t));
             throw new CircularDependencyError(cycle);
         }
 
         const descriptor = this.services.get(token)!;
-        
+
         // 单例模式检查
         if (descriptor.lifetime === ServiceLifetime.Singleton && this.instances.has(token)) {
             return this.instances.get(token) as T | undefined;
@@ -152,12 +149,10 @@ export class DependencyContainer implements IDependencyContainer {
                 instance = descriptor.factory(this) as T;
             } else if (descriptor.implementation) {
                 // 解析依赖项
-                const dependencies = descriptor.dependencies.map(dep => this.resolve(dep));
+                const dependencies = descriptor.dependencies.map((dep) => this.resolve(dep));
                 instance = new descriptor.implementation(...dependencies) as T;
             } else {
-                throw new DependencyInjectionError(
-                    `No implementation found for service: ${this.getTokenName(token)}`
-                );
+                throw new DependencyInjectionError(`No implementation found for service: ${this.getTokenName(token)}`);
             }
 
             // 缓存单例实例
@@ -183,17 +178,17 @@ export class DependencyContainer implements IDependencyContainer {
      */
     createChild(): IDependencyContainer {
         const child = new DependencyContainer();
-        
+
         // 复制父容器的服务注册（深拷贝 dependencies 数组，避免子容器修改影响父容器）
         for (const [token, descriptor] of this.services) {
             child.services.set(token, { ...descriptor, dependencies: [...descriptor.dependencies] });
         }
-        
+
         // 复制父容器的单例实例
         for (const [token, instance] of this.instances) {
             child.instances.set(token, instance);
         }
-        
+
         return child;
     }
 

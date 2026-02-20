@@ -1,17 +1,11 @@
-import {
-    TextDocument,
-    Diagnostic,
-    DiagnosticSeverity,
-    Range,
-    Uri
-} from 'vscode';
+import { type TextDocument, Diagnostic, DiagnosticSeverity, Range, type Uri } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { IEventBus } from '../../core/interfaces/IEventBus';
-import { ISchemaParser } from '../../core/interfaces/ISchemaParser';
+import { type IEventBus } from '../../core/interfaces/IEventBus';
+import { type ISchemaParser } from '../../core/interfaces/ISchemaParser';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { SchemaValidator } from '../../infrastructure/schema/SchemaValidator';
 import { generateEventId } from '../../infrastructure/utils';
-import { IParsedDocument, IPositionInfo } from '../../core/interfaces/IParsedDocument';
+import { type IParsedDocument, type IPositionInfo } from '../../core/interfaces/IParsedDocument';
 import { DiagnosticCache } from '../../infrastructure/cache/DiagnosticCache';
 import { SchemaDiagnosticFormatter } from './helpers/SchemaDiagnosticFormatter';
 import { YamlPositionMapper } from './helpers/YamlPositionMapper';
@@ -40,14 +34,14 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
             'CraftEngine Schema',
             'schema-diagnostics.update',
             'SchemaDiagnosticProvider',
-            'craftengine.diagnostics.schemaValidation'
+            'craftengine.diagnostics.schemaValidation',
         );
 
         this.eventBus = ServiceContainer.getService<IEventBus>(SERVICE_TOKENS.EventBus);
         this.schemaValidator = new SchemaValidator(
             ServiceContainer.getService<ISchemaParser>(SERVICE_TOKENS.SchemaParser),
             this.configuration,
-            ServiceContainer.getService(SERVICE_TOKENS.Logger)
+            ServiceContainer.getService(SERVICE_TOKENS.Logger),
         );
         this.diagnosticFormatter = new SchemaDiagnosticFormatter(this.logger);
         this.positionMapper = new YamlPositionMapper(this.logger);
@@ -56,26 +50,30 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
             {
                 capacity: SchemaDiagnosticProvider.DEFAULT_CACHE_CAPACITY,
                 ttl: SchemaDiagnosticProvider.DEFAULT_CACHE_TTL,
-                name: 'SchemaDiagnosticCache'
+                name: 'SchemaDiagnosticCache',
             },
-            this.logger
+            this.logger,
         );
 
         this.setupEventListeners();
     }
 
     private setupEventListeners(): void {
-        this.disposeFns.push(this.configuration.onChange(event => {
-            if (event.key.startsWith('craftengine.validation')) {
-                this.logger.info('Validation configuration changed, clearing cache');
-                this.diagnosticCache.clear();
-            }
-        }));
+        this.disposeFns.push(
+            this.configuration.onChange((event) => {
+                if (event.key.startsWith('craftengine.validation')) {
+                    this.logger.info('Validation configuration changed, clearing cache');
+                    this.diagnosticCache.clear();
+                }
+            }),
+        );
 
-        this.subscriptions.push(this.eventBus.subscribe('schema.reloaded', () => {
-            this.logger.info('Schema reloaded, clearing diagnostic cache');
-            this.diagnosticCache.clear();
-        }));
+        this.subscriptions.push(
+            this.eventBus.subscribe('schema.reloaded', () => {
+                this.logger.info('Schema reloaded, clearing diagnostic cache');
+                this.diagnosticCache.clear();
+            }),
+        );
     }
 
     /**
@@ -102,7 +100,7 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
             this.logger.debug('Updating schema diagnostics', {
                 file: document.fileName,
                 version: document.version,
-                useParsedDoc: !!parsedDoc
+                useParsedDoc: !!parsedDoc,
             });
 
             // 检查缓存
@@ -115,7 +113,9 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
             }
 
             const diagnostics = await this.doSchemaUpdateDiagnostics(
-                document, parsedDoc as IParsedDocument | undefined, startVersion
+                document,
+                parsedDoc as IParsedDocument | undefined,
+                startVersion,
             );
 
             if (diagnostics === null) {
@@ -135,12 +135,11 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
                 type: 'schema-diagnostics.updated',
                 timestamp: new Date(),
                 uri: document.uri,
-                diagnosticsCount: diagnostics.length
+                diagnosticsCount: diagnostics.length,
             });
-
         } catch (error) {
             this.logger.error('Failed to update schema diagnostics', error as Error, {
-                file: document.fileName
+                file: document.fileName,
             });
             timer.stop({ success: 'false', error: (error as Error).message });
         }
@@ -161,7 +160,7 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
     private async doSchemaUpdateDiagnostics(
         document: TextDocument,
         parsedDoc?: IParsedDocument,
-        startVersion?: number
+        startVersion?: number,
     ): Promise<Diagnostic[] | null> {
         const version = startVersion ?? document.version;
         const diagnostics: Diagnostic[] = [];
@@ -191,7 +190,9 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
 
         // 2. Schema 验证
         const validationDiagnostics = await this.validateAgainstSchema(
-            document, parseResult.data!, parseResult.positionMap
+            document,
+            parseResult.data!,
+            parseResult.positionMap,
         );
         diagnostics.push(...validationDiagnostics);
 
@@ -215,8 +216,9 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
 
         for (const error of parsedDoc.errors) {
             const diagnostic = new Diagnostic(
-                error.range, error.message,
-                error.severity === 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
+                error.range,
+                error.message,
+                error.severity === 'error' ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
             );
             diagnostic.source = 'CraftEngine Schema';
             diagnostic.code = error.code || 'yaml_error';
@@ -269,7 +271,7 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
             const diagnostic = new Diagnostic(
                 new Range(0, 0, 0, 1),
                 `YAML parse error: ${(error as Error).message}`,
-                DiagnosticSeverity.Error
+                DiagnosticSeverity.Error,
             );
             diagnostic.source = 'CraftEngine Schema';
             diagnostic.code = 'yaml_parse_error';
@@ -284,7 +286,7 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
     private async validateAgainstSchema(
         document: TextDocument,
         _data: unknown,
-        positionMap?: Map<string, IPositionInfo>
+        positionMap?: Map<string, IPositionInfo>,
     ): Promise<Diagnostic[]> {
         const diagnostics: Diagnostic[] = [];
 
@@ -297,16 +299,25 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
 
             for (const error of validationResult.errors) {
                 const diagnostic = await this.diagnosticFormatter.createValidationDiagnostic(
-                    error, document, positionMap
+                    error,
+                    document,
+                    positionMap,
                 );
-                if (diagnostic) { diagnostics.push(diagnostic); }
+                if (diagnostic) {
+                    diagnostics.push(diagnostic);
+                }
             }
 
             for (const warning of validationResult.warnings || []) {
                 const diagnostic = await this.diagnosticFormatter.createValidationDiagnostic(
-                    warning, document, positionMap, DiagnosticSeverity.Warning
+                    warning,
+                    document,
+                    positionMap,
+                    DiagnosticSeverity.Warning,
                 );
-                if (diagnostic) { diagnostics.push(diagnostic); }
+                if (diagnostic) {
+                    diagnostics.push(diagnostic);
+                }
             }
         } catch (error) {
             this.logger.error('Schema validation failed', error as Error);
@@ -320,18 +331,23 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
      */
     private setDiagnosticsDeduped(document: TextDocument, diagnostics: Diagnostic[]): void {
         const seen = new Set<string>();
-        const uniqueDiagnostics = diagnostics.filter(d => {
-            const codeValue = typeof d.code === 'object' && d.code !== null
-                ? (d.code as { value: string | number }).value
-                : d.code;
+        const uniqueDiagnostics = diagnostics.filter((d) => {
+            const codeValue =
+                typeof d.code === 'object' && d.code !== null ? (d.code as { value: string | number }).value : d.code;
 
             const key = [
-                d.range.start.line, d.range.start.character,
-                d.range.end.line, d.range.end.character,
-                d.message, d.source || '', codeValue ?? ''
+                d.range.start.line,
+                d.range.start.character,
+                d.range.end.line,
+                d.range.end.character,
+                d.message,
+                d.source || '',
+                codeValue ?? '',
             ].join(':');
 
-            if (seen.has(key)) { return false; }
+            if (seen.has(key)) {
+                return false;
+            }
             seen.add(key);
             return true;
         });

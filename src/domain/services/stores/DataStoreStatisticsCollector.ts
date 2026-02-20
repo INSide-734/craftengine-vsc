@@ -1,8 +1,8 @@
-import { IDataStoreStatistics } from '../../../core/interfaces/IDataStoreService';
-import { TemplateStore } from './TemplateStore';
-import { TranslationStore } from './TranslationStore';
-import { ItemStore } from './ItemStore';
-import { CategoryStore } from './CategoryStore';
+import { type IDataStoreStatistics } from '../../../core/interfaces/IDataStoreService';
+import { type TemplateStore } from './TemplateStore';
+import { type TranslationStore } from './TranslationStore';
+import { type ItemStore } from './ItemStore';
+import { type CategoryStore } from './CategoryStore';
 
 /**
  * 数据存储统计收集器
@@ -16,7 +16,7 @@ export class DataStoreStatisticsCollector {
         private readonly translationStore: TranslationStore,
         private readonly itemStore: ItemStore,
         private readonly categoryStore: CategoryStore,
-        private readonly isInitializedFn: () => boolean
+        private readonly isInitializedFn: () => boolean,
     ) {}
 
     /**
@@ -31,12 +31,12 @@ export class DataStoreStatisticsCollector {
             indexedFileCount: Math.max(
                 this.templateStore.getFileCount(),
                 this.translationStore.getFileCount(),
-                this.itemStore.getFileCount()
+                this.itemStore.getFileCount(),
             ),
             languageCount: this.translationStore.getLanguageCount(),
             namespaceCount: this.itemStore.getNamespaceCount(),
             lastUpdated: this.templateStore.getLastUpdated(),
-            isInitialized: this.isInitializedFn()
+            isInitialized: this.isInitializedFn(),
         };
     }
 

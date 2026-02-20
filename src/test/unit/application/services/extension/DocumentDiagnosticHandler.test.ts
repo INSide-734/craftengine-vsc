@@ -11,20 +11,22 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
     DocumentDiagnosticHandler,
-    IDiagnosticProviders,
-    IDiagnosticProvider,
+    type IDiagnosticProviders,
+    type IDiagnosticProvider,
 } from '../../../../../application/services/extension/DocumentDiagnosticHandler';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { IExtensionService } from '../../../../../core/interfaces/IExtensionService';
-import { IDocumentParseCache, IParsedDocument } from '../../../../../core/interfaces/IParsedDocument';
-import { IPerformanceMonitor } from '../../../../../core/interfaces/IPerformanceMonitor';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IExtensionService } from '../../../../../core/interfaces/IExtensionService';
+import { type IDocumentParseCache, type IParsedDocument } from '../../../../../core/interfaces/IParsedDocument';
+import { type IPerformanceMonitor } from '../../../../../core/interfaces/IPerformanceMonitor';
 import { workspace } from 'vscode';
 
 // Mock DiagnosticIgnoreParser
 vi.mock('../../../../../infrastructure/ignore/DiagnosticIgnoreParser', () => {
     return {
         DiagnosticIgnoreParser: class {
-            isFileIgnored() { return false; }
+            isFileIgnored() {
+                return false;
+            }
         },
     };
 });
@@ -106,7 +108,7 @@ describe('DocumentDiagnosticHandler', () => {
             mockProviders,
             mockExtensionService,
             mockDocumentParseCache,
-            mockPerformanceMonitor
+            mockPerformanceMonitor,
         );
     });
 
@@ -136,11 +138,7 @@ describe('DocumentDiagnosticHandler', () => {
 
     describe('constructor', () => {
         it('should create handler without optional parameters', () => {
-            const minimalHandler = new DocumentDiagnosticHandler(
-                mockLogger,
-                mockProviders,
-                null
-            );
+            const minimalHandler = new DocumentDiagnosticHandler(mockLogger, mockProviders, null);
             expect(minimalHandler).toBeDefined();
         });
 
@@ -201,9 +199,7 @@ describe('DocumentDiagnosticHandler', () => {
 
         it('should handle provider errors gracefully', async () => {
             // 设置 schema provider 抛出错误
-            vi.mocked(mockProviders.schema!.updateDiagnostics).mockRejectedValue(
-                new Error('Schema validation failed')
-            );
+            vi.mocked(mockProviders.schema!.updateDiagnostics).mockRejectedValue(new Error('Schema validation failed'));
 
             // handler 不应该因为单个 provider 失败而崩溃
             expect(handler).toBeDefined();
@@ -238,7 +234,7 @@ describe('DocumentDiagnosticHandler', () => {
                 mockProviders,
                 null,
                 mockDocumentParseCache,
-                mockPerformanceMonitor
+                mockPerformanceMonitor,
             );
             expect(handlerWithoutExt).toBeDefined();
         });
@@ -250,11 +246,7 @@ describe('DocumentDiagnosticHandler', () => {
 
     describe('without documentParseCache', () => {
         it('should work without documentParseCache', () => {
-            const handlerWithoutCache = new DocumentDiagnosticHandler(
-                mockLogger,
-                mockProviders,
-                mockExtensionService
-            );
+            const handlerWithoutCache = new DocumentDiagnosticHandler(mockLogger, mockProviders, mockExtensionService);
             expect(handlerWithoutCache).toBeDefined();
         });
     });
@@ -269,22 +261,14 @@ describe('DocumentDiagnosticHandler', () => {
                 schema: createMockProvider(),
             };
 
-            const partialHandler = new DocumentDiagnosticHandler(
-                mockLogger,
-                partialProviders,
-                null
-            );
+            const partialHandler = new DocumentDiagnosticHandler(mockLogger, partialProviders, null);
             expect(partialHandler).toBeDefined();
         });
 
         it('should work with empty providers', () => {
             const emptyProviders: IDiagnosticProviders = {};
 
-            const emptyHandler = new DocumentDiagnosticHandler(
-                mockLogger,
-                emptyProviders,
-                null
-            );
+            const emptyHandler = new DocumentDiagnosticHandler(mockLogger, emptyProviders, null);
             expect(emptyHandler).toBeDefined();
         });
     });

@@ -9,14 +9,14 @@ import {
     MINIMESSAGE_UNMATCHED_CLOSING,
     MINIMESSAGE_WRONG_CLOSING_ORDER,
     MINIMESSAGE_INVALID_CLICK_ACTION,
-    MINIMESSAGE_INVALID_HOVER_ACTION
+    MINIMESSAGE_INVALID_HOVER_ACTION,
 } from '../../../core/constants/DiagnosticCodes';
 import { MINIMESSAGE_MESSAGES } from '../../../core/constants/DiagnosticMessages';
 import {
-    MiniMessageTag,
-    MiniMessageValidationError,
-    MiniMessageValidationResult,
-    IMiniMessageDataProvider
+    type MiniMessageTag,
+    type MiniMessageValidationError,
+    type MiniMessageValidationResult,
+    type IMiniMessageDataProvider,
 } from './MiniMessageTypes';
 
 /**
@@ -84,7 +84,7 @@ export class MiniMessageParser {
                 startCharacter: match.index,
                 endCharacter: match.index + match[0].length,
                 startOffset: match.index,
-                endOffset: match.index + match[0].length
+                endOffset: match.index + match[0].length,
             });
         }
 
@@ -106,7 +106,7 @@ export class MiniMessageParser {
                 startCharacter: match.index,
                 endCharacter: match.index + match[0].length,
                 startOffset: match.index,
-                endOffset: match.index + match[0].length
+                endOffset: match.index + match[0].length,
             });
         }
 
@@ -129,9 +129,13 @@ export class MiniMessageParser {
         // 检查十六进制颜色
         if (tag.name.startsWith('#')) {
             if (!MiniMessageParser.HEX_COLOR_PATTERN.test(tag.name)) {
-                errors.push(this.createError(
-                    tag, MINIMESSAGE_MESSAGES.invalidHexColor(tag.name), MINIMESSAGE_INVALID_HEX_COLOR
-                ));
+                errors.push(
+                    this.createError(
+                        tag,
+                        MINIMESSAGE_MESSAGES.invalidHexColor(tag.name),
+                        MINIMESSAGE_INVALID_HEX_COLOR,
+                    ),
+                );
             }
             return errors;
         }
@@ -139,17 +143,21 @@ export class MiniMessageParser {
         // 检查标签是否有效
         if (!tag.isNegation && !this.dataProvider.isValidTag(tag.name)) {
             const suggestions = this.findSimilarTags(tag.name);
-            errors.push(this.createError(
-                tag, MINIMESSAGE_MESSAGES.invalidTag(tag.name, suggestions), MINIMESSAGE_INVALID_TAG
-            ));
+            errors.push(
+                this.createError(tag, MINIMESSAGE_MESSAGES.invalidTag(tag.name, suggestions), MINIMESSAGE_INVALID_TAG),
+            );
             return errors;
         }
 
         // 检查需要参数的标签
         if (!tag.isNegation && this.dataProvider.tagRequiresArguments(tag.name) && tag.arguments.length === 0) {
-            errors.push(this.createError(
-                tag, MINIMESSAGE_MESSAGES.missingArgument(tag.name, '<tag:argument>'), MINIMESSAGE_MISSING_ARGUMENT
-            ));
+            errors.push(
+                this.createError(
+                    tag,
+                    MINIMESSAGE_MESSAGES.missingArgument(tag.name, '<tag:argument>'),
+                    MINIMESSAGE_MISSING_ARGUMENT,
+                ),
+            );
         }
 
         // 验证特定标签的参数
@@ -169,72 +177,106 @@ export class MiniMessageParser {
             case 'colour':
             case 'c':
                 if (tag.arguments.length > 0 && !this.isValidColor(tag.arguments[0])) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.invalidColor(tag.arguments[0]), MINIMESSAGE_INVALID_COLOR
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.invalidColor(tag.arguments[0]),
+                            MINIMESSAGE_INVALID_COLOR,
+                        ),
+                    );
                 }
                 break;
 
             case 'click':
                 if (tag.arguments.length > 0 && !this.dataProvider.isValidClickAction(tag.arguments[0])) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.invalidClickAction(tag.arguments[0], this.dataProvider.getClickActions()),
-                        MINIMESSAGE_INVALID_CLICK_ACTION
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.invalidClickAction(
+                                tag.arguments[0],
+                                this.dataProvider.getClickActions(),
+                            ),
+                            MINIMESSAGE_INVALID_CLICK_ACTION,
+                        ),
+                    );
                 }
                 if (tag.arguments.length < 2) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.missingArgument('click', '<click:action:value>'),
-                        MINIMESSAGE_MISSING_ARGUMENT
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.missingArgument('click', '<click:action:value>'),
+                            MINIMESSAGE_MISSING_ARGUMENT,
+                        ),
+                    );
                 }
                 break;
 
             case 'hover':
                 if (tag.arguments.length > 0 && !this.dataProvider.isValidHoverAction(tag.arguments[0])) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.invalidHoverAction(tag.arguments[0], this.dataProvider.getHoverActions()),
-                        MINIMESSAGE_INVALID_HOVER_ACTION
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.invalidHoverAction(
+                                tag.arguments[0],
+                                this.dataProvider.getHoverActions(),
+                            ),
+                            MINIMESSAGE_INVALID_HOVER_ACTION,
+                        ),
+                    );
                 }
                 if (tag.arguments.length < 2) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.missingArgument('hover', '<hover:action:value>'),
-                        MINIMESSAGE_MISSING_ARGUMENT
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.missingArgument('hover', '<hover:action:value>'),
+                            MINIMESSAGE_MISSING_ARGUMENT,
+                        ),
+                    );
                 }
                 break;
 
             case 'gradient':
                 if (tag.arguments.length < 2) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.missingArgument('gradient', '<gradient:color1:color2>'),
-                        MINIMESSAGE_MISSING_ARGUMENT
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.missingArgument('gradient', '<gradient:color1:color2>'),
+                            MINIMESSAGE_MISSING_ARGUMENT,
+                        ),
+                    );
                 }
                 break;
 
             case 'score':
                 if (tag.arguments.length < 2) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.missingArgument('score', '<score:name:objective>'),
-                        MINIMESSAGE_MISSING_ARGUMENT
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.missingArgument('score', '<score:name:objective>'),
+                            MINIMESSAGE_MISSING_ARGUMENT,
+                        ),
+                    );
                 }
                 break;
 
             case 'nbt':
             case 'data':
                 if (tag.arguments.length < 3) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.missingArgument('nbt', '<nbt:type:id:path>'),
-                        MINIMESSAGE_MISSING_ARGUMENT
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.missingArgument('nbt', '<nbt:type:id:path>'),
+                            MINIMESSAGE_MISSING_ARGUMENT,
+                        ),
+                    );
                 } else if (!['block', 'entity', 'storage'].includes(tag.arguments[0])) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.invalidArgument('NBT source type', ['block', 'entity', 'storage']),
-                        MINIMESSAGE_INVALID_ARGUMENT
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.invalidArgument('NBT source type', ['block', 'entity', 'storage']),
+                            MINIMESSAGE_INVALID_ARGUMENT,
+                        ),
+                    );
                 }
                 break;
         }
@@ -255,16 +297,21 @@ export class MiniMessageParser {
                 const closingTagDisplay = tag.isNegation ? `</!${tag.name}>` : `</${tag.name}>`;
 
                 if (matchIndex === -1) {
-                    errors.push(this.createError(
-                        tag, MINIMESSAGE_MESSAGES.unmatchedClosing(closingTagDisplay),
-                        MINIMESSAGE_UNMATCHED_CLOSING
-                    ));
+                    errors.push(
+                        this.createError(
+                            tag,
+                            MINIMESSAGE_MESSAGES.unmatchedClosing(closingTagDisplay),
+                            MINIMESSAGE_UNMATCHED_CLOSING,
+                        ),
+                    );
                 } else if (matchIndex !== openTags.length - 1) {
                     const expectedTag = openTags[openTags.length - 1];
                     const expectedClosingDisplay = expectedTag.isNegation
-                        ? `</!${expectedTag.name}>` : `</${expectedTag.name}>`;
+                        ? `</!${expectedTag.name}>`
+                        : `</${expectedTag.name}>`;
                     const expectedOpeningDisplay = expectedTag.isNegation
-                        ? `<!${expectedTag.name}>` : `<${expectedTag.name}>`;
+                        ? `<!${expectedTag.name}>`
+                        : `<${expectedTag.name}>`;
 
                     errors.push({
                         codeInfo: MINIMESSAGE_WRONG_CLOSING_ORDER,
@@ -273,13 +320,15 @@ export class MiniMessageParser {
                         startCharacter: tag.startCharacter,
                         endLine: tag.startLine,
                         endCharacter: tag.endCharacter,
-                        relatedInfo: [{
-                            message: `Opening tag '${expectedOpeningDisplay}' is here`,
-                            startLine: expectedTag.startLine,
-                            startCharacter: expectedTag.startCharacter,
-                            endLine: expectedTag.startLine,
-                            endCharacter: expectedTag.endCharacter
-                        }]
+                        relatedInfo: [
+                            {
+                                message: `Opening tag '${expectedOpeningDisplay}' is here`,
+                                startLine: expectedTag.startLine,
+                                startCharacter: expectedTag.startCharacter,
+                                endLine: expectedTag.startLine,
+                                endCharacter: expectedTag.endCharacter,
+                            },
+                        ],
                     });
                     openTags.splice(matchIndex, 1);
                 } else {
@@ -296,11 +345,13 @@ export class MiniMessageParser {
             const closingDisplay = unclosedTag.isNegation ? `</!${unclosedTag.name}>` : `</${unclosedTag.name}>`;
             const selfClosingDisplay = unclosedTag.isNegation ? `<!${unclosedTag.name}/>` : `<${unclosedTag.name}/>`;
 
-            errors.push(this.createError(
-                unclosedTag,
-                MINIMESSAGE_MESSAGES.unclosedTag(openingDisplay, closingDisplay, selfClosingDisplay),
-                MINIMESSAGE_UNCLOSED_TAG
-            ));
+            errors.push(
+                this.createError(
+                    unclosedTag,
+                    MINIMESSAGE_MESSAGES.unclosedTag(openingDisplay, closingDisplay, selfClosingDisplay),
+                    MINIMESSAGE_UNCLOSED_TAG,
+                ),
+            );
         }
 
         return errors;
@@ -326,8 +377,9 @@ export class MiniMessageParser {
      * 验证颜色值
      */
     private isValidColor(color: string): boolean {
-        return this.dataProvider.isValidColorName(color.toLowerCase()) ||
-            MiniMessageParser.HEX_COLOR_PATTERN.test(color);
+        return (
+            this.dataProvider.isValidColorName(color.toLowerCase()) || MiniMessageParser.HEX_COLOR_PATTERN.test(color)
+        );
     }
 
     /**
@@ -336,25 +388,21 @@ export class MiniMessageParser {
     private findSimilarTags(tagName: string): string[] {
         const lowerTagName = tagName.toLowerCase();
         return [...this.dataProvider.getValidTagNames()]
-            .filter(validTag => calculateSimilarity(lowerTagName, validTag) > 0.6)
+            .filter((validTag) => calculateSimilarity(lowerTagName, validTag) > 0.6)
             .slice(0, 3);
     }
 
     /**
      * 创建验证错误
      */
-    private createError(
-        tag: MiniMessageTag,
-        message: string,
-        codeInfo: { code: string }
-    ): MiniMessageValidationError {
+    private createError(tag: MiniMessageTag, message: string, codeInfo: { code: string }): MiniMessageValidationError {
         return {
             codeInfo,
             message,
             startLine: tag.startLine,
             startCharacter: tag.startCharacter,
             endLine: tag.startLine,
-            endCharacter: tag.endCharacter
+            endCharacter: tag.endCharacter,
         };
     }
 }

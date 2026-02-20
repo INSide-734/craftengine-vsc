@@ -1,18 +1,18 @@
 import {
-    CodeActionProvider,
-    TextDocument,
+    type CodeActionProvider,
+    type TextDocument,
     Range,
-    CodeActionContext,
+    type CodeActionContext,
     CodeAction,
     CodeActionKind,
     WorkspaceEdit,
     Position,
-    Diagnostic
+    type Diagnostic,
 } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type ILogger } from '../../core/interfaces/ILogger';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
-import { IExtendedTypeService } from '../../core/interfaces/IExtendedParameterType';
+import { type IExtendedTypeService } from '../../core/interfaces/IExtendedParameterType';
 import { getIndentLevel } from '../../infrastructure/utils';
 
 /**
@@ -32,26 +32,21 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
     static readonly DIAGNOSTIC_SOURCE = 'CraftEngine Extended Type';
 
     /** 提供的 CodeAction 类型 */
-    static readonly providedCodeActionKinds = [
-        CodeActionKind.QuickFix
-    ];
+    static readonly providedCodeActionKinds = [CodeActionKind.QuickFix];
 
     constructor() {
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild('ExtendedTypeCodeActionProvider');
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(
+            'ExtendedTypeCodeActionProvider',
+        );
         this.extendedTypeService = ServiceContainer.getService<IExtendedTypeService>(
-            SERVICE_TOKENS.ExtendedTypeService
+            SERVICE_TOKENS.ExtendedTypeService,
         );
     }
 
     /**
      * 提供代码操作
      */
-    async provideCodeActions(
-        document: TextDocument,
-        _range: Range,
-        context: CodeActionContext
-    ): Promise<CodeAction[]> {
+    async provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
 
         try {
@@ -68,7 +63,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
             if (actions.length > 0) {
                 this.logger.debug('Extended type code actions provided', {
                     document: document.fileName,
-                    actionsCount: actions.length
+                    actionsCount: actions.length,
                 });
             }
         } catch (error) {
@@ -81,10 +76,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
     /**
      * 为诊断创建修复操作
      */
-    private createFixActionsForDiagnostic(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createFixActionsForDiagnostic(document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const code = diagnostic.code;
 
         switch (code) {
@@ -106,10 +98,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
     /**
      * 创建缺少必需属性的修复操作
      */
-    private createMissingPropertyActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createMissingPropertyActions(document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 从错误消息中提取属性名和类型名
@@ -131,10 +120,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
         const defaultValue = this.getDefaultValueForProperty(propName, propDef?.type || 'string', propDef?.examples);
 
         // 1. 添加缺失的属性
-        const addAction = new CodeAction(
-            `Add required property '${propName}'`,
-            CodeActionKind.QuickFix
-        );
+        const addAction = new CodeAction(`Add required property '${propName}'`, CodeActionKind.QuickFix);
         addAction.diagnostics = [diagnostic];
         addAction.isPreferred = true;
 
@@ -152,7 +138,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
         if (missingProps.length > 1) {
             const addAllAction = new CodeAction(
                 `Add all missing required properties (${missingProps.length})`,
-                CodeActionKind.QuickFix
+                CodeActionKind.QuickFix,
             );
             addAllAction.diagnostics = [diagnostic];
 
@@ -179,10 +165,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
     /**
      * 创建未知属性的修复操作
      */
-    private createUnknownPropertyActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createUnknownPropertyActions(document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 从错误消息中提取属性名和类型名
@@ -199,10 +182,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
         }
 
         // 1. 删除未知属性
-        const deleteAction = new CodeAction(
-            `Remove unknown property '${propName}'`,
-            CodeActionKind.QuickFix
-        );
+        const deleteAction = new CodeAction(`Remove unknown property '${propName}'`, CodeActionKind.QuickFix);
         deleteAction.diagnostics = [diagnostic];
 
         const lineRange = this.getFullLineRange(document, diagnostic.range.start.line);
@@ -216,10 +196,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
         const similarProps = this.findSimilarProperties(propName, allValidProps);
 
         for (const similarProp of similarProps.slice(0, 3)) {
-            const replaceAction = new CodeAction(
-                `Change '${propName}' to '${similarProp}'`,
-                CodeActionKind.QuickFix
-            );
+            const replaceAction = new CodeAction(`Change '${propName}' to '${similarProp}'`, CodeActionKind.QuickFix);
             replaceAction.diagnostics = [diagnostic];
 
             const replaceEdit = new WorkspaceEdit();
@@ -234,24 +211,20 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
     /**
      * 创建属性值类型错误的修复操作
      */
-    private createInvalidTypeActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createInvalidTypeActions(document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 处理枚举类型错误
-        const enumMatch = diagnostic.message.match(/Invalid value '([^']+)' for property '(\w+(?:-\w+)*)'\. Expected one of: (.+)/);
+        const enumMatch = diagnostic.message.match(
+            /Invalid value '([^']+)' for property '(\w+(?:-\w+)*)'\. Expected one of: (.+)/,
+        );
         if (enumMatch) {
             const [, , , enumValuesStr] = enumMatch;
             const enumValues = enumValuesStr.split(', ');
 
             // 为每个有效的枚举值创建替换操作
             for (const enumValue of enumValues.slice(0, 5)) {
-                const replaceAction = new CodeAction(
-                    `Change to '${enumValue}'`,
-                    CodeActionKind.QuickFix
-                );
+                const replaceAction = new CodeAction(`Change to '${enumValue}'`, CodeActionKind.QuickFix);
                 replaceAction.diagnostics = [diagnostic];
                 replaceAction.isPreferred = enumValues[0] === enumValue;
 
@@ -271,15 +244,17 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
             const [, propName] = intMatch;
 
             // 提供常用整数值建议
-            const suggestedValues = propName === 'from' ? ['0', '1'] :
-                                   propName === 'to' ? ['10', '20', '100'] :
-                                   propName === 'step' ? ['1', '2', '-1'] : ['0', '1'];
+            const suggestedValues =
+                propName === 'from'
+                    ? ['0', '1']
+                    : propName === 'to'
+                      ? ['10', '20', '100']
+                      : propName === 'step'
+                        ? ['1', '2', '-1']
+                        : ['0', '1'];
 
             for (const value of suggestedValues) {
-                const replaceAction = new CodeAction(
-                    `Set ${propName} to ${value}`,
-                    CodeActionKind.QuickFix
-                );
+                const replaceAction = new CodeAction(`Set ${propName} to ${value}`, CodeActionKind.QuickFix);
                 replaceAction.diagnostics = [diagnostic];
 
                 const valueRange = this.getPropertyValueRange(document, diagnostic.range.start.line);
@@ -298,17 +273,11 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
     /**
      * 创建无效范围的修复操作 (self_increase_int)
      */
-    private createInvalidRangeActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createInvalidRangeActions(document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 交换 from 和 to 的值
-        const swapAction = new CodeAction(
-            'Swap from and to values',
-            CodeActionKind.QuickFix
-        );
+        const swapAction = new CodeAction('Swap from and to values', CodeActionKind.QuickFix);
         swapAction.diagnostics = [diagnostic];
         swapAction.isPreferred = true;
 
@@ -337,20 +306,14 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
     /**
      * 创建无效步长的修复操作 (self_increase_int)
      */
-    private createInvalidStepActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): CodeAction[] {
+    private createInvalidStepActions(document: TextDocument, diagnostic: Diagnostic): CodeAction[] {
         const actions: CodeAction[] = [];
 
         // 检查是否是 step 为 0 的错误
         if (diagnostic.message.includes('step cannot be 0')) {
             const valueRange = this.getPropertyValueRange(document, diagnostic.range.start.line);
 
-            const setPositiveAction = new CodeAction(
-                'Set step to 1',
-                CodeActionKind.QuickFix
-            );
+            const setPositiveAction = new CodeAction('Set step to 1', CodeActionKind.QuickFix);
             setPositiveAction.diagnostics = [diagnostic];
             setPositiveAction.isPreferred = true;
 
@@ -361,10 +324,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
                 actions.push(setPositiveAction);
             }
 
-            const setNegativeAction = new CodeAction(
-                'Set step to -1',
-                CodeActionKind.QuickFix
-            );
+            const setNegativeAction = new CodeAction('Set step to -1', CodeActionKind.QuickFix);
             setNegativeAction.diagnostics = [diagnostic];
 
             if (valueRange) {
@@ -382,10 +342,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
             if (stepValue) {
                 const numValue = parseInt(stepValue, 10);
                 if (!isNaN(numValue)) {
-                    const fixAction = new CodeAction(
-                        `Change step to ${-numValue}`,
-                        CodeActionKind.QuickFix
-                    );
+                    const fixAction = new CodeAction(`Change step to ${-numValue}`, CodeActionKind.QuickFix);
                     fixAction.diagnostics = [diagnostic];
                     fixAction.isPreferred = true;
 
@@ -408,11 +365,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
     /**
      * 获取属性的默认值
      */
-    private getDefaultValueForProperty(
-        propName: string,
-        type: string,
-        examples?: string[]
-    ): string {
+    private getDefaultValueForProperty(propName: string, type: string, examples?: string[]): string {
         // 优先使用示例值
         if (examples && examples.length > 0) {
             const example = examples[0];
@@ -498,10 +451,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
      * 获取完整行的范围（包括换行符）
      */
     private getFullLineRange(_document: TextDocument, line: number): Range {
-        return new Range(
-            new Position(line, 0),
-            new Position(line + 1, 0)
-        );
+        return new Range(new Position(line, 0), new Position(line + 1, 0));
     }
 
     /**
@@ -519,10 +469,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
         const valueText = lineText.substring(valueStart);
         const trimmedStart = valueText.length - valueText.trimStart().length;
 
-        return new Range(
-            new Position(line, valueStart + trimmedStart),
-            new Position(line, lineText.length)
-        );
+        return new Range(new Position(line, valueStart + trimmedStart), new Position(line, lineText.length));
     }
 
     /**
@@ -544,7 +491,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
      */
     private getBlockInfo(
         document: TextDocument,
-        startLine: number
+        startLine: number,
     ): { fromLine: number; toLine: number; stepLine: number } {
         const result = { fromLine: -1, toLine: -1, stepLine: -1 };
         const text = document.getText();
@@ -566,9 +513,13 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
             }
 
             if (lineIndent === blockIndent) {
-                if (trimmed.startsWith('from:')) {result.fromLine = i;}
-                else if (trimmed.startsWith('to:')) {result.toLine = i;}
-                else if (trimmed.startsWith('step:')) {result.stepLine = i;}
+                if (trimmed.startsWith('from:')) {
+                    result.fromLine = i;
+                } else if (trimmed.startsWith('to:')) {
+                    result.toLine = i;
+                } else if (trimmed.startsWith('step:')) {
+                    result.stepLine = i;
+                }
             }
         }
 
@@ -587,9 +538,13 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
             }
 
             if (lineIndent === blockIndent) {
-                if (trimmed.startsWith('from:')) {result.fromLine = i;}
-                else if (trimmed.startsWith('to:')) {result.toLine = i;}
-                else if (trimmed.startsWith('step:')) {result.stepLine = i;}
+                if (trimmed.startsWith('from:')) {
+                    result.fromLine = i;
+                } else if (trimmed.startsWith('to:')) {
+                    result.toLine = i;
+                } else if (trimmed.startsWith('step:')) {
+                    result.stepLine = i;
+                }
             }
         }
 
@@ -602,7 +557,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
     private findAllMissingRequiredProperties(
         document: TextDocument,
         range: Range,
-        typeDef: { requiredProperties: string[] }
+        typeDef: { requiredProperties: string[] },
     ): string[] {
         const text = document.getText();
         const lines = text.split('\n');
@@ -652,7 +607,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
             }
         }
 
-        return typeDef.requiredProperties.filter(prop => !existingProps.has(prop));
+        return typeDef.requiredProperties.filter((prop) => !existingProps.has(prop));
     }
 
     /**
@@ -660,13 +615,13 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
      */
     private findSimilarProperties(target: string, validProps: string[]): string[] {
         return validProps
-            .map(prop => ({
+            .map((prop) => ({
                 prop,
-                score: this.calculateSimilarity(target, prop)
+                score: this.calculateSimilarity(target, prop),
             }))
-            .filter(item => item.score > 0.4)
+            .filter((item) => item.score > 0.4)
             .sort((a, b) => b.score - a.score)
-            .map(item => item.prop);
+            .map((item) => item.prop);
     }
 
     /**
@@ -703,11 +658,7 @@ export class ExtendedTypeCodeActionProvider implements CodeActionProvider {
                 if (b.charAt(i - 1) === a.charAt(j - 1)) {
                     matrix[i][j] = matrix[i - 1][j - 1];
                 } else {
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j - 1] + 1,
-                        matrix[i][j - 1] + 1,
-                        matrix[i - 1][j] + 1
-                    );
+                    matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
                 }
             }
         }

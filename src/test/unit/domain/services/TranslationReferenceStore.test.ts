@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TranslationReferenceStore } from '../../../../domain/services/stores/TranslationReferenceStore';
-import { ITranslationReference } from '../../../../core/interfaces/ITranslation';
+import { type ITranslationReference } from '../../../../core/interfaces/ITranslation';
 
 describe('TranslationReferenceStore', () => {
     let store: TranslationReferenceStore;

@@ -1,4 +1,4 @@
-import { JSONSchema7 } from 'json-schema';
+import { type JSONSchema7 } from 'json-schema';
 
 /**
  * Schema 解析结果
@@ -52,7 +52,7 @@ export interface ISchemaParser {
      * @returns Schema 解析结果
      */
     loadSchema(schemaId: string): Promise<ISchemaParseResult>;
-    
+
     /**
      * 解析 $ref 引用
      * @param ref 引用字符串（例如：'#/$defs/itemConfig'）
@@ -60,31 +60,30 @@ export interface ISchemaParser {
      * @returns 解析后的 schema
      */
     resolveRef(ref: string, baseSchema: JSONSchema7): Promise<JSONSchema7 | undefined>;
-    
+
     /**
      * 根据上下文查找匹配的 schema
      * @param context Schema 上下文
      * @returns 匹配的 schema 列表
      */
     findSchemaForContext(context: ISchemaContext): Promise<ISchemaMatch[]>;
-    
+
     /**
      * 从 schema 中提取属性
      * @param schema JSON Schema
      * @returns 属性列表
      */
     extractProperties(schema: JSONSchema7): Map<string, JSONSchema7>;
-    
+
     /**
      * 从 schema 中提取枚举值
      * @param schema JSON Schema
      * @returns 枚举值列表
      */
     extractEnumValues(schema: JSONSchema7): string[];
-    
+
     /**
      * 清除缓存
      */
     clearCache(): void;
 }
-

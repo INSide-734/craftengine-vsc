@@ -1,5 +1,5 @@
-import { EditorTextDocument, EditorRange } from '../types/EditorTypes';
-import { ITemplate } from './ITemplate';
+import { type EditorTextDocument, type EditorRange } from '../types/EditorTypes';
+import { type ITemplate } from './ITemplate';
 
 /**
  * 文档解析结果
@@ -41,34 +41,32 @@ export interface IDocumentParseWarning {
 
 /**
  * 文档解析器接口
- * 
+ *
  * 提供文档内容的解析功能，提取模板和错误信息
  */
 export interface IDocumentParser {
     /**
      * 解析文档
-     * 
+     *
      * @param document 要解析的文档
      * @returns 解析结果
      */
     parseDocument(document: EditorTextDocument): Promise<IDocumentParseResult>;
-    
+
     /**
      * 解析文本内容
-     * 
+     *
      * @param content 文本内容
      * @param fileName 文件名（可选，用于错误报告）
      * @returns 解析结果
      */
     parseText(content: string, fileName?: string): Promise<IDocumentParseResult>;
-    
+
     /**
      * 验证文档语法
-     * 
+     *
      * @param document 要验证的文档
      * @returns 语法错误列表
      */
     validateSyntax(document: EditorTextDocument): Promise<IDocumentParseError[]>;
 }
-
-

@@ -15,20 +15,23 @@ import { ServiceContainer } from './infrastructure/ServiceContainer';
 import { SERVICE_TOKENS } from './core/constants/ServiceTokens';
 
 // 核心接口
-import { ILogger } from './core/interfaces/ILogger';
-import { IExtensionService } from './core/interfaces/IExtensionService';
-import { ISchemaService } from './core/interfaces/ISchemaService';
-import { IDocumentParseCache } from './core/interfaces/IParsedDocument';
-import { IPerformanceMonitor } from './core/interfaces/IPerformanceMonitor';
+import { type ILogger } from './core/interfaces/ILogger';
+import { type IExtensionService } from './core/interfaces/IExtensionService';
+import { type ISchemaService } from './core/interfaces/ISchemaService';
+import { type IDocumentParseCache } from './core/interfaces/IParsedDocument';
+import { type IPerformanceMonitor } from './core/interfaces/IPerformanceMonitor';
 
 // 表现层
 import { ProviderRegistry } from './presentation/ProviderRegistry';
-import { TemplateDiagnosticProvider } from './presentation/providers/TemplateDiagnosticProvider';
-import { SchemaDiagnosticProvider } from './presentation/providers/SchemaDiagnosticProvider';
+import { type TemplateDiagnosticProvider } from './presentation/providers/TemplateDiagnosticProvider';
+import { type SchemaDiagnosticProvider } from './presentation/providers/SchemaDiagnosticProvider';
 import { SchemaCommands } from './presentation/commands/SchemaCommands';
 
 // 应用层
-import { DocumentDiagnosticHandler, IDiagnosticProviders } from './application/services/extension/DocumentDiagnosticHandler';
+import {
+    DocumentDiagnosticHandler,
+    type IDiagnosticProviders,
+} from './application/services/extension/DocumentDiagnosticHandler';
 
 // ============================================================================
 // 全局状态
@@ -107,10 +110,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         await initializeExtensionService(context);
 
         // 阶段 3 和 5: 并行执行（无依赖关系）
-        await Promise.all([
-            registerProviders(context),
-            registerSchemaProvider(context)
-        ]);
+        await Promise.all([registerProviders(context), registerSchemaProvider(context)]);
 
         // 阶段 4: 依赖 registerProviders 完成
         await setupDocumentHandling(context);
@@ -119,7 +119,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         await performPostActivationTasks();
 
         logActivationSuccess(startTime);
-
     } catch (error) {
         handleActivationError(error);
         throw error;
@@ -155,7 +154,6 @@ export async function deactivate(): Promise<void> {
 
         // 清理服务容器（会 dispose 所有日志目标并轮转日志文件）
         await ServiceContainer.dispose();
-
     } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         logger?.error('Deactivation error', err);
@@ -212,7 +210,7 @@ async function setupDocumentHandling(context: vscode.ExtensionContext): Promise<
         miniMessage: providerRegistry.getMiniMessageDiagnosticProvider(),
         itemId: providerRegistry.getItemIdDiagnosticProvider(),
         versionCondition: providerRegistry.getVersionConditionDiagnosticProvider(),
-        category: providerRegistry.getCategoryDiagnosticProvider()
+        category: providerRegistry.getCategoryDiagnosticProvider(),
     };
 
     // 创建文档处理器并注册监听器（传入文档解析缓存和性能监控）
@@ -221,7 +219,7 @@ async function setupDocumentHandling(context: vscode.ExtensionContext): Promise<
         providers,
         extensionService,
         documentParseCache ?? undefined,
-        performanceMonitor ?? undefined
+        performanceMonitor ?? undefined,
     );
     documentHandler.registerDocumentListeners(context);
 }
@@ -240,7 +238,7 @@ async function registerSchemaProvider(context: vscode.ExtensionContext): Promise
         const logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger);
         logger.warn('Schema provider registration failed', {
             error: (error as Error).message,
-            suggestion: 'Install Red Hat YAML extension for full schema validation'
+            suggestion: 'Install Red Hat YAML extension for full schema validation',
         });
     }
 }
@@ -265,7 +263,7 @@ async function performPostActivationTasks(): Promise<void> {
 
             logger.info('Post-activation tasks completed');
         })
-        .catch(error => {
+        .catch((error) => {
             logger.error('Initial scan failed', error as Error);
         });
 
@@ -299,7 +297,7 @@ function logActivationSuccess(startTime: number): void {
     logger.info('CraftEngine extension activated', {
         activationTime: duration,
         activationTimeFormatted: `${duration.toFixed(2)}ms`,
-        features: ['completion', 'hover', 'definition', 'diagnostics', 'schema']
+        features: ['completion', 'hover', 'definition', 'diagnostics', 'schema'],
     });
 }
 
@@ -310,10 +308,7 @@ function handleActivationError(error: unknown): void {
 
     logger?.error('Activation failed', err);
 
-    vscode.window.showErrorMessage(
-        `CraftEngine activation failed: ${err.message}`,
-        'View Logs'
-    ).then(selection => {
+    vscode.window.showErrorMessage(`CraftEngine activation failed: ${err.message}`, 'View Logs').then((selection) => {
         if (selection === 'View Logs') {
             vscode.commands.executeCommand('workbench.action.openSettings', '@ext:craftengine');
         }

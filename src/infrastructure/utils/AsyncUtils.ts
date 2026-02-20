@@ -33,7 +33,7 @@ export { ConcurrencyLimiter } from './ConcurrencyLimiter';
  * ```
  */
 export function delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -49,7 +49,7 @@ export function delay(ms: number): Promise<void> {
 export function withTimeout<T>(
     promise: Promise<T>,
     ms: number,
-    errorMessage: string = 'Operation timed out'
+    errorMessage: string = 'Operation timed out',
 ): Promise<T> {
     return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
@@ -57,11 +57,11 @@ export function withTimeout<T>(
         }, ms);
 
         promise
-            .then(result => {
+            .then((result) => {
                 clearTimeout(timer);
                 resolve(result);
             })
-            .catch(error => {
+            .catch((error) => {
                 clearTimeout(timer);
                 reject(error);
             });
@@ -93,16 +93,13 @@ export interface RetryOptions {
  * @param options - 重试选项
  * @returns Promise
  */
-export async function retry<T>(
-    fn: () => Promise<T>,
-    options: RetryOptions = {}
-): Promise<T> {
+export async function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
     const {
         maxRetries = 3,
         retryDelay = 1000,
         exponentialBackoff = false,
         shouldRetry = () => true,
-        onRetry
+        onRetry,
     } = options;
 
     let lastError: Error | undefined;
@@ -122,9 +119,7 @@ export async function retry<T>(
             }
 
             // 计算延迟时间
-            const delayTime = exponentialBackoff
-                ? retryDelay * Math.pow(2, attempt - 1)
-                : retryDelay;
+            const delayTime = exponentialBackoff ? retryDelay * Math.pow(2, attempt - 1) : retryDelay;
 
             await delay(delayTime);
         }
@@ -146,15 +141,13 @@ export async function retry<T>(
 export async function batchAsync<T, R>(
     items: T[],
     fn: (item: T, index: number) => Promise<R>,
-    batchSize: number
+    batchSize: number,
 ): Promise<R[]> {
     const results: R[] = [];
 
     for (let i = 0; i < items.length; i += batchSize) {
         const batch = items.slice(i, i + batchSize);
-        const batchResults = await Promise.all(
-            batch.map((item, batchIndex) => fn(item, i + batchIndex))
-        );
+        const batchResults = await Promise.all(batch.map((item, batchIndex) => fn(item, i + batchIndex)));
         results.push(...batchResults);
     }
 
@@ -172,7 +165,7 @@ export async function batchAsync<T, R>(
  */
 export function debounce<T extends (...args: unknown[]) => unknown>(
     fn: T,
-    wait: number
+    wait: number,
 ): (...args: Parameters<T>) => void {
     let timer: NodeJS.Timeout | null = null;
 
@@ -199,7 +192,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
  */
 export function throttle<T extends (...args: unknown[]) => unknown>(
     fn: T,
-    limit: number
+    limit: number,
 ): (...args: Parameters<T>) => void {
     let lastTime = 0;
     let timer: NodeJS.Timeout | null = null;
@@ -215,11 +208,14 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
             lastTime = now;
             fn.apply(this, args);
         } else if (!timer) {
-            timer = setTimeout(() => {
-                timer = null;
-                lastTime = Date.now();
-                fn.apply(this, args);
-            }, limit - (now - lastTime));
+            timer = setTimeout(
+                () => {
+                    timer = null;
+                    lastTime = Date.now();
+                    fn.apply(this, args);
+                },
+                limit - (now - lastTime),
+            );
         }
     };
 }

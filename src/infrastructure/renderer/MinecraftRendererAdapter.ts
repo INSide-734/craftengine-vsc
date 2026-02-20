@@ -11,10 +11,10 @@
  * - 管理渲染器生命周期
  */
 
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IRendererAdapter } from '../../core/interfaces/IRendererAdapter';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IRendererAdapter } from '../../core/interfaces/IRendererAdapter';
 import { MinecraftModelRenderer } from './core/MinecraftModelRenderer';
-import { IMinecraftModelJson } from '../../core/interfaces/IModelGenerator';
+import { type IMinecraftModelJson } from '../../core/interfaces/IModelGenerator';
 
 // ============================================
 // 类型定义
@@ -152,13 +152,13 @@ export class MinecraftRendererAdapter implements IRendererAdapter {
             const duration = performance.now() - startTime;
             this.logger.debug('Model rendered from JSON', {
                 parent: modelJson.parent,
-                duration: `${duration.toFixed(2)}ms`
+                duration: `${duration.toFixed(2)}ms`,
             });
 
             return buffer;
         } catch (error) {
             this.logger.error('Failed to render model from JSON', error as Error, {
-                parent: modelJson.parent
+                parent: modelJson.parent,
             });
             throw new Error(`Failed to render model from JSON: ${(error as Error).message}`);
         }
@@ -240,10 +240,7 @@ export class MinecraftRendererAdapter implements IRendererAdapter {
         return (
             this.currentOptions.renderSize === newOptions.renderSize &&
             this.currentOptions.useInternalResources === newOptions.useInternalResources &&
-            this.arraysEqual(
-                this.currentOptions.resourcePacks ?? [],
-                newOptions.resourcePacks ?? []
-            )
+            this.arraysEqual(this.currentOptions.resourcePacks ?? [], newOptions.resourcePacks ?? [])
         );
     }
 

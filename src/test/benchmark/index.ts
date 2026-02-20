@@ -1,15 +1,15 @@
 /**
  * 性能测试入口
- * 
+ *
  * 导出所有性能测试模块，便于统一管理和运行。
- * 
+ *
  * 运行方式:
  * - 运行所有性能测试: npm run test:bench
  * - 运行 YAML 解析器测试: npm run test:bench:yaml
  * - 运行模板存储测试: npm run test:bench:store
  * - 运行模板搜索测试: npm run test:bench:search
  * - 运行事件总线测试: npm run test:bench:eventbus
- * 
+ *
  * 性能基准目标:
  * | 操作 | 目标时间 |
  * |------|----------|
@@ -85,4 +85,3 @@ export const PERFORMANCE_BASELINES = {
         cacheHit: { maxMs: 0.1, description: 'Cache hit lookup' },
     },
 } as const;
-

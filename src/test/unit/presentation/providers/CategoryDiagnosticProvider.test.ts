@@ -7,51 +7,47 @@
  * - Schema 驱动的诊断
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-    TextDocument,
-    Uri,
-    DiagnosticSeverity
-} from '../../../__mocks__/vscode';
+import { TextDocument, Uri, DiagnosticSeverity } from '../../../__mocks__/vscode';
 import type { TextDocument as VscodeTextDocument } from 'vscode';
 import { CategoryDiagnosticProvider } from '../../../../presentation/providers/CategoryDiagnosticProvider';
 import { ServiceContainer } from '../../../../infrastructure/ServiceContainer';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IConfiguration } from '../../../../core/interfaces/IConfiguration';
-import { IDataStoreService } from '../../../../core/interfaces/IDataStoreService';
-import { ISchemaService } from '../../../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../../../core/interfaces/IYamlPathParser';
-import { PerformanceMonitor } from '../../../../infrastructure/performance/PerformanceMonitor';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IConfiguration } from '../../../../core/interfaces/IConfiguration';
+import { type IDataStoreService } from '../../../../core/interfaces/IDataStoreService';
+import { type ISchemaService } from '../../../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../../../core/interfaces/IYamlPathParser';
+import { type PerformanceMonitor } from '../../../../infrastructure/performance/PerformanceMonitor';
 import { SERVICE_TOKENS } from '../../../../core/constants/ServiceTokens';
 
 // Mock ServiceContainer
 vi.mock('../../../../infrastructure/ServiceContainer', () => ({
     ServiceContainer: {
-        getService: vi.fn()
-    }
+        getService: vi.fn(),
+    },
 }));
 
 // Mock DiagnosticSeverityConfig
 const mockSeverityConfig = {
     getSeverity: vi.fn().mockReturnValue(DiagnosticSeverity.Error),
-    shouldIgnore: vi.fn().mockReturnValue(false)
+    shouldIgnore: vi.fn().mockReturnValue(false),
 };
 vi.mock('../../../../infrastructure/config/DiagnosticSeverityConfig', () => ({
     DiagnosticSeverityConfig: class {
         getSeverity = mockSeverityConfig.getSeverity;
         shouldIgnore = mockSeverityConfig.shouldIgnore;
-    }
+    },
 }));
 
 // Mock YamlHelper
 vi.mock('../../../../infrastructure/yaml/YamlHelper', () => ({
     YamlHelper: {
-        isInComment: vi.fn().mockReturnValue(false)
-    }
+        isInComment: vi.fn().mockReturnValue(false),
+    },
 }));
 
 // Mock calculateSimilarity
 vi.mock('../../../../infrastructure/utils', () => ({
-    calculateSimilarity: vi.fn().mockReturnValue(0.8)
+    calculateSimilarity: vi.fn().mockReturnValue(0.8),
 }));
 
 describe('CategoryDiagnosticProvider', () => {
@@ -81,31 +77,31 @@ describe('CategoryDiagnosticProvider', () => {
                 }
                 return defaultValue;
             }),
-            onChange: vi.fn().mockReturnValue({ dispose: vi.fn() })
+            onChange: vi.fn().mockReturnValue({ dispose: vi.fn() }),
         } as unknown as IConfiguration;
 
         // 创建 mock data store service
         mockDataStoreService = {
             getCategoryById: vi.fn().mockResolvedValue(undefined),
-            getAllCategories: vi.fn().mockResolvedValue([])
+            getAllCategories: vi.fn().mockResolvedValue([]),
         } as unknown as IDataStoreService;
 
         // 创建 mock schema service
         mockSchemaService = {
             getSchemaForPath: vi.fn().mockResolvedValue(null),
-            getCustomProperty: vi.fn().mockReturnValue(null)
+            getCustomProperty: vi.fn().mockReturnValue(null),
         } as unknown as ISchemaService;
 
         // 创建 mock yaml path parser
         mockYamlPathParser = {
-            parsePath: vi.fn().mockReturnValue([])
+            parsePath: vi.fn().mockReturnValue([]),
         } as unknown as IYamlPathParser;
 
         // 创建 mock performance monitor
         mockPerformanceMonitor = {
             startTimer: vi.fn().mockReturnValue({
-                stop: vi.fn()
-            })
+                stop: vi.fn(),
+            }),
         } as unknown as PerformanceMonitor;
 
         // 配置 ServiceContainer mock
@@ -141,11 +137,7 @@ describe('CategoryDiagnosticProvider', () => {
 
     // 辅助函数：创建测试文档
     function createDocument(content: string): VscodeTextDocument {
-        return new TextDocument(
-            Uri.file('/test/file.yaml'),
-            content,
-            'yaml'
-        ) as unknown as VscodeTextDocument;
+        return new TextDocument(Uri.file('/test/file.yaml'), content, 'yaml') as unknown as VscodeTextDocument;
     }
 
     // ========================================
@@ -157,7 +149,7 @@ describe('CategoryDiagnosticProvider', () => {
             const document = new TextDocument(
                 Uri.file('/test/file.txt'),
                 'hello world',
-                'plaintext'
+                'plaintext',
             ) as unknown as VscodeTextDocument;
 
             await provider.updateDiagnostics(document);
@@ -184,7 +176,7 @@ items:
             // 模拟 schema 返回 categoryReference 字段
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.categoryReference'
+                'x-completion-provider': 'craftengine.categoryReference',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.categoryReference');
 
@@ -202,7 +194,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.categoryReference'
+                'x-completion-provider': 'craftengine.categoryReference',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.categoryReference');
             vi.mocked(mockYamlPathParser.parsePath).mockReturnValue(['items', 'my-item', 'category']);
@@ -222,7 +214,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.categoryReference'
+                'x-completion-provider': 'craftengine.categoryReference',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.categoryReference');
             vi.mocked(mockYamlPathParser.parsePath).mockReturnValue(['items', 'my-item', 'category']);
@@ -230,7 +222,7 @@ items:
                 id: '#mypack:weapons',
                 namespace: 'mypack',
                 name: 'weapons',
-                sourceFile: '/test/categories.yaml'
+                sourceFile: '/test/categories.yaml',
             });
 
             await provider.updateDiagnostics(document);
@@ -253,7 +245,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.categoryReference'
+                'x-completion-provider': 'craftengine.categoryReference',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.categoryReference');
             vi.mocked(mockYamlPathParser.parsePath).mockReturnValue(['items', 'my-item', 'category']);
@@ -272,7 +264,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.categoryReference'
+                'x-completion-provider': 'craftengine.categoryReference',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.categoryReference');
             vi.mocked(mockYamlPathParser.parsePath).mockReturnValue(['items', 'my-item', 'category']);
@@ -297,14 +289,14 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.categoryReference'
+                'x-completion-provider': 'craftengine.categoryReference',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.categoryReference');
             vi.mocked(mockYamlPathParser.parsePath).mockReturnValue(['items', 'my-item', 'category']);
             vi.mocked(mockDataStoreService.getCategoryById).mockResolvedValue(undefined);
             vi.mocked(mockDataStoreService.getAllCategories).mockResolvedValue([
                 { id: '#mypack:weapons', namespace: 'mypack', name: 'weapons', sourceFile: '/test/cat.yaml' },
-                { id: '#mypack:tools', namespace: 'mypack', name: 'tools', sourceFile: '/test/cat.yaml' }
+                { id: '#mypack:tools', namespace: 'mypack', name: 'tools', sourceFile: '/test/cat.yaml' },
             ]);
 
             await provider.updateDiagnostics(document);
@@ -384,7 +376,7 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.categoryReference'
+                'x-completion-provider': 'craftengine.categoryReference',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.categoryReference');
             vi.mocked(mockYamlPathParser.parsePath).mockReturnValue(['items', 'my-item', 'category']);
@@ -441,13 +433,11 @@ items:
 
             vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
                 type: 'string',
-                'x-completion-provider': 'craftengine.categoryReference'
+                'x-completion-provider': 'craftengine.categoryReference',
             });
             vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.categoryReference');
             vi.mocked(mockYamlPathParser.parsePath).mockReturnValue(['items', 'my-item', 'category']);
-            vi.mocked(mockDataStoreService.getCategoryById).mockRejectedValue(
-                new Error('Service error')
-            );
+            vi.mocked(mockDataStoreService.getCategoryById).mockRejectedValue(new Error('Service error'));
 
             await expect(provider.updateDiagnostics(document)).resolves.not.toThrow();
         });
@@ -471,9 +461,7 @@ items:
     category: #mypack:weapons
             `);
 
-            vi.mocked(mockSchemaService.getSchemaForPath).mockRejectedValue(
-                new Error('Schema service error')
-            );
+            vi.mocked(mockSchemaService.getSchemaForPath).mockRejectedValue(new Error('Schema service error'));
 
             await expect(provider.updateDiagnostics(document)).resolves.not.toThrow();
         });

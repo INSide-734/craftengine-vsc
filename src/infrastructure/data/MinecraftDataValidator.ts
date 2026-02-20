@@ -1,15 +1,15 @@
 import {
-    IEnchantment,
-    IEntity,
-    IParticle,
-    IPotionEffect,
-    IBiome,
-    ISound,
-    IBlock,
-    IMinecraftItem,
-    IAttribute,
-    IDamageType,
-    IGameEvent
+    type IEnchantment,
+    type IEntity,
+    type IParticle,
+    type IPotionEffect,
+    type IBiome,
+    type ISound,
+    type IBlock,
+    type IMinecraftItem,
+    type IAttribute,
+    type IDamageType,
+    type IGameEvent,
 } from '../../core/interfaces/IMinecraftDataService';
 
 /**
@@ -47,16 +47,16 @@ export class MinecraftDataValidator {
         damageTypes: IDamageType[];
         gameEvents: IGameEvent[];
     }): void {
-        this.enchantmentSet = new Set(data.enchantments.map(e => e.name));
-        this.entitySet = new Set(data.entities.map(e => e.name));
-        this.particleSet = new Set(data.particles.map(p => p.name));
-        this.potionEffectSet = new Set(data.potionEffects.map(e => e.name));
-        this.biomeSet = new Set(data.biomes.map(b => b.name));
-        this.soundSet = new Set(data.sounds.map(s => s.name));
-        this.blockSet = new Set(data.blocks.map(b => b.name));
-        this.itemSet = new Set(data.items.map(i => i.name));
-        this.damageTypeSet = new Set(data.damageTypes.map(d => d.name));
-        this.gameEventSet = new Set(data.gameEvents.map(g => g.name));
+        this.enchantmentSet = new Set(data.enchantments.map((e) => e.name));
+        this.entitySet = new Set(data.entities.map((e) => e.name));
+        this.particleSet = new Set(data.particles.map((p) => p.name));
+        this.potionEffectSet = new Set(data.potionEffects.map((e) => e.name));
+        this.biomeSet = new Set(data.biomes.map((b) => b.name));
+        this.soundSet = new Set(data.sounds.map((s) => s.name));
+        this.blockSet = new Set(data.blocks.map((b) => b.name));
+        this.itemSet = new Set(data.items.map((i) => i.name));
+        this.damageTypeSet = new Set(data.damageTypes.map((d) => d.name));
+        this.gameEventSet = new Set(data.gameEvents.map((g) => g.name));
 
         // 属性集合需要同时添加完整名称和资源名称
         this.attributeSet = new Set<string>();

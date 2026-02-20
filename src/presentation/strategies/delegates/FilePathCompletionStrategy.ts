@@ -1,17 +1,20 @@
-import {
-    CompletionItem,
-    CompletionItemKind,
-    MarkdownString,
-    CancellationToken
-} from 'vscode';
+import { CompletionItem, CompletionItemKind, MarkdownString, type CancellationToken } from 'vscode';
 import * as fs from 'fs';
 import { ServiceContainer } from '../../../infrastructure/ServiceContainer';
-import { ICompletionStrategy, ICompletionContextInfo, ICompletionResult } from '../../../core/interfaces/ICompletionStrategy';
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IDataConfigLoader, IResourceTypePresetsConfig, IResourceTypePreset } from '../../../core/interfaces/IDataConfigLoader';
+import {
+    type ICompletionStrategy,
+    type ICompletionContextInfo,
+    type ICompletionResult,
+} from '../../../core/interfaces/ICompletionStrategy';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import {
+    type IDataConfigLoader,
+    type IResourceTypePresetsConfig,
+    type IResourceTypePreset,
+} from '../../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
-import { INamespaceDiscoveryService } from '../../../core/interfaces/INamespaceDiscoveryService';
-import { CompletionItemWithStrategy, FilePathCompletionItem } from '../../types/CompletionTypes';
+import { type INamespaceDiscoveryService } from '../../../core/interfaces/INamespaceDiscoveryService';
+import { type CompletionItemWithStrategy, type FilePathCompletionItem } from '../../types/CompletionTypes';
 import { FileScanner } from './helpers/FileScanner';
 
 /**
@@ -21,7 +24,16 @@ import { FileScanner } from './helpers/FileScanner';
  */
 export interface IFilePathCompletionOptions {
     /** 资源类型（用于预设配置） */
-    resourceType?: 'model' | 'texture' | 'sound' | 'loot_table' | 'recipe' | 'advancement' | 'function' | 'structure' | 'custom';
+    resourceType?:
+        | 'model'
+        | 'texture'
+        | 'sound'
+        | 'loot_table'
+        | 'recipe'
+        | 'advancement'
+        | 'function'
+        | 'structure'
+        | 'custom';
     /** 基础路径模板，支持 {namespace} 占位符 */
     basePath?: string;
     /** 允许的文件扩展名 */
@@ -105,10 +117,11 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
     private resourceTypePresetsCache: IResourceTypePresetsConfig | null = null;
 
     constructor() {
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild('FilePathCompletionStrategy');
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(
+            'FilePathCompletionStrategy',
+        );
         this.namespaceService = ServiceContainer.getService<INamespaceDiscoveryService>(
-            SERVICE_TOKENS.NamespaceDiscoveryService
+            SERVICE_TOKENS.NamespaceDiscoveryService,
         );
         this.configLoader = ServiceContainer.getService<IDataConfigLoader>(SERVICE_TOKENS.DataConfigLoader);
 
@@ -123,7 +136,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
         this.fileScanner = new FileScanner(
             this.logger.createChild('FileScanner'),
             this.namespaceService,
-            this.cacheTTL
+            this.cacheTTL,
         );
     }
 
@@ -153,7 +166,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
         // 并行加载两个配置
         const [timingConfig, resourceTypePresets] = await Promise.all([
             this.configLoader.loadTimingConfig(),
-            this.configLoader.loadResourceTypePresetsConfig()
+            this.configLoader.loadResourceTypePresetsConfig(),
         ]);
 
         this.cacheTTL = timingConfig.cache.filePathCacheTTL;
@@ -163,7 +176,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
 
         this.logger.debug('Config loaded', {
             cacheTTL: this.cacheTTL,
-            resourceTypes: resourceTypePresets.resourceTypes
+            resourceTypes: resourceTypePresets.resourceTypes,
         });
     }
 
@@ -213,7 +226,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
      */
     async provideCompletionItems(
         context: ICompletionContextInfo,
-        token?: CancellationToken
+        token?: CancellationToken,
     ): Promise<ICompletionResult | undefined> {
         try {
             if (token?.isCancellationRequested) {
@@ -230,7 +243,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
                 position: `${context.position.line}:${context.position.character}`,
                 linePrefix: context.linePrefix,
                 resourceType: options.resourceType,
-                basePath: options.basePath
+                basePath: options.basePath,
             });
 
             // 解析已输入的前缀，提取命名空间过滤器和路径前缀
@@ -247,33 +260,32 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
             const filteredFiles = this.fileScanner.filterNamespacedFiles(allFiles, namespaceFilter, pathPrefix);
 
             // 创建补全项
-            const completionItems = filteredFiles.map(file =>
-                this.createCompletionItem(file.relativePath, file.namespace, options)
+            const completionItems = filteredFiles.map((file) =>
+                this.createCompletionItem(file.relativePath, file.namespace, options),
             );
 
             this.logger.debug('File path completions provided', {
                 total: allFiles.length,
                 filtered: completionItems.length,
                 namespaceFilter,
-                pathPrefix
+                pathPrefix,
             });
 
             return {
                 items: completionItems,
                 isIncomplete: false,
                 completionType: 'file-path',
-                priority: this.priority
+                priority: this.priority,
             };
-
         } catch (error) {
             this.logger.error('Failed to provide file path completions', error as Error, {
-                linePrefix: context.linePrefix
+                linePrefix: context.linePrefix,
             });
             return {
                 items: [],
                 isIncomplete: false,
                 completionType: 'file-path',
-                priority: this.priority
+                priority: this.priority,
             };
         }
     }
@@ -281,10 +293,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
     /**
      * 解析补全项，提供详细信息
      */
-    async resolveCompletionItem(
-        item: CompletionItem,
-        token?: CancellationToken
-    ): Promise<CompletionItem | undefined> {
+    async resolveCompletionItem(item: CompletionItem, token?: CancellationToken): Promise<CompletionItem | undefined> {
         try {
             if (token?.isCancellationRequested) {
                 return item;
@@ -325,7 +334,6 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
             item.documentation = md;
 
             return item;
-
         } catch (error) {
             this.logger.error('Failed to resolve file path completion item', error as Error);
             return item;
@@ -350,7 +358,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
             searchDepth: defaults.searchDepth,
             pathSeparator: defaults.pathSeparator,
             includeSubdirectories: defaults.includeSubdirectories,
-            autoDetectWorkspace: defaults.autoDetectWorkspace
+            autoDetectWorkspace: defaults.autoDetectWorkspace,
         };
 
         if (!context.schema) {
@@ -366,31 +374,32 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
         const preset = this.getResourceTypePreset(resourceType);
 
         // 获取排除模式
-        const excludePatterns = schemaOptions['excludePatterns'] as string[] ||
-            this.getExcludePatterns(resourceType);
+        const excludePatterns = (schemaOptions['excludePatterns'] as string[]) || this.getExcludePatterns(resourceType);
 
         this.logger.debug('Loading completion options from schema', {
             schemaOptions,
             resourceType,
             hasPreset: !!preset,
-            hasBasePath: !!schemaOptions['basePath']
+            hasBasePath: !!schemaOptions['basePath'],
         });
 
         // 合并选项：默认值 < 预设配置 < Schema 配置值
         return {
             ...defaultOptions,
-            ...(preset ? {
-                basePath: preset.basePath,
-                fileExtensions: preset.fileExtensions,
-                includeNamespace: preset.includeNamespace,
-                stripExtension: preset.stripExtension,
-                searchDepth: preset.searchDepth,
-                pathSeparator: preset.pathSeparator,
-                includeSubdirectories: preset.includeSubdirectories
-            } : {}),
+            ...(preset
+                ? {
+                      basePath: preset.basePath,
+                      fileExtensions: preset.fileExtensions,
+                      includeNamespace: preset.includeNamespace,
+                      stripExtension: preset.stripExtension,
+                      searchDepth: preset.searchDepth,
+                      pathSeparator: preset.pathSeparator,
+                      includeSubdirectories: preset.includeSubdirectories,
+                  }
+                : {}),
             excludePatterns,
             ...schemaOptions,
-            resourceType: resourceType as IFilePathCompletionOptions['resourceType']
+            resourceType: resourceType as IFilePathCompletionOptions['resourceType'],
         };
     }
 
@@ -404,9 +413,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
      *
      * 使用 NamespaceDiscoveryService.parseResourceLocation 进行解析
      */
-    private parseInputPrefix(
-        linePrefix: string
-    ): { namespaceFilter: string | null; pathPrefix: string } {
+    private parseInputPrefix(linePrefix: string): { namespaceFilter: string | null; pathPrefix: string } {
         const trimmed = linePrefix.trim();
 
         // 找到 YAML 键值分隔符
@@ -424,14 +431,14 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
         if (resourceLocation.namespace) {
             return {
                 namespaceFilter: resourceLocation.namespace,
-                pathPrefix: resourceLocation.path
+                pathPrefix: resourceLocation.path,
             };
         }
 
         // 没有命名空间，可能正在输入命名空间或路径
         return {
             namespaceFilter: null,
-            pathPrefix: resourceLocation.path || value
+            pathPrefix: resourceLocation.path || value,
         };
     }
 
@@ -443,7 +450,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
     private createCompletionItem(
         relativePath: string,
         namespace: string,
-        options: IFilePathCompletionOptions
+        options: IFilePathCompletionOptions,
     ): CompletionItem {
         // 使用服务构建资源位置字符串
         const fullPath = options.includeNamespace
@@ -471,7 +478,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
             relativePath,
             fullPath,
             namespace,
-            resourceType: options.resourceType
+            resourceType: options.resourceType,
         };
 
         // 设置策略标识
@@ -485,15 +492,15 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
      */
     private getResourceTypeName(resourceType?: string): string {
         const names: Record<string, string> = {
-            'model': 'Model',
-            'texture': 'Texture',
-            'sound': 'Sound',
-            'loot_table': 'Loot Table',
-            'recipe': 'Recipe',
-            'advancement': 'Advancement',
-            'function': 'Function',
-            'structure': 'Structure',
-            'custom': 'File'
+            model: 'Model',
+            texture: 'Texture',
+            sound: 'Sound',
+            loot_table: 'Loot Table',
+            recipe: 'Recipe',
+            advancement: 'Advancement',
+            function: 'Function',
+            structure: 'Structure',
+            custom: 'File',
         };
         return names[resourceType || 'custom'] || 'File';
     }

@@ -1,6 +1,6 @@
-import { TextDocument, Position } from 'vscode';
-import { ISchemaService } from '../../../core/interfaces/ISchemaService';
-import { IYamlPathParser } from '../../../core/interfaces/IYamlPathParser';
+import { type TextDocument, type Position } from 'vscode';
+import { type ISchemaService } from '../../../core/interfaces/ISchemaService';
+import { type IYamlPathParser } from '../../../core/interfaces/IYamlPathParser';
 
 /**
  * Schema 字段类型识别器
@@ -11,7 +11,7 @@ import { IYamlPathParser } from '../../../core/interfaces/IYamlPathParser';
 export class SchemaFieldIdentifier {
     constructor(
         private readonly schemaService: ISchemaService,
-        private readonly yamlPathParser: IYamlPathParser
+        private readonly yamlPathParser: IYamlPathParser,
     ) {}
 
     /**
@@ -22,11 +22,7 @@ export class SchemaFieldIdentifier {
      * @param providerId 期望的 completion-provider 标识（如 'craftengine.categoryReference'）
      * @returns 是否匹配
      */
-    async isFieldOfType(
-        document: TextDocument,
-        position: Position,
-        providerId: string
-    ): Promise<boolean> {
+    async isFieldOfType(document: TextDocument, position: Position, providerId: string): Promise<boolean> {
         try {
             const path = this.yamlPathParser.parsePath(document, position);
             if (path.length === 0) {

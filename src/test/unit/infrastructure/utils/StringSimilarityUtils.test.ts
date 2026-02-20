@@ -8,7 +8,7 @@ import {
     prefixMatchScore,
     isSubsequence,
     calculateMatchScore,
-    filterAndSort
+    filterAndSort,
 } from '../../../../infrastructure/utils/StringSimilarityUtils';
 
 describe('StringSimilarityUtils', () => {
@@ -92,21 +92,24 @@ describe('StringSimilarityUtils', () => {
     });
 
     describe('findSimilarItems', () => {
-        interface Item { id: string; name: string }
+        interface Item {
+            id: string;
+            name: string;
+        }
         const items: Item[] = [
             { id: '1', name: 'apple' },
             { id: '2', name: 'banana' },
-            { id: '3', name: 'apricot' }
+            { id: '3', name: 'apricot' },
         ];
 
         it('should find similar items using extractor', () => {
-            const results = findSimilarItems('aple', items, item => item.name);
+            const results = findSimilarItems('aple', items, (item) => item.name);
             expect(results.length).toBeGreaterThan(0);
             expect(results[0].item.name).toBe('apple');
         });
 
         it('should respect options', () => {
-            const results = findSimilarItems('xyz', items, item => item.name, { threshold: 0.9 });
+            const results = findSimilarItems('xyz', items, (item) => item.name, { threshold: 0.9 });
             expect(results.length).toBe(0);
         });
     });

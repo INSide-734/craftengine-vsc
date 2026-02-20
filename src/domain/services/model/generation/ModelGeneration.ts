@@ -4,12 +4,12 @@
  * 移植自 craft-engine 的 ModelGeneration 类，包含缓存和验证功能。
  */
 
-import { Key } from '../utils/Key';
+import { type Key } from '../utils/Key';
 import {
-    DisplayPosition,
-    IDisplayMeta,
-    GuiLight,
-    IModelGenerationConfig,
+    type DisplayPosition,
+    type IDisplayMeta,
+    type GuiLight,
+    type IModelGenerationConfig,
 } from '../../../../core/interfaces/IModelGenerator';
 import { ModelGenerationError } from '../../../../core/errors/ExtensionErrors';
 
@@ -34,7 +34,7 @@ export class ModelGeneration {
         texturesOverride?: Record<string, string>,
         displays?: Partial<Record<DisplayPosition, IDisplayMeta>>,
         guiLight?: GuiLight,
-        ambientOcclusion?: boolean
+        ambientOcclusion?: boolean,
     ) {
         this.path = path;
         this.parentModelPath = parentModelPath;
@@ -97,7 +97,9 @@ export class ModelGeneration {
      * 检查是否相等
      */
     equals(other: ModelGeneration | null | undefined): boolean {
-        if (!other) {return false;}
+        if (!other) {
+            return false;
+        }
         return (
             this.path.equals(other.path) &&
             this.parentModelPath === other.parentModelPath &&
@@ -193,7 +195,7 @@ export class ModelGenerationBuilder {
             this._texturesOverride,
             this._displays,
             this._guiLight,
-            this._ambientOcclusion
+            this._ambientOcclusion,
         );
     }
 }

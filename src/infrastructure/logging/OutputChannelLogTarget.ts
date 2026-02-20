@@ -1,4 +1,4 @@
-import { ILogEntry, ILogTarget, LogLevel } from '../../core/interfaces/ILogger';
+import { type ILogEntry, type ILogTarget, LogLevel } from '../../core/interfaces/ILogger';
 
 // 预计算级别字符串
 const LEVEL_STRINGS: Record<number, string> = {

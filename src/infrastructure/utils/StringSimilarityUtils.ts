@@ -12,10 +12,7 @@ export {
     prefixMatchScore,
     isSubsequence,
     calculateMatchScore,
-    filterAndSort
+    filterAndSort,
 } from '../../core/utils/StringSimilarityUtils';
 
-export type {
-    FindSimilarOptions,
-    SimilarityResult
-} from '../../core/utils/StringSimilarityUtils';
+export type { FindSimilarOptions, SimilarityResult } from '../../core/utils/StringSimilarityUtils';

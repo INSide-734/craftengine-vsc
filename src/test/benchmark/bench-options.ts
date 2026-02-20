@@ -1,10 +1,10 @@
 /**
  * 基准测试共享配置
- * 
+ *
  * 提供统一的基准测试选项，确保所有测试有足够的迭代次数
  * 来生成有效的性能数据。
  */
-import { BenchOptions } from 'vitest';
+import { type BenchOptions } from 'vitest';
 
 /**
  * 默认基准测试选项
@@ -41,4 +41,3 @@ export const verySlowBenchOptions: BenchOptions = {
     iterations: 10,
     warmupIterations: 2,
 };
-

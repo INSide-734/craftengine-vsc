@@ -4,10 +4,10 @@
  * 移植自 craft-engine 的 Registry
  */
 
-import { Key } from '../utils/Key';
-import { ResourceKey } from './ResourceKey';
-import { HolderOwner } from './Holder';
-import { HolderReference } from './HolderReference';
+import { type Key } from '../utils/Key';
+import { type ResourceKey } from './ResourceKey';
+import { type HolderOwner } from './Holder';
+import { type HolderReference } from './HolderReference';
 
 /**
  * 注册表接口

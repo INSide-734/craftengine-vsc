@@ -6,7 +6,7 @@
 
 import { Key } from '../utils/Key';
 import { ResourceKey } from './ResourceKey';
-import { Registry } from './Registry';
+import { type Registry } from './Registry';
 
 /**
  * 创建注册表键

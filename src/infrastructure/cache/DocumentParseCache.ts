@@ -1,13 +1,13 @@
-import { Position, Range, TextDocument } from 'vscode';
+import { Position, Range, type TextDocument } from 'vscode';
 import * as yaml from 'yaml';
 import {
-    IParsedDocument,
-    IDocumentParseCache,
-    IPositionInfo,
-    IParseError
+    type IParsedDocument,
+    type IDocumentParseCache,
+    type IPositionInfo,
+    type IParseError,
 } from '../../core/interfaces/IParsedDocument';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import { type IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
 import { LRUCache } from '../utils/LRUCache';
 
 /**
@@ -56,7 +56,7 @@ export class DocumentParseCache implements IDocumentParseCache {
     constructor(
         private readonly logger: ILogger,
         private readonly performanceMonitor?: IPerformanceMonitor,
-        capacity?: number
+        capacity?: number,
     ) {
         this.capacity = capacity ?? DocumentParseCache.DEFAULT_CAPACITY;
         this.cache = new LRUCache<string, IParsedDocument>(this.capacity);
@@ -77,7 +77,7 @@ export class DocumentParseCache implements IDocumentParseCache {
                 this.hits++;
                 this.logger.debug('Document parse cache hit', {
                     uri,
-                    version: document.version
+                    version: document.version,
                 });
                 timer?.stop({ success: 'true', fromCache: 'true' });
                 return cached;
@@ -88,7 +88,7 @@ export class DocumentParseCache implements IDocumentParseCache {
             this.logger.debug('Document parse cache miss', {
                 uri,
                 version: document.version,
-                cachedVersion: cached?.version
+                cachedVersion: cached?.version,
             });
 
             const parsed = await this.parseDocument(document);
@@ -98,7 +98,6 @@ export class DocumentParseCache implements IDocumentParseCache {
 
             timer?.stop({ success: 'true', fromCache: 'false' });
             return parsed;
-
         } catch (error) {
             this.logger.error('Failed to get parsed document', error as Error, { uri });
             timer?.stop({ success: 'false', error: (error as Error).message });
@@ -140,7 +139,7 @@ export class DocumentParseCache implements IDocumentParseCache {
             size: this.cache.size(),
             hits: this.hits,
             misses: this.misses,
-            hitRate: total > 0 ? this.hits / total : 0
+            hitRate: total > 0 ? this.hits / total : 0,
         };
     }
 
@@ -160,7 +159,7 @@ export class DocumentParseCache implements IDocumentParseCache {
             // 使用 yaml 库解析
             const astDocument = yaml.parseDocument(text, {
                 strict: false,
-                prettyErrors: true
+                prettyErrors: true,
             });
 
             // 处理解析错误
@@ -189,7 +188,7 @@ export class DocumentParseCache implements IDocumentParseCache {
                     version: document.version,
                     uri: document.uri.toString(),
                     text,
-                    lines
+                    lines,
                 };
             }
 
@@ -209,9 +208,8 @@ export class DocumentParseCache implements IDocumentParseCache {
                 version: document.version,
                 uri: document.uri.toString(),
                 text,
-                lines
+                lines,
             };
-
         } catch (error) {
             this.logger.error('YAML parse error', error as Error);
             timer?.stop({ success: 'false', error: (error as Error).message });
@@ -220,7 +218,7 @@ export class DocumentParseCache implements IDocumentParseCache {
                 message: `YAML parse error: ${(error as Error).message}`,
                 range: new Range(0, 0, 0, 1),
                 severity: 'error',
-                code: 'yaml_parse_error'
+                code: 'yaml_parse_error',
             });
 
             return {
@@ -232,7 +230,7 @@ export class DocumentParseCache implements IDocumentParseCache {
                 version: document.version,
                 uri: document.uri.toString(),
                 text,
-                lines
+                lines,
             };
         }
     }
@@ -240,10 +238,7 @@ export class DocumentParseCache implements IDocumentParseCache {
     /**
      * 构建位置映射
      */
-    private buildPositionMap(
-        astDocument: yaml.Document.Parsed,
-        document: TextDocument
-    ): Map<string, IPositionInfo> {
+    private buildPositionMap(astDocument: yaml.Document.Parsed, document: TextDocument): Map<string, IPositionInfo> {
         const positionMap = new Map<string, IPositionInfo>();
 
         const visitNode = (node: yaml.Node | null, path: string[] = [], keyNode?: yaml.Node): void => {
@@ -272,7 +267,7 @@ export class DocumentParseCache implements IDocumentParseCache {
                     start: startPos,
                     end: endPos,
                     range,
-                    keyRange
+                    keyRange,
                 });
             } catch (error) {
                 // 位置超出范围时忽略
@@ -287,10 +282,9 @@ export class DocumentParseCache implements IDocumentParseCache {
                         let key: string;
                         if (item.key.range) {
                             const [keyStart, keyEnd] = item.key.range;
-                            key = document.getText(new Range(
-                                document.positionAt(keyStart),
-                                document.positionAt(keyEnd)
-                            ));
+                            key = document.getText(
+                                new Range(document.positionAt(keyStart), document.positionAt(keyEnd)),
+                            );
                         } else {
                             key = String(item.key.value);
                         }
@@ -300,12 +294,7 @@ export class DocumentParseCache implements IDocumentParseCache {
                             visitNode(item.value as yaml.Node, currentPath, item.key as yaml.Node);
                         } else if (item.key.range) {
                             // 处理空值
-                            this.addEmptyValuePosition(
-                                positionMap,
-                                document,
-                                item.key as yaml.Scalar,
-                                currentPath
-                            );
+                            this.addEmptyValuePosition(positionMap, document, item.key as yaml.Scalar, currentPath);
                         }
                     }
                 }
@@ -330,7 +319,7 @@ export class DocumentParseCache implements IDocumentParseCache {
         positionMap: Map<string, IPositionInfo>,
         document: TextDocument,
         keyNode: yaml.Scalar,
-        path: string[]
+        path: string[],
     ): void {
         if (!keyNode.range) {
             return;
@@ -361,7 +350,7 @@ export class DocumentParseCache implements IDocumentParseCache {
                 start: colonRange.start,
                 end: colonRange.end,
                 range: colonRange,
-                keyRange
+                keyRange,
             });
         } catch (error) {
             this.logger.debug('Failed to add empty value position', { path: path.join('.') });
@@ -374,7 +363,7 @@ export class DocumentParseCache implements IDocumentParseCache {
     private createParseError(
         error: yaml.YAMLError | yaml.YAMLWarning,
         document: TextDocument,
-        severity: 'error' | 'warning'
+        severity: 'error' | 'warning',
     ): IParseError {
         let range: Range;
 
@@ -398,7 +387,7 @@ export class DocumentParseCache implements IDocumentParseCache {
             message: error.message,
             range,
             severity,
-            code: severity === 'error' ? 'yaml_syntax_error' : 'yaml_warning'
+            code: severity === 'error' ? 'yaml_syntax_error' : 'yaml_warning',
         };
     }
 
@@ -420,12 +409,7 @@ export class DocumentParseCache implements IDocumentParseCache {
         const trimmedEnd = lineText.search(/\S\s*$/);
 
         if (trimmedStart !== -1 && trimmedEnd !== -1) {
-            return new Range(
-                startPos.line,
-                trimmedStart,
-                startPos.line,
-                trimmedEnd + 1
-            );
+            return new Range(startPos.line, trimmedStart, startPos.line, trimmedEnd + 1);
         }
 
         return new Range(startPos, line.range.end);
@@ -445,7 +429,7 @@ export class DocumentParseCache implements IDocumentParseCache {
             version: document.version,
             uri: document.uri.toString(),
             text,
-            lines: text.split('\n')
+            lines: text.split('\n'),
         };
     }
 

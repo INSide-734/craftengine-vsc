@@ -1,14 +1,14 @@
 import {
-    CodeActionProvider,
-    TextDocument,
-    Range,
-    CodeActionContext,
-    CodeAction,
+    type CodeActionProvider,
+    type TextDocument,
+    type Range,
+    type CodeActionContext,
+    type CodeAction,
     CodeActionKind,
-    Diagnostic
+    type Diagnostic,
 } from 'vscode';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { ILogger } from '../../core/interfaces/ILogger';
+import { type ILogger } from '../../core/interfaces/ILogger';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 
 /**
@@ -29,8 +29,7 @@ export abstract class BaseCodeActionProvider implements CodeActionProvider {
      * @param loggerName 日志子组件名称
      */
     constructor(loggerName: string) {
-        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger)
-            .createChild(loggerName);
+        this.logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger).createChild(loggerName);
     }
 
     /** 诊断源标识，用于过滤诊断 */
@@ -44,11 +43,7 @@ export abstract class BaseCodeActionProvider implements CodeActionProvider {
      * @param context 代码操作上下文，包含诊断信息
      * @returns 代码操作数组
      */
-    async provideCodeActions(
-        document: TextDocument,
-        _range: Range,
-        context: CodeActionContext
-    ): Promise<CodeAction[]> {
+    async provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext): Promise<CodeAction[]> {
         const actions: CodeAction[] = [];
 
         try {
@@ -63,7 +58,7 @@ export abstract class BaseCodeActionProvider implements CodeActionProvider {
 
             this.logger.debug('Code actions provided', {
                 document: document.fileName,
-                actionsCount: actions.length
+                actionsCount: actions.length,
             });
         } catch (error) {
             this.logger.error('Error providing code actions', error as Error);
@@ -79,8 +74,5 @@ export abstract class BaseCodeActionProvider implements CodeActionProvider {
      * @param diagnostic 需要修复的诊断信息
      * @returns 针对该诊断可用的代码操作集合
      */
-    protected abstract createFixActions(
-        document: TextDocument,
-        diagnostic: Diagnostic
-    ): Promise<CodeAction[]>;
+    protected abstract createFixActions(document: TextDocument, diagnostic: Diagnostic): Promise<CodeAction[]>;
 }

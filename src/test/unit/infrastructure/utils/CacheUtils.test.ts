@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-    LRUCache,
-    TTLCache,
-    StatsCache,
-    getOrSet,
-    getOrSetSync
-} from '../../../../infrastructure/utils/CacheUtils';
+import { LRUCache, TTLCache, StatsCache, getOrSet, getOrSetSync } from '../../../../infrastructure/utils/CacheUtils';
 
 describe('CacheUtils', () => {
     describe('LRUCache', () => {
@@ -86,7 +80,10 @@ describe('CacheUtils', () => {
             cache.set('b', 2);
             expect([...cache.keys()]).toEqual(['a', 'b']);
             expect([...cache.values()]).toEqual([1, 2]);
-            expect([...cache.entries()]).toEqual([['a', 1], ['b', 2]]);
+            expect([...cache.entries()]).toEqual([
+                ['a', 1],
+                ['b', 2],
+            ]);
         });
 
         it('should use default maxSize of 100', () => {

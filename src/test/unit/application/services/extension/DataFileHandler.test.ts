@@ -9,9 +9,9 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DataFileHandler } from '../../../../../application/services/extension/DataFileHandler';
-import { ILogger } from '../../../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../../../core/interfaces/IEventBus';
-import { IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
+import { type ILogger } from '../../../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../../../core/interfaces/IEventBus';
+import { type IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
 import { Uri } from 'vscode';
 
 describe('DataFileHandler', () => {
@@ -42,17 +42,19 @@ describe('DataFileHandler', () => {
         mockDataStoreService = {
             handleFileChange: vi.fn(() => Promise.resolve()),
             handleFileDelete: vi.fn(() => Promise.resolve()),
-            getStatistics: vi.fn(() => Promise.resolve({
-                templateCount: 5,
-                translationKeyCount: 10,
-                itemCount: 3,
-                categoryCount: 2,
-                indexedFileCount: 8,
-                languageCount: 1,
-                namespaceCount: 1,
-                lastUpdated: new Date(),
-                isInitialized: true,
-            })),
+            getStatistics: vi.fn(() =>
+                Promise.resolve({
+                    templateCount: 5,
+                    translationKeyCount: 10,
+                    itemCount: 3,
+                    categoryCount: 2,
+                    indexedFileCount: 8,
+                    languageCount: 1,
+                    namespaceCount: 1,
+                    lastUpdated: new Date(),
+                    isInitialized: true,
+                }),
+            ),
         } as unknown as IDataStoreService;
 
         mockGenerateEventId = vi.fn(() => 'test-event-id');
@@ -61,7 +63,7 @@ describe('DataFileHandler', () => {
             mockLogger,
             mockEventBus,
             mockDataStoreService,
-            mockGenerateEventId as unknown as () => string
+            mockGenerateEventId as unknown as () => string,
         );
     });
 
@@ -90,7 +92,7 @@ describe('DataFileHandler', () => {
                     action: 'modified',
                     templateCount: 5,
                     translationKeyCount: 10,
-                })
+                }),
             );
         });
 
@@ -99,22 +101,20 @@ describe('DataFileHandler', () => {
             await handler.handleFileModified(uri);
             expect(mockLogger.info).toHaveBeenCalledWith(
                 'File modification handled successfully',
-                expect.objectContaining({ file: uri.fsPath })
+                expect.objectContaining({ file: uri.fsPath }),
             );
         });
 
         it('should log error when handleFileChange throws', async () => {
             const uri = Uri.file('/test/templates.yaml');
-            vi.mocked(mockDataStoreService.handleFileChange).mockRejectedValue(
-                new Error('Parse error')
-            );
+            vi.mocked(mockDataStoreService.handleFileChange).mockRejectedValue(new Error('Parse error'));
 
             await handler.handleFileModified(uri);
 
             expect(mockLogger.error).toHaveBeenCalledWith(
                 'Failed to handle file modification',
                 expect.any(Error),
-                expect.objectContaining({ file: uri.fsPath })
+                expect.objectContaining({ file: uri.fsPath }),
             );
             // 不应该发布事件
             expect(mockEventBus.publish).not.toHaveBeenCalled();
@@ -146,22 +146,20 @@ describe('DataFileHandler', () => {
                     action: 'deleted',
                     templateCount: 0,
                     translationKeyCount: 0,
-                })
+                }),
             );
         });
 
         it('should log error when handleFileDelete throws', async () => {
             const uri = Uri.file('/test/templates.yaml');
-            vi.mocked(mockDataStoreService.handleFileDelete).mockRejectedValue(
-                new Error('Delete error')
-            );
+            vi.mocked(mockDataStoreService.handleFileDelete).mockRejectedValue(new Error('Delete error'));
 
             await handler.handleFileDeleted(uri);
 
             expect(mockLogger.error).toHaveBeenCalledWith(
                 'Failed to handle file deletion',
                 expect.any(Error),
-                expect.objectContaining({ file: uri.fsPath })
+                expect.objectContaining({ file: uri.fsPath }),
             );
             expect(mockEventBus.publish).not.toHaveBeenCalled();
         });

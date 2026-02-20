@@ -1,17 +1,17 @@
-import { ILogger } from '../../../core/interfaces/ILogger';
-import { IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
-import { JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
-import { LRUCache } from '../../../core/utils';
+import { type ILogger } from '../../../core/interfaces/ILogger';
+import { type IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
+import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
+import { LRUCache, safeCompileRegex } from '../../../core/utils';
 import {
-    SchemaPathNavigator,
-    SchemaPropertyExtractor,
-    SchemaProperty,
-    SchemaPropertyDetails,
+    type SchemaPathNavigator,
+    type SchemaPropertyExtractor,
+    type SchemaProperty,
+    type SchemaPropertyDetails,
     extractFieldNameFromPattern,
     getFallbackTopLevelFields,
     SCHEMA_METADATA,
     SCHEMA_CACHE,
-    VERSION_CONDITION
+    VERSION_CONDITION,
 } from './index';
 
 /**
@@ -45,11 +45,14 @@ export class SchemaQueryService {
     // pendingPathQueries 最大容量
     private static readonly MAX_PENDING_QUERIES = 1000;
 
+    // 容量溢出时淘汰比例
+    private static readonly EVICTION_RATIO = 0.2;
+
     constructor(
         private readonly navigator: SchemaPathNavigator,
         private readonly extractor: SchemaPropertyExtractor,
         private readonly logger: ILogger,
-        private readonly performanceMonitor?: IPerformanceMonitor
+        private readonly performanceMonitor?: IPerformanceMonitor,
     ) {
         // 初始化缓存
         this.propertiesCache = new LRUCache<string, SchemaProperty[]>(SCHEMA_CACHE.PROPERTIES_CACHE_SIZE);
@@ -81,11 +84,20 @@ export class SchemaQueryService {
 
         // 3. 检查 pendingPathQueries 容量，防止内存泄漏
         if (this.pendingPathQueries.size >= SchemaQueryService.MAX_PENDING_QUERIES) {
-            this.logger.warn('pendingPathQueries capacity exceeded, clearing old entries', {
-                size: this.pendingPathQueries.size
+            const evictCount = Math.ceil(SchemaQueryService.MAX_PENDING_QUERIES * SchemaQueryService.EVICTION_RATIO);
+            this.logger.warn('pendingPathQueries capacity exceeded, evicting oldest entries', {
+                size: this.pendingPathQueries.size,
+                evictCount,
             });
-            // 清除所有待处理查询（简单策略）
-            this.pendingPathQueries.clear();
+            // 淘汰最早的条目（Map 保持插入顺序）
+            let removed = 0;
+            for (const key of this.pendingPathQueries.keys()) {
+                if (removed >= evictCount) {
+                    break;
+                }
+                this.pendingPathQueries.delete(key);
+                removed++;
+            }
         }
 
         // 4. 发起新查询并注册到 pending map（带超时）
@@ -101,11 +113,14 @@ export class SchemaQueryService {
     private async executeQueryWithTimeout(
         rootSchema: JsonSchemaNode,
         path: string[],
-        cacheKey: string
+        cacheKey: string,
     ): Promise<JsonSchemaNode | undefined> {
+        // 保存 timer 引用，确保查询完成后清理
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
         // 创建超时 Promise
         const timeoutPromise = new Promise<JsonSchemaNode | undefined>((_, reject) => {
-            setTimeout(() => {
+            timeoutId = setTimeout(() => {
                 reject(new Error(`Schema query timeout after ${SchemaQueryService.QUERY_TIMEOUT}ms`));
             }, SchemaQueryService.QUERY_TIMEOUT);
         });
@@ -116,19 +131,23 @@ export class SchemaQueryService {
         try {
             // 竞争：查询 vs 超时
             const result = await Promise.race([queryPromise, timeoutPromise]);
-            this.pathCache.set(cacheKey, result as JsonSchemaNode);
+            this.pathCache.set(cacheKey, result);
             return result;
         } catch (error) {
             this.logger.error('Failed to get schema for path', error as Error, {
-                path: path.join('.')
+                path: path.join('.'),
             });
             return undefined;
         } finally {
+            // 清理超时 timer，防止资源泄漏
+            if (timeoutId !== undefined) {
+                clearTimeout(timeoutId);
+            }
             // 确保清理 pending 查询
             this.pendingPathQueries.delete(cacheKey);
         }
     }
-    
+
     /**
      * 获取 Schema 的唯一标识符
      *
@@ -167,17 +186,16 @@ export class SchemaQueryService {
             this.schemaAvailabilityCache.set(cacheKey, hasSchema);
 
             return hasSchema;
-
         } catch (error) {
             this.logger.debug('Schema availability check failed', {
                 path: path.join('.'),
-                error: (error as Error).message
+                error: (error as Error).message,
             });
             this.schemaAvailabilityCache.set(cacheKey, false);
             return false;
         }
     }
-    
+
     /**
      * 获取可用属性（带缓存）
      */
@@ -195,104 +213,95 @@ export class SchemaQueryService {
                 timer?.stop({ success: true, fromCache: true, propertiesCount: cached.length });
                 return cached;
             }
-            
+
             // 获取 Schema
             const schema = await this.getSchemaForPath(rootSchema, path);
             if (!schema) {
                 timer?.stop({ success: false, reason: 'schema_not_found' });
                 return [];
             }
-            
+
             // 提取属性，优先使用 schema 的上下文（来自外部引用解析），否则使用 rootSchema
             // 这确保嵌套的相对路径引用（如 ./base.schema.json）能相对于正确的目录解析
             const contextSchema = (schema[SCHEMA_METADATA.CONTEXT_SCHEMA] as JsonSchemaNode | undefined) || rootSchema;
             const properties = await this.extractor.extractProperties(schema, contextSchema);
-            
+
             // 缓存结果
             this.propertiesCache.set(cacheKey, properties);
 
             this.logger.debug('Extracted available properties', {
                 path: path.join('.'),
                 propertiesCount: properties.length,
-                keys: properties.map(p => p.key)
+                keys: properties.map((p) => p.key),
             });
 
             timer?.stop({ success: true, fromCache: false, propertiesCount: properties.length });
             return properties;
-
         } catch (error) {
             this.logger.error('Failed to get available properties', error as Error, {
-                path: path.join('.')
+                path: path.join('.'),
             });
             timer?.stop({ success: false, error: (error as Error).message });
             return [];
         }
     }
-    
+
     /**
      * 获取属性详情
      */
-    async getPropertyDetails(
-        rootSchema: JsonSchemaNode,
-        path: string[]
-    ): Promise<SchemaPropertyDetails | undefined> {
+    async getPropertyDetails(rootSchema: JsonSchemaNode, path: string[]): Promise<SchemaPropertyDetails | undefined> {
         const timer = this.performanceMonitor?.startTimer('schema.getPropertyDetails');
-        
+
         try {
             if (path.length === 0) {
                 timer?.stop({ success: false, reason: 'empty_path' });
                 return undefined;
             }
-            
+
             // 获取父路径和属性名
             const parentPath = path.slice(0, -1);
             const propertyName = path[path.length - 1];
-            
-            const parentSchema = parentPath.length > 0
-                ? await this.getSchemaForPath(rootSchema, parentPath)
-                : rootSchema;
-            
+
+            const parentSchema =
+                parentPath.length > 0 ? await this.getSchemaForPath(rootSchema, parentPath) : rootSchema;
+
             if (!parentSchema) {
                 timer?.stop({ success: false, reason: 'parent_schema_not_found' });
                 return undefined;
             }
-            
+
             // 查找属性 Schema，优先使用 parentSchema 的上下文（来自外部引用解析），否则使用 rootSchema
             // 这确保嵌套的相对路径引用（如 ./base.schema.json）能相对于正确的目录解析
-            const contextSchema = (parentSchema[SCHEMA_METADATA.CONTEXT_SCHEMA] as JsonSchemaNode | undefined) || rootSchema;
-            let propertySchema = await this.extractor.findPropertySchema(parentSchema, propertyName, contextSchema);
-            
+            const contextSchema =
+                (parentSchema[SCHEMA_METADATA.CONTEXT_SCHEMA] as JsonSchemaNode | undefined) || rootSchema;
+            const propertySchema = await this.extractor.findPropertySchema(parentSchema, propertyName, contextSchema);
+
             if (!propertySchema) {
                 timer?.stop({ success: false, reason: 'property_schema_not_found' });
                 return undefined;
             }
-            
+
             // 提取详细信息
-            const details = this.extractor.extractPropertyDetails(
-                propertySchema,
-                parentSchema,
-                propertyName
-            );
-            
+            const details = this.extractor.extractPropertyDetails(propertySchema, parentSchema, propertyName);
+
             this.logger.debug('Extracted property details', {
                 path: path.join('.'),
                 hasDescription: !!details.description,
                 type: details.type,
-                required: details.required
+                required: details.required,
             });
-            
+
             timer?.stop({ success: true });
             return details;
-            
         } catch (error) {
             this.logger.error('Failed to get property details', error as Error, {
-                path: path.join('.')
+                path: path.join('.'),
             });
             timer?.stop({ success: false, error: (error as Error).message });
             return undefined;
         }
     }
-    
+
     /**
      * 获取顶级字段
      */
@@ -301,15 +310,15 @@ export class SchemaQueryService {
         if (this.topLevelFieldsCache) {
             return this.topLevelFieldsCache;
         }
-        
+
         try {
             if (!rootSchema) {
                 this.logger.warn('Root schema not available, using fallback');
                 return getFallbackTopLevelFields();
             }
-            
+
             const topLevelFields = new Set<string>();
-            
+
             // 从 patternProperties 提取
             if (rootSchema.patternProperties) {
                 for (const pattern in rootSchema.patternProperties) {
@@ -319,30 +328,29 @@ export class SchemaQueryService {
                     }
                 }
             }
-            
+
             // 从 properties 提取
             if (rootSchema.properties) {
                 for (const property in rootSchema.properties) {
                     topLevelFields.add(property);
                 }
             }
-            
+
             const result = Array.from(topLevelFields).sort();
             this.topLevelFieldsCache = result;
-            
+
             this.logger.debug('Extracted top-level fields', {
                 fieldsCount: result.length,
-                fields: result
+                fields: result,
             });
-            
+
             return result;
-            
         } catch (error) {
             this.logger.error('Failed to extract top-level fields', error as Error);
             return getFallbackTopLevelFields();
         }
     }
-    
+
     /**
      * 清除所有缓存
      */
@@ -355,7 +363,7 @@ export class SchemaQueryService {
 
         this.logger.debug('All schema caches cleared');
     }
-    
+
     // ==================== 私有方法 ====================
 
     /**
@@ -364,13 +372,13 @@ export class SchemaQueryService {
     private isVersionConditionKey(key: string): boolean {
         return VERSION_CONDITION.PATTERN.test(key);
     }
-    
+
     /**
      * 快速检查 Schema 是否存在
-     * 
+     *
      * 这个方法用于快速判断路径是否有可能有对应的 Schema。
      * 当遇到 $ref 引用时，假设引用是有效的并继续检查。
-     * 
+     *
      * @remarks
      * 此方法用于 shouldActivate 的快速检查，允许一定程度的"乐观"判断。
      * 实际的 Schema 验证会在 getSchemaForPath 中进行完整的引用解析。
@@ -379,7 +387,7 @@ export class SchemaQueryService {
         if (!schema || path.length === 0) {
             return true;
         }
-        
+
         let current: JsonSchemaNode = schema;
 
         for (const segment of path) {
@@ -406,16 +414,12 @@ export class SchemaQueryService {
             if (patternProps) {
                 let matched = false;
                 for (const pattern of Object.keys(patternProps)) {
-                    try {
-                        const regex = new RegExp(pattern);
-                        if (regex.test(segment)) {
-                            // 找到匹配的模式，继续导航到该模式对应的 Schema
-                            current = patternProps[pattern];
-                            matched = true;
-                            break;
-                        }
-                    } catch {
-                        // 忽略无效的正则表达式
+                    const regex = safeCompileRegex(pattern);
+                    if (regex && regex.test(segment)) {
+                        // 找到匹配的模式，继续导航到该模式对应的 Schema
+                        current = patternProps[pattern];
+                        matched = true;
+                        break;
                     }
                 }
                 if (matched) {
@@ -424,8 +428,10 @@ export class SchemaQueryService {
             }
 
             // 检查 additionalProperties
-            if (current.additionalProperties === true ||
-                (typeof current.additionalProperties === 'object' && current.additionalProperties !== null)) {
+            if (
+                current.additionalProperties === true ||
+                (typeof current.additionalProperties === 'object' && current.additionalProperties !== null)
+            ) {
                 if (typeof current.additionalProperties === 'object') {
                     current = current.additionalProperties as JsonSchemaNode;
                     continue;
@@ -438,16 +444,15 @@ export class SchemaQueryService {
                 current = current.items as JsonSchemaNode;
                 continue;
             }
-            
+
             // 检查 allOf、oneOf、anyOf - 如果存在这些组合，假设可能有效
             if (current.allOf || current.oneOf || current.anyOf) {
                 return true;
             }
-            
+
             return false;
         }
-        
+
         return true;
     }
 }
-

@@ -50,7 +50,7 @@ export class StatsCache<K, V> {
             delete(key: K): boolean;
             clear(): void;
             size(): number;
-        }
+        },
     ) {}
 
     /**
@@ -110,7 +110,7 @@ export class StatsCache<K, V> {
             hits: this.hits,
             misses: this.misses,
             hitRate: total > 0 ? this.hits / total : 0,
-            size: this.innerCache.size()
+            size: this.innerCache.size(),
         };
     }
 
@@ -122,4 +122,3 @@ export class StatsCache<K, V> {
         this.misses = 0;
     }
 }
-

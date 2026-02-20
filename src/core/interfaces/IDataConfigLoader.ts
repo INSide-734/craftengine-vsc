@@ -6,23 +6,23 @@
  */
 
 import {
-    IDataSourcesConfig,
-    ICompletionPrioritiesConfig,
-    IPerformanceConfig,
-    IExtendedTypesConfig,
-    IMinecraftVersionsConfig,
-    IModelPropertiesConfig,
-    IVersionConditionConfig,
-    ITimingConfig,
-    IVersionRequirementsConfig,
-    IApiEndpointsConfig,
-    IMiniMessageConstantsConfig,
-    IResourceTypePresetsConfig,
-    IParameterTypesConfig,
-    IDiagnosticCodesConfig,
-    IDiagnosticSeverityRulesConfig,
-    ISchemaConfig,
-    IItemTypeConfig
+    type IDataSourcesConfig,
+    type ICompletionPrioritiesConfig,
+    type IPerformanceConfig,
+    type IExtendedTypesConfig,
+    type IMinecraftVersionsConfig,
+    type IModelPropertiesConfig,
+    type IVersionConditionConfig,
+    type ITimingConfig,
+    type IVersionRequirementsConfig,
+    type IApiEndpointsConfig,
+    type IMiniMessageConstantsConfig,
+    type IResourceTypePresetsConfig,
+    type IParameterTypesConfig,
+    type IDiagnosticCodesConfig,
+    type IDiagnosticSeverityRulesConfig,
+    type ISchemaConfig,
+    type IItemTypeConfig,
 } from '../types/ConfigTypes';
 
 // 向后兼容：重新导出所有配置类型
@@ -183,11 +183,7 @@ export interface IDataConfigLoader {
      * @param params URL 参数替换
      * @returns URL 列表（主站 + 镜像站）
      */
-    getDataSourceUrls(
-        sourceKey: string,
-        endpointKey: string,
-        params?: Record<string, string>
-    ): Promise<string[]>;
+    getDataSourceUrls(sourceKey: string, endpointKey: string, params?: Record<string, string>): Promise<string[]>;
 
     /**
      * 获取补全策略优先级（异步）

@@ -1,6 +1,6 @@
 /**
  * TemplateStore 单元测试
- * 
+ *
  * 测试模板存储服务的所有功能，包括：
  * - 模板的 CRUD 操作
  * - 索引管理
@@ -11,9 +11,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TemplateStore } from '../../../../domain/services/stores/TemplateStore';
 import { Template } from '../../../../domain/entities/Template';
-import { ITemplate, ITemplateParameter } from '../../../../core/interfaces/ITemplate';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { IEventBus } from '../../../../core/interfaces/IEventBus';
+import { type ITemplate, type ITemplateParameter } from '../../../../core/interfaces/ITemplate';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type IEventBus } from '../../../../core/interfaces/IEventBus';
 import { EVENT_TYPES } from '../../../../core/constants/ServiceTokens';
 import { Uri, Position } from 'vscode';
 
@@ -23,13 +23,15 @@ describe('TemplateStore', () => {
     let mockEventBus: IEventBus;
 
     // 辅助函数：创建测试模板
-    const createTestTemplate = (overrides: Partial<{
-        id: string;
-        name: string;
-        parameters: ITemplateParameter[];
-        sourceFile: Uri;
-        definitionPosition: Position;
-    }> = {}): ITemplate => {
+    const createTestTemplate = (
+        overrides: Partial<{
+            id: string;
+            name: string;
+            parameters: ITemplateParameter[];
+            sourceFile: Uri;
+            definitionPosition: Position;
+        }> = {},
+    ): ITemplate => {
         return new Template({
             id: overrides.id ?? `tpl-${Date.now()}-${Math.random()}`,
             name: overrides.name ?? 'test-template',
@@ -56,7 +58,7 @@ describe('TemplateStore', () => {
 
         mockEventBus = {
             publish: vi.fn(() => Promise.resolve()),
-            subscribe: vi.fn(() => ({ 
+            subscribe: vi.fn(() => ({
                 unsubscribe: vi.fn(),
                 isActive: () => true,
             })),
@@ -89,7 +91,7 @@ describe('TemplateStore', () => {
                 expect.objectContaining({
                     type: EVENT_TYPES.TemplateCreated,
                     template,
-                })
+                }),
             );
         });
 
@@ -208,20 +210,23 @@ describe('TemplateStore', () => {
         beforeEach(async () => {
             // 准备测试数据
             const templates = [
-                createTestTemplate({ 
-                    id: 'tpl-1', 
+                createTestTemplate({
+                    id: 'tpl-1',
                     name: 'user-profile',
                     parameters: [{ name: 'userId', required: true }],
                     sourceFile: Uri.file('/project/templates/user.yaml'),
                 }),
-                createTestTemplate({ 
-                    id: 'tpl-2', 
+                createTestTemplate({
+                    id: 'tpl-2',
                     name: 'user-settings',
-                    parameters: [{ name: 'userId', required: true }, { name: 'theme', required: false }],
+                    parameters: [
+                        { name: 'userId', required: true },
+                        { name: 'theme', required: false },
+                    ],
                     sourceFile: Uri.file('/project/templates/user.yaml'),
                 }),
-                createTestTemplate({ 
-                    id: 'tpl-3', 
+                createTestTemplate({
+                    id: 'tpl-3',
                     name: 'product-card',
                     parameters: [{ name: 'productId', required: true }],
                     sourceFile: Uri.file('/project/templates/product.yaml'),
@@ -237,7 +242,7 @@ describe('TemplateStore', () => {
             const result = await store.query({ namePattern: 'user-.*' });
 
             expect(result.templates).toHaveLength(2);
-            expect(result.templates.every(t => t.name.startsWith('user-'))).toBe(true);
+            expect(result.templates.every((t) => t.name.startsWith('user-'))).toBe(true);
         });
 
         it('should query by parameter name', async () => {
@@ -271,7 +276,7 @@ describe('TemplateStore', () => {
         it('should sort by name', async () => {
             const result = await store.query({});
 
-            const names = result.templates.map(t => t.name);
+            const names = result.templates.map((t) => t.name);
             expect(names).toEqual([...names].sort());
         });
 
@@ -387,13 +392,13 @@ describe('TemplateStore', () => {
                 expect.objectContaining({
                     type: EVENT_TYPES.TemplateUpdated,
                     template: updated,
-                })
+                }),
             );
         });
 
         it('should update indexes', async () => {
-            const template = createTestTemplate({ 
-                id: 'tpl-001', 
+            const template = createTestTemplate({
+                id: 'tpl-001',
                 name: 'old-name',
                 parameters: [{ name: 'oldParam', required: true }],
             });
@@ -443,7 +448,7 @@ describe('TemplateStore', () => {
                     type: EVENT_TYPES.TemplateDeleted,
                     templateId: 'to-remove',
                     templateName: 'removed-template',
-                })
+                }),
             );
         });
 
@@ -460,21 +465,27 @@ describe('TemplateStore', () => {
     describe('removeByFile', () => {
         it('should remove all templates from file', async () => {
             const sourceFile = Uri.file('/project/templates/batch.yaml');
-            await store.add(createTestTemplate({ 
-                id: 'tpl-1', 
-                name: 'template-1', 
-                sourceFile,
-            }));
-            await store.add(createTestTemplate({ 
-                id: 'tpl-2', 
-                name: 'template-2', 
-                sourceFile,
-            }));
-            await store.add(createTestTemplate({ 
-                id: 'tpl-3', 
-                name: 'template-3', 
-                sourceFile: Uri.file('/other/file.yaml'),
-            }));
+            await store.add(
+                createTestTemplate({
+                    id: 'tpl-1',
+                    name: 'template-1',
+                    sourceFile,
+                }),
+            );
+            await store.add(
+                createTestTemplate({
+                    id: 'tpl-2',
+                    name: 'template-2',
+                    sourceFile,
+                }),
+            );
+            await store.add(
+                createTestTemplate({
+                    id: 'tpl-3',
+                    name: 'template-3',
+                    sourceFile: Uri.file('/other/file.yaml'),
+                }),
+            );
 
             await store.removeByFile(sourceFile);
 
@@ -492,16 +503,20 @@ describe('TemplateStore', () => {
 
         it('should publish events for removed templates', async () => {
             const sourceFile = Uri.file('/project/templates/batch.yaml');
-            await store.add(createTestTemplate({ 
-                id: 'tpl-1', 
-                name: 'template-1', 
-                sourceFile,
-            }));
-            await store.add(createTestTemplate({ 
-                id: 'tpl-2', 
-                name: 'template-2', 
-                sourceFile,
-            }));
+            await store.add(
+                createTestTemplate({
+                    id: 'tpl-1',
+                    name: 'template-1',
+                    sourceFile,
+                }),
+            );
+            await store.add(
+                createTestTemplate({
+                    id: 'tpl-2',
+                    name: 'template-2',
+                    sourceFile,
+                }),
+            );
             vi.clearAllMocks();
 
             await store.removeByFile(sourceFile);
@@ -591,7 +606,7 @@ describe('TemplateStore', () => {
 
         it('should update on add', async () => {
             const initial = store.getLastUpdated();
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await store.add(createTestTemplate({ name: 'template-1' }));
 
             expect(store.getLastUpdated().getTime()).toBeGreaterThan(initial.getTime());
@@ -601,7 +616,7 @@ describe('TemplateStore', () => {
             const template = createTestTemplate({ id: 'to-remove' });
             await store.add(template);
             const afterAdd = store.getLastUpdated();
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
             await store.remove('to-remove');
 
             expect(store.getLastUpdated().getTime()).toBeGreaterThan(afterAdd.getTime());
@@ -630,7 +645,7 @@ describe('TemplateStore', () => {
             mockEventBus.publish = vi.fn().mockRejectedValue(new Error('Publish failed'));
 
             const template = createTestTemplate({ name: 'template-1' });
-            
+
             // 不应该抛出异常
             await expect(store.add(template)).resolves.not.toThrow();
 
@@ -643,10 +658,7 @@ describe('TemplateStore', () => {
 
             await store.add(createTestTemplate({ name: 'template-1' }));
 
-            expect(mockLogger.warn).toHaveBeenCalledWith(
-                'Failed to publish template event',
-                expect.any(Object)
-            );
+            expect(mockLogger.warn).toHaveBeenCalledWith('Failed to publish template event', expect.any(Object));
         });
     });
 
@@ -676,4 +688,3 @@ describe('TemplateStore', () => {
         });
     });
 });
-

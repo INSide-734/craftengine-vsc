@@ -2,9 +2,12 @@ import * as fs from 'fs';
 import * as fsPromises from 'fs/promises';
 import * as path from 'path';
 import { workspace } from 'vscode';
-import { ILogger } from '../../core/interfaces/ILogger';
-import { INamespaceDiscoveryService, IResourceLocation } from '../../core/interfaces/INamespaceDiscoveryService';
-import { IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
+import { type ILogger } from '../../core/interfaces/ILogger';
+import {
+    type INamespaceDiscoveryService,
+    type IResourceLocation,
+} from '../../core/interfaces/INamespaceDiscoveryService';
+import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
 import { ResourcePackDiscovery } from './ResourcePackDiscovery';
 import { LRUCache } from '../utils/LRUCache';
 
@@ -23,16 +26,16 @@ interface INamespaceCacheEntry {
 
 /**
  * 命名空间发现服务实现
- * 
+ *
  * 提供 Minecraft 资源包命名空间的自动发现、验证和解析功能。
- * 
+ *
  * @remarks
  * **Minecraft 资源位置格式**（根据 https://minecraft.wiki/w/Resource_location）：
- * 
+ *
  * 格式: `namespace:path`
  * - **namespace**: 只能包含 `[a-z0-9_.-]`，必须以字母开头
  * - **path**: 可以包含 `[a-z0-9_.-/]`，斜杠作为目录分隔符
- * 
+ *
  * **资源包目录结构**：
  * ```
  * assets/
@@ -44,7 +47,7 @@ interface INamespaceCacheEntry {
  * │   └── models/
  * └── mymod/               <- 模组命名空间
  *     └── textures/
- * 
+ *
  * data/
  * ├── minecraft/           <- 命名空间
  * │   ├── loot_tables/
@@ -53,25 +56,25 @@ interface INamespaceCacheEntry {
  * └── custom_pack/         <- 自定义命名空间
  *     └── loot_tables/
  * ```
- * 
+ *
  * @example
  * ```typescript
  * const service = new NamespaceDiscoveryService(logger);
- * 
+ *
  * // 发现命名空间
  * const namespaces = service.discoverNamespacesInWorkspace('assets/{namespace}/models');
  * // 返回: ['minecraft', 'custom_pack', 'mymod']
- * 
+ *
  * // 验证命名空间
  * service.isValidNamespace('minecraft');     // true
  * service.isValidNamespace('my_mod');        // true
  * service.isValidNamespace('MyMod');         // false (大写字母)
  * service.isValidNamespace('my mod');        // false (空格)
- * 
+ *
  * // 解析资源位置
  * const location = service.parseResourceLocation('minecraft:item/sword');
  * // 返回: { namespace: 'minecraft', path: 'item/sword', isValid: true }
- * 
+ *
  * // 规范化资源位置
  * service.normalizeResourceLocation('Minecraft:Item/Sword');
  * // 返回: 'minecraft:item/sword'
@@ -138,9 +141,11 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
 
     constructor(
         private readonly logger?: ILogger,
-        configLoader?: IDataConfigLoader
+        configLoader?: IDataConfigLoader,
     ) {
-        this.namespaceCache = new LRUCache<string, INamespaceCacheEntry>(NamespaceDiscoveryService.DEFAULT_MAX_CACHE_SIZE);
+        this.namespaceCache = new LRUCache<string, INamespaceCacheEntry>(
+            NamespaceDiscoveryService.DEFAULT_MAX_CACHE_SIZE,
+        );
         this.configLoader = configLoader || null;
         // 异步加载配置（fire and forget）
         if (this.configLoader) {
@@ -166,7 +171,7 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
             this.logger?.warn('Failed to load config, using defaults', { error });
         }
     }
-    
+
     // ==================== 命名空间发现 ====================
 
     /**
@@ -192,9 +197,9 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
             const entries = fs.readdirSync(parentPath, { withFileTypes: true });
 
             const namespaces = entries
-                .filter(entry => entry.isDirectory())
-                .map(entry => entry.name)
-                .filter(name => this.isValidNamespace(name))
+                .filter((entry) => entry.isDirectory())
+                .map((entry) => entry.name)
+                .filter((name) => this.isValidNamespace(name))
                 .sort();
 
             // 缓存结果
@@ -203,14 +208,13 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
             this.logger?.debug('Discovered namespaces', {
                 parentPath,
                 count: namespaces.length,
-                namespaces
+                namespaces,
             });
 
             return namespaces;
-
         } catch (error) {
             this.logger?.error('Failed to discover namespaces', error as Error, {
-                parentPath
+                parentPath,
             });
             return [];
         }
@@ -244,9 +248,9 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
             const entries = await fsPromises.readdir(parentPath, { withFileTypes: true });
 
             const namespaces = entries
-                .filter(entry => entry.isDirectory())
-                .map(entry => entry.name)
-                .filter(name => this.isValidNamespace(name))
+                .filter((entry) => entry.isDirectory())
+                .map((entry) => entry.name)
+                .filter((name) => this.isValidNamespace(name))
                 .sort();
 
             // 缓存结果
@@ -255,19 +259,18 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
             this.logger?.debug('Discovered namespaces (async)', {
                 parentPath,
                 count: namespaces.length,
-                namespaces
+                namespaces,
             });
 
             return namespaces;
-
         } catch (error) {
             this.logger?.error('Failed to discover namespaces', error as Error, {
-                parentPath
+                parentPath,
             });
             return [];
         }
     }
-    
+
     /**
      * 在工作区中发现所有命名空间
      */
@@ -298,14 +301,14 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
             for (const pack of resourcePacks) {
                 const parentPath = path.join(pack.path, parentDir);
                 const namespaces = this.discoverNamespaces(parentPath);
-                namespaces.forEach(ns => allNamespaces.add(ns));
+                namespaces.forEach((ns) => allNamespaces.add(ns));
             }
 
             // 2. 然后在工作区根目录中搜索（保持向后兼容）
             for (const folder of workspaceFolders) {
                 const parentPath = path.join(folder.uri.fsPath, parentDir);
                 const namespaces = this.discoverNamespaces(parentPath);
-                namespaces.forEach(ns => allNamespaces.add(ns));
+                namespaces.forEach((ns) => allNamespaces.add(ns));
             }
 
             const result = Array.from(allNamespaces).sort();
@@ -317,19 +320,18 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
                 basePathTemplate,
                 count: result.length,
                 namespaces: result,
-                resourcePackCount: resourcePacks.length
+                resourcePackCount: resourcePacks.length,
             });
 
             return result;
-
         } catch (error) {
             this.logger?.error('Failed to discover namespaces in workspace', error as Error, {
-                basePathTemplate
+                basePathTemplate,
             });
             return [];
         }
     }
-    
+
     /**
      * 检查命名空间是否存在于工作区中
      */
@@ -337,11 +339,11 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         if (!this.isValidNamespace(namespace)) {
             return false;
         }
-        
+
         const namespaces = this.discoverNamespacesInWorkspace(basePathTemplate);
         return namespaces.includes(namespace);
     }
-    
+
     /**
      * 获取命名空间在工作区中的绝对路径（同步版本）
      *
@@ -391,11 +393,10 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
 
             // 缓存结果
             this.setCachedNamespaces(cacheKey, paths);
-
         } catch (error) {
             this.logger?.error('Failed to get namespace paths', error as Error, {
                 namespace,
-                basePathTemplate
+                basePathTemplate,
             });
         }
 
@@ -461,11 +462,10 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
 
             // 缓存结果
             this.setCachedNamespaces(cacheKey, paths);
-
         } catch (error) {
             this.logger?.error('Failed to get namespace paths', error as Error, {
                 namespace,
-                basePathTemplate
+                basePathTemplate,
             });
         }
 
@@ -486,9 +486,9 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
             return null;
         }
     }
-    
+
     // ==================== 验证方法 ====================
-    
+
     /**
      * 检查名称是否是有效的 Minecraft 命名空间
      */
@@ -498,7 +498,7 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         }
         return NamespaceDiscoveryService.VALID_NAMESPACE_PATTERN.test(name);
     }
-    
+
     /**
      * 检查路径是否是有效的 Minecraft 资源路径
      */
@@ -511,7 +511,7 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         }
         return NamespaceDiscoveryService.VALID_PATH_PATTERN.test(resourcePath);
     }
-    
+
     /**
      * 检查资源位置字符串是否有效
      */
@@ -519,9 +519,9 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         const parsed = this.parseResourceLocation(resourceLocation);
         return parsed.isValid;
     }
-    
+
     // ==================== 资源位置操作 ====================
-    
+
     /**
      * 解析资源位置字符串
      */
@@ -531,63 +531,63 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
                 namespace: null,
                 path: '',
                 isValid: false,
-                error: 'Resource location is empty or not a string'
+                error: 'Resource location is empty or not a string',
             };
         }
-        
+
         const trimmed = resourceLocation.trim();
-        
+
         // 检查是否包含命名空间
         const match = trimmed.match(NamespaceDiscoveryService.RESOURCE_LOCATION_PATTERN);
-        
+
         if (match) {
             const namespace = match[1];
             const resourcePath = match[2];
-            
+
             // 验证命名空间
             if (!this.isValidNamespace(namespace)) {
                 return {
                     namespace,
                     path: resourcePath,
                     isValid: false,
-                    error: `Invalid namespace: "${namespace}". Namespace must start with a lowercase letter and contain only [a-z0-9_.-]`
+                    error: `Invalid namespace: "${namespace}". Namespace must start with a lowercase letter and contain only [a-z0-9_.-]`,
                 };
             }
-            
+
             // 验证路径
             if (!this.isValidPath(resourcePath)) {
                 return {
                     namespace,
                     path: resourcePath,
                     isValid: false,
-                    error: `Invalid path: "${resourcePath}". Path must contain only [a-z0-9_./-]`
+                    error: `Invalid path: "${resourcePath}". Path must contain only [a-z0-9_./-]`,
                 };
             }
-            
+
             return {
                 namespace,
                 path: resourcePath,
-                isValid: true
+                isValid: true,
             };
         }
-        
+
         // 没有命名空间，只有路径
         if (!this.isValidPath(trimmed)) {
             return {
                 namespace: null,
                 path: trimmed,
                 isValid: false,
-                error: `Invalid path: "${trimmed}". Path must contain only [a-z0-9_./-]`
+                error: `Invalid path: "${trimmed}". Path must contain only [a-z0-9_./-]`,
             };
         }
-        
+
         return {
             namespace: null,
             path: trimmed,
-            isValid: true
+            isValid: true,
         };
     }
-    
+
     /**
      * 构建资源位置字符串
      */
@@ -597,7 +597,7 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         }
         return `${namespace}:${resourcePath}`;
     }
-    
+
     /**
      * 规范化资源位置字符串
      */
@@ -605,18 +605,18 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         if (!resourceLocation || typeof resourceLocation !== 'string') {
             return null;
         }
-        
+
         const trimmed = resourceLocation.trim().toLowerCase();
-        
+
         // 规范化路径分隔符（将反斜杠转换为斜杠）
         const normalized = trimmed.replace(/\\/g, '/');
-        
+
         // 解析资源位置
         const colonIndex = normalized.indexOf(':');
-        
+
         let namespace: string;
         let resourcePath: string;
-        
+
         if (colonIndex !== -1) {
             namespace = normalized.substring(0, colonIndex);
             resourcePath = normalized.substring(colonIndex + 1);
@@ -624,36 +624,36 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
             namespace = addDefaultNamespace ? this.getDefaultNamespace() : '';
             resourcePath = normalized;
         }
-        
+
         // 规范化命名空间
         const normalizedNamespace = this.normalizeNamespace(namespace);
         if (namespace && !normalizedNamespace) {
             return null;
         }
-        
+
         // 规范化路径
         const normalizedPath = this.normalizePath(resourcePath);
         if (!normalizedPath) {
             return null;
         }
-        
+
         return this.buildResourceLocation(normalizedNamespace || '', normalizedPath);
     }
-    
+
     /**
      * 比较两个资源位置是否相等
      */
     compareResourceLocations(location1: string, location2: string): boolean {
         const normalized1 = this.normalizeResourceLocation(location1, true);
         const normalized2 = this.normalizeResourceLocation(location2, true);
-        
+
         if (!normalized1 || !normalized2) {
             return false;
         }
-        
+
         return normalized1 === normalized2;
     }
-    
+
     /**
      * 解析资源的完整文件系统路径（同步版本）
      *
@@ -661,11 +661,7 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
      * 优先返回缓存结果，如果缓存未命中则同步执行文件系统操作。
      * 对于性能敏感的场景，建议使用 resolveResourcePathsAsync。
      */
-    resolveResourcePaths(
-        resourceLocation: string,
-        basePathTemplate: string,
-        fileExtension?: string
-    ): string[] {
+    resolveResourcePaths(resourceLocation: string, basePathTemplate: string, fileExtension?: string): string[] {
         const parsed = this.parseResourceLocation(resourceLocation);
         if (!parsed.isValid) {
             return [];
@@ -714,11 +710,10 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
 
             // 缓存结果
             this.setCachedNamespaces(cacheKey, paths);
-
         } catch (error) {
             this.logger?.error('Failed to resolve resource paths', error as Error, {
                 resourceLocation,
-                basePathTemplate
+                basePathTemplate,
             });
         }
 
@@ -739,7 +734,7 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
     async resolveResourcePathsAsync(
         resourceLocation: string,
         basePathTemplate: string,
-        fileExtension?: string
+        fileExtension?: string,
     ): Promise<string[]> {
         const parsed = this.parseResourceLocation(resourceLocation);
         if (!parsed.isValid) {
@@ -796,19 +791,18 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
 
             // 缓存结果
             this.setCachedNamespaces(cacheKey, paths);
-
         } catch (error) {
             this.logger?.error('Failed to resolve resource paths', error as Error, {
                 resourceLocation,
-                basePathTemplate
+                basePathTemplate,
             });
         }
 
         return paths;
     }
-    
+
     // ==================== 规范化方法 ====================
-    
+
     /**
      * 规范化命名空间名称
      */
@@ -816,31 +810,31 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         if (!name || typeof name !== 'string') {
             return null;
         }
-        
+
         // 去除前后空格并转换为小写
         let normalized = name.trim().toLowerCase();
-        
+
         // 替换空格和无效字符为下划线
         normalized = normalized.replace(/[\s]+/g, '_');
         normalized = normalized.replace(/[^a-z0-9_.-]/g, '_');
-        
+
         // 确保以字母开头
         if (!/^[a-z]/.test(normalized)) {
             // 尝试添加前缀
             normalized = 'ns_' + normalized;
         }
-        
+
         // 清理连续的下划线
         normalized = normalized.replace(/_+/g, '_');
-        
+
         // 验证最终结果
         if (!this.isValidNamespace(normalized)) {
             return null;
         }
-        
+
         return normalized;
     }
-    
+
     /**
      * 规范化资源路径
      */
@@ -848,39 +842,39 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         if (!resourcePath || typeof resourcePath !== 'string') {
             return null;
         }
-        
+
         // 去除前后空格并转换为小写
         let normalized = resourcePath.trim().toLowerCase();
-        
+
         // 规范化路径分隔符
         normalized = normalized.replace(/\\/g, '/');
-        
+
         // 移除开头和结尾的斜杠
         normalized = normalized.replace(/^\/+|\/+$/g, '');
-        
+
         // 清理连续的斜杠
         normalized = normalized.replace(/\/+/g, '/');
-        
+
         // 替换无效字符
         normalized = normalized.replace(/[^a-z0-9_./-]/g, '_');
-        
+
         // 验证最终结果
         if (!normalized || !this.isValidPath(normalized)) {
             return null;
         }
-        
+
         return normalized;
     }
-    
+
     // ==================== 默认值和缓存 ====================
-    
+
     /**
      * 获取默认命名空间
      */
     getDefaultNamespace(): string {
         return NamespaceDiscoveryService.DEFAULT_NAMESPACE;
     }
-    
+
     /**
      * 清除命名空间缓存
      */
@@ -888,9 +882,9 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         this.namespaceCache.clear();
         this.logger?.debug('Namespace cache cleared');
     }
-    
+
     // ==================== 私有辅助方法 ====================
-    
+
     /**
      * 从路径模板提取父目录
      */
@@ -898,14 +892,14 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         const namespaceIndex = basePathTemplate.indexOf('{namespace}');
         if (namespaceIndex === -1) {
             this.logger?.warn('Invalid basePathTemplate, missing {namespace} placeholder', {
-                basePathTemplate
+                basePathTemplate,
             });
             return null;
         }
-        
+
         return basePathTemplate.substring(0, namespaceIndex).replace(/\/$/, '');
     }
-    
+
     /**
      * 从缓存获取命名空间
      */
@@ -917,15 +911,14 @@ export class NamespaceDiscoveryService implements INamespaceDiscoveryService {
         }
         return null;
     }
-    
+
     /**
      * 设置命名空间缓存（LRUCache 自动处理容量淘汰）
      */
     private setCachedNamespaces(key: string, namespaces: string[]): void {
         this.namespaceCache.set(key, {
             namespaces,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
     }
 }
-

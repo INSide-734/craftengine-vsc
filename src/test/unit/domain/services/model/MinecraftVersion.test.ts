@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-    MinecraftVersion,
-    MinecraftVersions,
-} from '../../../../../domain/services/model/utils/MinecraftVersion';
+import { MinecraftVersion, MinecraftVersions } from '../../../../../domain/services/model/utils/MinecraftVersion';
 
 describe('MinecraftVersion', () => {
     describe('constructor', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DelegateStrategyRegistry } from '../../../../infrastructure/completion/DelegateStrategyRegistry';
-import { ILogger } from '../../../../core/interfaces/ILogger';
-import { ICompletionStrategy } from '../../../../core/interfaces/ICompletionStrategy';
+import { type ILogger } from '../../../../core/interfaces/ILogger';
+import { type ICompletionStrategy } from '../../../../core/interfaces/ICompletionStrategy';
 
 describe('DelegateStrategyRegistry', () => {
     let registry: DelegateStrategyRegistry;
@@ -34,7 +34,7 @@ describe('DelegateStrategyRegistry', () => {
             expect(registry.hasProvider('test.provider')).toBe(true);
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Delegate strategy registered',
-                expect.objectContaining({ providerId: 'test.provider' })
+                expect.objectContaining({ providerId: 'test.provider' }),
             );
         });
 
@@ -48,7 +48,7 @@ describe('DelegateStrategyRegistry', () => {
             expect(registry.hasProvider('test.factory')).toBe(true);
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Delegate strategy factory registered',
-                expect.objectContaining({ providerId: 'test.factory' })
+                expect.objectContaining({ providerId: 'test.factory' }),
             );
         });
     });
@@ -86,7 +86,7 @@ describe('DelegateStrategyRegistry', () => {
             expect(factory).toHaveBeenCalled();
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Delegate strategy instantiated from factory',
-                expect.objectContaining({ providerId: 'test.factory' })
+                expect.objectContaining({ providerId: 'test.factory' }),
             );
         });
 
@@ -96,7 +96,7 @@ describe('DelegateStrategyRegistry', () => {
             } as ICompletionStrategy);
 
             registry.registerStrategy('test.factory', factory);
-            
+
             registry.getStrategy('test.factory');
             registry.getStrategy('test.factory');
 
@@ -115,7 +115,7 @@ describe('DelegateStrategyRegistry', () => {
             expect(mockLogger.error).toHaveBeenCalledWith(
                 'Failed to instantiate delegate strategy',
                 expect.any(Error),
-                expect.objectContaining({ providerId: 'test.error' })
+                expect.objectContaining({ providerId: 'test.error' }),
             );
         });
 
@@ -125,7 +125,7 @@ describe('DelegateStrategyRegistry', () => {
             expect(result).toBeUndefined();
             expect(mockLogger.warn).toHaveBeenCalledWith(
                 'Delegate strategy not found',
-                expect.objectContaining({ providerId: 'non.existent' })
+                expect.objectContaining({ providerId: 'non.existent' }),
             );
         });
     });
@@ -133,7 +133,7 @@ describe('DelegateStrategyRegistry', () => {
     describe('listProviders', () => {
         it('should list all registered providers', () => {
             registry.registerStrategy('provider1', {} as ICompletionStrategy);
-            registry.registerStrategy('provider2', () => ({} as ICompletionStrategy));
+            registry.registerStrategy('provider2', () => ({}) as ICompletionStrategy);
 
             const providers = registry.listProviders();
 
@@ -160,7 +160,7 @@ describe('DelegateStrategyRegistry', () => {
             expect(registry.hasProvider('test')).toBe(false);
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Delegate strategy unregistered',
-                expect.objectContaining({ providerId: 'test' })
+                expect.objectContaining({ providerId: 'test' }),
             );
         });
 
@@ -169,7 +169,7 @@ describe('DelegateStrategyRegistry', () => {
 
             expect(mockLogger.warn).toHaveBeenCalledWith(
                 'Attempt to unregister non-existent provider',
-                expect.objectContaining({ providerId: 'non.existent' })
+                expect.objectContaining({ providerId: 'non.existent' }),
             );
         });
     });
@@ -177,16 +177,15 @@ describe('DelegateStrategyRegistry', () => {
     describe('clear', () => {
         it('should clear all strategies', () => {
             registry.registerStrategy('p1', {} as ICompletionStrategy);
-            registry.registerStrategy('p2', () => ({} as ICompletionStrategy));
+            registry.registerStrategy('p2', () => ({}) as ICompletionStrategy);
 
             registry.clear();
 
             expect(registry.listProviders()).toHaveLength(0);
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Delegate strategy registry cleared',
-                expect.objectContaining({ count: 2 })
+                expect.objectContaining({ count: 2 }),
             );
         });
     });
 });
-

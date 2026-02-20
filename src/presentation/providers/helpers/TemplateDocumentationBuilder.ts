@@ -1,5 +1,5 @@
 import { MarkdownString } from 'vscode';
-import { ITemplate, ITemplateParameter } from '../../../core/interfaces/ITemplate';
+import { type ITemplate, type ITemplateParameter } from '../../../core/interfaces/ITemplate';
 import { getRelativePath } from '../../../infrastructure/utils/StringUtils';
 
 /**
@@ -78,12 +78,12 @@ export function buildTemplateMarkdown(template: ITemplate): MarkdownString {
 
         if (requiredParams.length > 0) {
             md.appendMarkdown('  # 🔴 Required parameters\n');
-            requiredParams.forEach(p => md.appendMarkdown(`  ${p.name}: ${getExampleValue(p)}\n`));
+            requiredParams.forEach((p) => md.appendMarkdown(`  ${p.name}: ${getExampleValue(p)}\n`));
         }
 
         if (optionalParams.length > 0) {
             md.appendMarkdown('  # 🟡 Optional parameters (uncomment to use)\n');
-            optionalParams.forEach(p => md.appendMarkdown(`  # ${p.name}: ${getExampleValue(p)}\n`));
+            optionalParams.forEach((p) => md.appendMarkdown(`  # ${p.name}: ${getExampleValue(p)}\n`));
         }
     }
 
