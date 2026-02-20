@@ -322,7 +322,7 @@
     "cross-env": "^10.0.0",
     "esbuild": "^0.27.3",
     "eslint": "^9.32.0",
-    "glob": "^11.0.3",
+    "glob": "^13.0.6",
     "rimraf": "^6.0.1",
     "typescript": "^5.9.2",
     "vitest": "^4.0.16"
@@ -330,7 +330,7 @@
   "dependencies": {
     "@types/json-schema": "^7.0.15",
     "adm-zip": "^0.5.16",
-    "ajv": "^8.17.1",
+    "ajv": "^8.18.0",
     "sharp": "^0.33.0",
     "yaml": "^2.8.1"
   },
@@ -338,6 +338,12 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "sharp"
-    ]
+    ],
+    "overrides": {
+      "minimatch@<10.2.1": ">=10.2.1",
+      "@isaacs/brace-expansion@<=5.0.0": ">=5.0.1",
+      "diff@>=6.0.0 <8.0.3": ">=8.0.3",
+      "ajv@>=8.0.0 <8.18.0": ">=8.18.0"
+    }
   }
 }
