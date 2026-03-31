@@ -33,7 +33,11 @@ export class RangeDispatchEvaluator {
     /**
      * 获取属性值
      */
-    private getPropertyValue(property: string, _model: IRangeDispatchItemModel, context: IRenderContext): number | null {
+    private getPropertyValue(
+        property: string,
+        _model: IRangeDispatchItemModel,
+        context: IRenderContext,
+    ): number | null {
         const prop = property.replace(/^minecraft:/, '');
 
         switch (prop) {

@@ -29,7 +29,11 @@ export class SelectEvaluator {
     /**
      * 获取属性值
      */
-    private getPropertyValue(property: string, model: ISelectItemModel, context: IRenderContext): string | number | null {
+    private getPropertyValue(
+        property: string,
+        model: ISelectItemModel,
+        context: IRenderContext,
+    ): string | number | null {
         const prop = property.replace(/^minecraft:/, '');
 
         switch (prop) {

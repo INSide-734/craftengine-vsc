@@ -156,7 +156,13 @@ export class TextureCache {
      * 应用 UV 坐标截取
      * 直接移植 Kotlin 的 getWithUV 算法
      */
-    private async applyUV(img: IImageData, fromX: number, fromY: number, toX: number, toY: number): Promise<IImageData> {
+    private async applyUV(
+        img: IImageData,
+        fromX: number,
+        fromY: number,
+        toX: number,
+        toY: number,
+    ): Promise<IImageData> {
         // 计算像素坐标
         const x1 = Math.ceil(fromX * img.width);
         const y1 = Math.ceil(fromY * img.height);

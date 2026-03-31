@@ -152,14 +152,17 @@ describe('ExtensionFileWatcherManager', () => {
 
             capturedOnFileChangeCallback!({ uri, type: 'modified' });
 
-            expect(mockLogger.error).toHaveBeenCalledWith(
-                'Error handling file change',
-                error,
-                expect.objectContaining({
-                    file: uri.fsPath,
-                    type: 'modified',
-                }),
-            );
+            // 等待异步错误处理完成
+            await vi.waitFor(() => {
+                expect(mockLogger.error).toHaveBeenCalledWith(
+                    'Error handling file change',
+                    error,
+                    expect.objectContaining({
+                        file: uri.fsPath,
+                        type: 'modified',
+                    }),
+                );
+            });
         });
     });
 });

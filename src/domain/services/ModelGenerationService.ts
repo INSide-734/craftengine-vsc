@@ -324,7 +324,9 @@ export class ModelGenerationService implements IModelGenerator {
     /**
      * 生成自定义模型 JSON
      */
-    private generateCustomModelJson(config: IItemConfig): ReturnType<ModelJsonBuilder['buildModelFromGeneration']> | undefined {
+    private generateCustomModelJson(
+        config: IItemConfig,
+    ): ReturnType<ModelJsonBuilder['buildModelFromGeneration']> | undefined {
         // 检查是否有 generation 配置
         if (typeof config.model === 'object' && config.model !== null) {
             const modelConfig = config.model as Record<string, unknown>;

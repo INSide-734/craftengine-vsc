@@ -168,9 +168,7 @@ export class ModelJsonBuilder {
      * @param display - 显示位置配置
      * @returns Minecraft 模型 JSON 中的 display 配置
      */
-    buildDisplayConfig(
-        display: Partial<Record<DisplayPosition, IDisplayTransform>>,
-    ): IMinecraftModelJson['display'] {
+    buildDisplayConfig(display: Partial<Record<DisplayPosition, IDisplayTransform>>): IMinecraftModelJson['display'] {
         const result: Record<string, IDisplayTransform> = {};
 
         for (const [position, transform] of Object.entries(display)) {

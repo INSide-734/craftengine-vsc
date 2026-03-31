@@ -271,8 +271,8 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
 
             // 设置插入文本（代码片段）
             item.insertText = isPattern
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                ? this.docBuilder.generatePatternSnippet(analysis!)
+                ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                  this.docBuilder.generatePatternSnippet(analysis!)
                 : this.createInsertText(prop.key, prop.schema);
 
             // 设置详情和文档

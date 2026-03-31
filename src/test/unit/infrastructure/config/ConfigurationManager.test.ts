@@ -157,7 +157,7 @@ describe('ConfigurationManager', () => {
             watchCallback();
 
             // 等待 Promise 链完成
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             expect(mockLogger.error).toHaveBeenCalledWith(
                 'Failed to reload configuration after file change',

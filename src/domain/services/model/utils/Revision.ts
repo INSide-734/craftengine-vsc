@@ -5,7 +5,10 @@
  */
 
 import { MinecraftVersion, MinecraftVersions } from './MinecraftVersion';
-import { type IRevision as ICoreRevision, type IMinecraftVersionInfo } from '../../../../core/interfaces/IModelGenerator';
+import {
+    type IRevision as ICoreRevision,
+    type IMinecraftVersionInfo,
+} from '../../../../core/interfaces/IModelGenerator';
 
 /**
  * 未来版本常量

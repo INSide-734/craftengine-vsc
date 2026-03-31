@@ -64,8 +64,7 @@ export class FileLockManager {
             lockExpiryMs?: number;
         },
     ) {
-        this.lockCleanupIntervalMs =
-            config?.lockCleanupIntervalMs ?? FileLockManager.DEFAULT_LOCK_CLEANUP_INTERVAL_MS;
+        this.lockCleanupIntervalMs = config?.lockCleanupIntervalMs ?? FileLockManager.DEFAULT_LOCK_CLEANUP_INTERVAL_MS;
         this.lockExpiryMs = config?.lockExpiryMs ?? FileLockManager.DEFAULT_LOCK_EXPIRY_MS;
 
         // 启动文件锁定期清理

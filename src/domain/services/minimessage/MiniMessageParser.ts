@@ -395,7 +395,11 @@ export class MiniMessageParser {
     /**
      * 创建验证错误
      */
-    private createError(tag: IMiniMessageTag, message: string, codeInfo: { code: string }): IMiniMessageValidationError {
+    private createError(
+        tag: IMiniMessageTag,
+        message: string,
+        codeInfo: { code: string },
+    ): IMiniMessageValidationError {
         return {
             codeInfo,
             message,

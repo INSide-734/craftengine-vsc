@@ -49,9 +49,7 @@ export class NamespaceCache {
         cacheTTL?: number,
         maxCacheSize?: number,
     ) {
-        this.cache = new LRUCache<string, INamespaceCacheEntry>(
-            maxCacheSize || NamespaceCache.DEFAULT_MAX_CACHE_SIZE,
-        );
+        this.cache = new LRUCache<string, INamespaceCacheEntry>(maxCacheSize || NamespaceCache.DEFAULT_MAX_CACHE_SIZE);
         this.cacheTTL = cacheTTL || NamespaceCache.DEFAULT_CACHE_TTL_FALLBACK;
     }
 

@@ -86,7 +86,10 @@ export class SchemaReferenceResolver {
     /**
      * 带上下文的引用解析
      */
-    private async resolveWithContext(schema: IJsonSchemaNode, context: IRefResolutionContext): Promise<IJsonSchemaNode> {
+    private async resolveWithContext(
+        schema: IJsonSchemaNode,
+        context: IRefResolutionContext,
+    ): Promise<IJsonSchemaNode> {
         if (!schema || context.depth >= context.maxDepth) {
             if (context.depth >= context.maxDepth) {
                 this.logger.debug('Max resolution depth reached', {

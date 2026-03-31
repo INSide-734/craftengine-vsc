@@ -105,7 +105,7 @@ describe('Debouncer', () => {
         expect(debouncer.pendingCount()).toBe(0);
     });
 
-    it('should handle async function errors gracefully', () => {
+    it('should handle async function errors gracefully', async () => {
         const debouncer = new Debouncer();
         const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         const fn = vi.fn().mockRejectedValue(new Error('async fail'));
@@ -113,8 +113,12 @@ describe('Debouncer', () => {
         debouncer.debounce('test', fn, 100);
         vi.advanceTimersByTime(100);
 
+        // 等待异步错误处理完成
+        await vi.advanceTimersByTimeAsync(0);
+
         // 错误被捕获，不会抛出
         expect(fn).toHaveBeenCalledOnce();
+        expect(consoleSpy).toHaveBeenCalled();
         consoleSpy.mockRestore();
     });
 });

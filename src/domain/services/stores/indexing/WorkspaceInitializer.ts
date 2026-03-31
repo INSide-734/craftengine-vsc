@@ -1,5 +1,9 @@
 import { type ILogger } from '../../../../core/interfaces/ILogger';
-import { type IYamlScanner, type IYamlScanResult, type IYamlScanOptions } from '../../../../core/interfaces/IYamlScanner';
+import {
+    type IYamlScanner,
+    type IYamlScanResult,
+    type IYamlScanOptions,
+} from '../../../../core/interfaces/IYamlScanner';
 import { type TemplateStore } from '../TemplateStore';
 import { type TranslationStore } from '../TranslationStore';
 import { type ItemStore } from '../ItemStore';

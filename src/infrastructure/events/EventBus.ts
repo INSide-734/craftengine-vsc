@@ -539,7 +539,12 @@ export class EventBus implements IEventBus {
     /**
      * 遍历 Trie 树查找匹配的订阅
      */
-    private traverseTrie(node: IPatternTrieNode, segments: string[], index: number, results: EventSubscription[]): void {
+    private traverseTrie(
+        node: IPatternTrieNode,
+        segments: string[],
+        index: number,
+        results: EventSubscription[],
+    ): void {
         if (index === segments.length) {
             // 收集此节点的活跃订阅
             for (const sub of node.subscriptions) {
