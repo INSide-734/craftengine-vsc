@@ -5,7 +5,7 @@
  */
 
 import { type Key } from '../utils/Key';
-import { type SimplifiedModelReader } from './SimplifiedModelReader';
+import { type ISimplifiedModelReader } from './SimplifiedModelReader';
 import { SimplifiedModelConfigError } from './GeneratedModelReader';
 
 /** 弓模型所需的纹理/模型数量 */
@@ -27,7 +27,7 @@ function createModelWithGeneration(path: string, parent: string, texture: string
 /**
  * 弓模型读取器
  */
-export class BowModelReader implements SimplifiedModelReader {
+export class BowModelReader implements ISimplifiedModelReader {
     convertFromTextures(textures: string[], optionalModelPaths: string[], id: Key): Record<string, unknown> {
         if (textures.length !== BOW_REQUIRED_COUNT) {
             throw new SimplifiedModelConfigError(

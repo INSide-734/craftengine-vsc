@@ -11,19 +11,19 @@ import { Key } from '../utils/Key';
 // ============================================
 
 /** 通用属性接口 */
-export interface Property {
+export interface IProperty {
     readonly type: Key;
     apply(json: Record<string, unknown>): void;
     toJson(): Record<string, unknown>;
 }
 
 /** 属性工厂接口 */
-export interface PropertyFactory<T extends Property> {
+export interface IPropertyFactory<T extends IProperty> {
     create(arguments_: Record<string, unknown>): T;
 }
 
 /** 属性读取器接口 */
-export interface PropertyReader<T extends Property> {
+export interface IPropertyReader<T extends IProperty> {
     read(json: Record<string, unknown>): T;
 }
 
@@ -32,7 +32,7 @@ export interface PropertyReader<T extends Property> {
 // ============================================
 
 /** 简单属性基类 */
-export class SimpleProperty implements Property {
+export class SimpleProperty implements IProperty {
     readonly type: Key;
     protected readonly propertyKey: string;
 
@@ -51,7 +51,7 @@ export class SimpleProperty implements Property {
 }
 
 /** 简单属性工厂 */
-export class SimplePropertyFactory<T extends Property> implements PropertyFactory<T> {
+export class SimplePropertyFactory<T extends IProperty> implements IPropertyFactory<T> {
     private readonly propertyKey: string;
     private readonly createFn: (type: Key) => T;
 
@@ -66,7 +66,7 @@ export class SimplePropertyFactory<T extends Property> implements PropertyFactor
 }
 
 /** 简单属性读取器 */
-export class SimplePropertyReader<T extends Property> implements PropertyReader<T> {
+export class SimplePropertyReader<T extends IProperty> implements IPropertyReader<T> {
     private readonly propertyKey: string;
     private readonly createFn: (type: Key) => T;
 
@@ -85,9 +85,9 @@ export class SimplePropertyReader<T extends Property> implements PropertyReader<
 // ============================================
 
 /** 属性注册表 */
-export class PropertyRegistry<T extends Property> {
-    private readonly factoryRegistry = new Map<string, PropertyFactory<T>>();
-    private readonly readerRegistry = new Map<string, PropertyReader<T>>();
+export class PropertyRegistry<T extends IProperty> {
+    private readonly factoryRegistry = new Map<string, IPropertyFactory<T>>();
+    private readonly readerRegistry = new Map<string, IPropertyReader<T>>();
     private readonly propertyKey: string;
     private readonly typeName: string;
 
@@ -96,16 +96,16 @@ export class PropertyRegistry<T extends Property> {
         this.propertyKey = propertyKey;
     }
 
-    registerFactory(key: Key, factory: PropertyFactory<T>): void {
+    registerFactory(key: Key, factory: IPropertyFactory<T>): void {
         this.factoryRegistry.set(key.asString(), factory);
     }
 
-    registerReader(key: Key, reader: PropertyReader<T>): void {
+    registerReader(key: Key, reader: IPropertyReader<T>): void {
         this.readerRegistry.set(key.asString(), reader);
     }
 
     /** 批量注册简单属性 */
-    registerSimpleTypes(types: Key[], factory: PropertyFactory<T>, reader: PropertyReader<T>): void {
+    registerSimpleTypes(types: Key[], factory: IPropertyFactory<T>, reader: IPropertyReader<T>): void {
         for (const type of types) {
             this.registerFactory(type, factory);
             this.registerReader(type, reader);

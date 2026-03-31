@@ -336,7 +336,7 @@ export class TranslationDefinitionProvider implements DefinitionProvider {
             }
 
             // 如果没找到，扩大搜索范围
-            return this.searchEntireDocument(document, keyName, languageCode);
+            return await this.searchEntireDocument(document, keyName, languageCode);
         } catch (error) {
             this.logger.debug('Failed to find precise location', {
                 uri: uri.fsPath,

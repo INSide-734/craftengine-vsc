@@ -8,9 +8,9 @@
 
 import { Key } from '../utils/Key';
 import {
-    type Property,
-    type PropertyFactory,
-    type PropertyReader,
+    type IProperty,
+    type IPropertyFactory,
+    type IPropertyReader,
     SimpleProperty,
     SimplePropertyFactory,
     SimplePropertyReader,
@@ -22,9 +22,9 @@ import { type IModelPropertyDefinition } from '../../../../core/types/ConfigType
 // 选择属性接口（保持向后兼容）
 // ============================================
 
-export type SelectProperty = Property;
-export type SelectPropertyFactory = PropertyFactory<SelectProperty>;
-export type SelectPropertyReader = PropertyReader<SelectProperty>;
+export type SelectProperty = IProperty;
+export type SelectPropertyFactory = IPropertyFactory<SelectProperty>;
+export type SelectPropertyReader = IPropertyReader<SelectProperty>;
 
 // ============================================
 // 简单选择属性

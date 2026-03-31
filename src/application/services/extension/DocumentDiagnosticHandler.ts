@@ -8,7 +8,7 @@ import {
     type IDiagnosticProviders,
     type IDiagnosticIgnoreParser,
 } from '../../../core/interfaces/IDiagnosticProvider';
-import { DocumentChangeTracker } from './DocumentChangeTracker';
+import { DocumentChangeTracker, type IDocumentChangeInfo } from './DocumentChangeTracker';
 
 // 重导出接口以保持向后兼容
 export type { IDiagnosticProvider, IDiagnosticProviders };
@@ -26,7 +26,7 @@ export enum DiagnosticPriority {
 /**
  * 诊断执行组配置
  */
-interface DiagnosticGroup {
+interface IDiagnosticGroup {
     name: string;
     providers: (keyof IDiagnosticProviders)[];
     priority: DiagnosticPriority;
@@ -43,7 +43,7 @@ export class DocumentDiagnosticHandler {
     private readonly HIGH_PRIORITY_DELAY: number;
     private readonly LOW_PRIORITY_DELAY: number;
     private readonly INCREMENTAL_THRESHOLD: number;
-    private readonly DIAGNOSTIC_GROUPS: DiagnosticGroup[];
+    private readonly DIAGNOSTIC_GROUPS: IDiagnosticGroup[];
 
     private readonly debounceTimers = new Map<string, NodeJS.Timeout>();
     private readonly lowPriorityTimers = new Map<string, NodeJS.Timeout>();
@@ -62,7 +62,7 @@ export class DocumentDiagnosticHandler {
             highPriorityDelay?: number;
             lowPriorityDelay?: number;
             incrementalThreshold?: number;
-            diagnosticGroups?: DiagnosticGroup[];
+            diagnosticGroups?: IDiagnosticGroup[];
         },
     ) {
         this.ignoreParser = ignoreParser ?? { isFileIgnored: () => false };
@@ -109,10 +109,11 @@ export class DocumentDiagnosticHandler {
             return;
         }
 
-        setTimeout(async () => {
+        setTimeout(() => {
             // 并行更新所有打开的文档
-            await Promise.all(openYamlDocs.map((doc) => this.updateAllDiagnostics(doc)));
-            this.logger.debug('Initial diagnostics updated', { documentCount: openYamlDocs.length });
+            void Promise.all(openYamlDocs.map((doc) => this.updateAllDiagnostics(doc))).then(() => {
+                this.logger.debug('Initial diagnostics updated', { documentCount: openYamlDocs.length });
+            });
         }, this.INITIAL_DELAY);
     }
 
@@ -164,34 +165,36 @@ export class DocumentDiagnosticHandler {
         const useIncremental = changeInfo && changeInfo.changedLines.size <= this.INCREMENTAL_THRESHOLD;
 
         // 高优先级诊断（P0, P1）快速响应
-        const highPriorityTimer = setTimeout(async () => {
+        const highPriorityTimer = setTimeout(() => {
             if (!this.changeTracker.isVersionCurrent(uri, currentVersion)) {
                 this.logger.debug('Skipping outdated high priority diagnostics', {
                     file: event.document.fileName,
                 });
                 return;
             }
-            await this.updateHighPriorityDiagnostics(
+            void this.updateHighPriorityDiagnostics(
                 event.document,
                 useIncremental ? changeInfo : undefined,
                 currentVersion,
-            );
-            this.debounceTimers.delete(uri);
+            ).then(() => {
+                this.debounceTimers.delete(uri);
+            });
         }, this.HIGH_PRIORITY_DELAY);
 
         this.debounceTimers.set(uri, highPriorityTimer);
 
         // 低优先级诊断（P2, P3）延迟执行
-        const lowTimer = setTimeout(async () => {
+        const lowTimer = setTimeout(() => {
             if (!this.changeTracker.isVersionCurrent(uri, currentVersion)) {
                 this.logger.debug('Skipping outdated low priority diagnostics', {
                     file: event.document.fileName,
                 });
                 return;
             }
-            await this.updateLowPriorityDiagnostics(event.document, currentVersion);
-            this.lowPriorityTimers.delete(uri);
-            this.changeTracker.clearChanges(uri);
+            void this.updateLowPriorityDiagnostics(event.document, currentVersion).then(() => {
+                this.lowPriorityTimers.delete(uri);
+                this.changeTracker.clearChanges(uri);
+            });
         }, this.LOW_PRIORITY_DELAY);
 
         this.lowPriorityTimers.set(uri, lowTimer);
@@ -202,7 +205,7 @@ export class DocumentDiagnosticHandler {
      */
     private async updateHighPriorityDiagnostics(
         document: vscode.TextDocument,
-        _changeInfo?: import('./DocumentChangeTracker').DocumentChangeInfo,
+        _changeInfo?: IDocumentChangeInfo,
         executionVersion?: number,
     ): Promise<void> {
         const timer = this.performanceMonitor?.startTimer('diagnostics.highPriority');
@@ -383,7 +386,7 @@ export class DocumentDiagnosticHandler {
      * @param executionVersion - 执行版本号，用于检测过时任务
      */
     private async executeGroupDiagnostics(
-        group: DiagnosticGroup,
+        group: IDiagnosticGroup,
         document: vscode.TextDocument,
         parsedDoc?: IParsedDocument,
         executionVersion?: number,

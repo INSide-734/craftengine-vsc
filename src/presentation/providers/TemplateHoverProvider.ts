@@ -144,34 +144,34 @@ export class TemplateHoverProvider implements HoverProvider {
         md.supportHtml = true;
 
         // 标题
-        md.appendMarkdown(`## 🔧 Extended Parameter Type: \`${typeInfo.name}\`\n\n`);
+        md.appendMarkdown(`##  Extended Parameter Type: \`${typeInfo.name}\`\n\n`);
 
         // 描述
         md.appendMarkdown(`${typeInfo.description}\n\n`);
 
         // 属性表格
-        md.appendMarkdown('### 📋 Properties\n\n');
+        md.appendMarkdown('###  Properties\n\n');
         md.appendMarkdown('| Property | Status |\n|:---------|:------:|\n');
 
         typeInfo.requiredProperties.forEach((prop) => {
-            md.appendMarkdown(`| \`${prop}\` | 🔴 Required |\n`);
+            md.appendMarkdown(`| \`${prop}\` |  Required |\n`);
         });
 
         typeInfo.optionalProperties.forEach((prop) => {
-            md.appendMarkdown(`| \`${prop}\` | 🟡 Optional |\n`);
+            md.appendMarkdown(`| \`${prop}\` |  Optional |\n`);
         });
 
         md.appendMarkdown('\n');
 
         // 示例
-        md.appendMarkdown('### 💡 Example\n\n');
+        md.appendMarkdown('###  Example\n\n');
         md.appendMarkdown('```yaml\n');
         md.appendMarkdown(typeInfo.example);
         md.appendMarkdown('\n```\n\n');
 
         // 提示
         md.appendMarkdown('---\n\n');
-        md.appendMarkdown('> **💡 Tip:** Use code completion to quickly insert extended parameter types.\n');
+        md.appendMarkdown('> ** Tip:** Use code completion to quickly insert extended parameter types.\n');
 
         return md;
     }

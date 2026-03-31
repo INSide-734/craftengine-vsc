@@ -23,9 +23,8 @@ import {
 import { type ILogger } from '../../core/interfaces/ILogger';
 import { type IEventBus } from '../../core/interfaces/IEventBus';
 import { type IFileReader } from '../../core/interfaces/IFileReader';
-import { type IYamlScanner, type IYamlScanResult } from '../../core/interfaces/IYamlScanner';
+import { type IYamlScanner, type IYamlScanResult, type IYamlScanOptions } from '../../core/interfaces/IYamlScanner';
 import { type IYamlParser } from '../../core/interfaces/IYamlParser';
-import { type IYamlScanOptions } from '../../core/interfaces/IYamlScanner';
 import { FileIndexingOrchestrator } from './stores/FileIndexingOrchestrator';
 import { DataStoreStatisticsCollector } from './stores/DataStoreStatisticsCollector';
 

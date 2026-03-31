@@ -49,14 +49,14 @@ export class Throttler {
             // 可以立即执行
             if (leading) {
                 this.lastExecutionTime.set(key, now);
-                this.execute(fn, key);
+                void this.execute(fn, key);
             }
         } else if (trailing) {
             // 设置尾随调用
             const timer = setTimeout(() => {
                 this.lastExecutionTime.set(key, Date.now());
                 this.pendingTimers.delete(key);
-                this.execute(fn, key);
+                void this.execute(fn, key);
             }, interval - elapsed);
             this.pendingTimers.set(key, timer);
         }
@@ -69,7 +69,7 @@ export class Throttler {
         try {
             await fn();
         } catch (error) {
-            // 工具函数无 Logger 上下文，使用 console
+            // eslint-disable-next-line no-console
             console.error(`Throttled function error for key '${key}':`, error);
         }
     }

@@ -5,7 +5,8 @@ import * as path from 'path';
 const mockStatSync = vi.fn();
 const mockReadFileSync = vi.fn();
 vi.mock('fs', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('fs')>();
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    const actual: typeof import('fs') = await importOriginal();
     return {
         ...actual,
         statSync: (...args: any[]) => mockStatSync(...args),

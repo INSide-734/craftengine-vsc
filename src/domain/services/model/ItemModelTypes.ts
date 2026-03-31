@@ -16,7 +16,7 @@ import {
     type ISelectCase,
     type IRangeDispatchEntry,
 } from '../../../core/interfaces/IModelGenerator';
-import { type Tint } from './Tint';
+import { type ITint } from './Tint';
 
 // ============================================
 // 模型类型常量（从 JSON 配置初始化）
@@ -157,10 +157,10 @@ export class EmptyItemModel implements IItemModel {
 export class BaseItemModel implements IItemModel {
     readonly type = MODEL_TYPES.MODEL;
     private readonly path: string;
-    private readonly tints: Tint[];
+    private readonly tints: ITint[];
     private readonly modelGeneration?: IModelGeneration;
 
-    constructor(path: string, tints: Tint[] = [], modelGeneration?: IModelGeneration) {
+    constructor(path: string, tints: ITint[] = [], modelGeneration?: IModelGeneration) {
         this.path = path;
         this.tints = tints;
         this.modelGeneration = modelGeneration;

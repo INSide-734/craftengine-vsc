@@ -83,7 +83,10 @@ function log(level: 'info' | 'warn' | 'debug', message: string, data?: Record<st
  */
 function flushEarlyLogs(logger: ILogger): void {
     while (earlyLogs.length > 0) {
-        const entry = earlyLogs.shift()!;
+        const entry = earlyLogs.shift();
+        if (!entry) {
+            break;
+        }
         if (entry.level === 'error') {
             logger.error(entry.message, entry.error, entry.data as Record<string, unknown>);
         } else {

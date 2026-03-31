@@ -183,7 +183,7 @@ export class SchemaKeyHoverProvider implements HoverProvider {
         md.supportHtml = true;
 
         // 标题
-        md.appendMarkdown(`### 🔑 \`${key}\`\n\n`);
+        md.appendMarkdown(`### \`${key}\`\n\n`);
 
         this.appendBadges(md, details);
         if (details.description) {
@@ -219,7 +219,7 @@ export class SchemaKeyHoverProvider implements HoverProvider {
             return;
         }
         md.appendMarkdown(`---\n\n`);
-        md.appendMarkdown(`**📊 Type:** `);
+        md.appendMarkdown(`** Type:** `);
         if (Array.isArray(details.type)) {
             md.appendMarkdown(`\`${details.type.join(' | ')}\`\n\n`);
         } else {
@@ -232,7 +232,7 @@ export class SchemaKeyHoverProvider implements HoverProvider {
         if (!details.enum || details.enum.length === 0) {
             return;
         }
-        md.appendMarkdown(`**✨ Allowed Values:**\n\n`);
+        md.appendMarkdown(`** Allowed Values:**\n\n`);
         if (details.enum.length <= 10) {
             details.enum.forEach((value) => {
                 md.appendMarkdown(`- \`${JSON.stringify(value)}\`\n`);
@@ -248,7 +248,7 @@ export class SchemaKeyHoverProvider implements HoverProvider {
         if (details.default === undefined) {
             return;
         }
-        md.appendMarkdown(`**🎯 Default Value:**\n\n`);
+        md.appendMarkdown(`** Default Value:**\n\n`);
         if (typeof details.default === 'string') {
             md.appendCodeblock(details.default, 'text');
         } else {
@@ -262,7 +262,7 @@ export class SchemaKeyHoverProvider implements HoverProvider {
         if (!details.pattern) {
             return;
         }
-        md.appendMarkdown(`**🔍 Pattern:**\n\n`);
+        md.appendMarkdown(`** Pattern:**\n\n`);
         md.appendCodeblock(details.pattern, 'regex');
         md.appendMarkdown('\n');
     }
@@ -274,8 +274,9 @@ export class SchemaKeyHoverProvider implements HoverProvider {
         details: { examples?: unknown[]; type?: string | string[]; enum?: unknown[]; default?: unknown },
     ): void {
         if (details.examples && details.examples.length > 0) {
-            md.appendMarkdown(`**📝 Examples:**\n\n`);
+            md.appendMarkdown(`** Examples:**\n\n`);
             details.examples.forEach((example, index) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 if (details.examples!.length > 1) {
                     md.appendMarkdown(`*Example ${index + 1}:*\n\n`);
                 }
@@ -289,7 +290,7 @@ export class SchemaKeyHoverProvider implements HoverProvider {
                 md.appendMarkdown('\n');
             });
         } else {
-            md.appendMarkdown(`**💡 Usage:**\n\n`);
+            md.appendMarkdown(`** Usage:**\n\n`);
             md.appendCodeblock(this.generateUsageExample(key, details), 'yaml');
             md.appendMarkdown('\n');
         }
@@ -301,7 +302,7 @@ export class SchemaKeyHoverProvider implements HoverProvider {
             return;
         }
         md.appendMarkdown(`---\n\n`);
-        md.appendMarkdown(`⚠️ **Warning:** This property is deprecated and may be removed in future versions.\n\n`);
+        md.appendMarkdown(` **Warning:** This property is deprecated and may be removed in future versions.\n\n`);
     }
 
     /**

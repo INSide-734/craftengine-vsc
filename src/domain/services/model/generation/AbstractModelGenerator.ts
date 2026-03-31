@@ -5,7 +5,7 @@
  */
 
 import { type ModelGeneration } from './ModelGeneration';
-import { type ModelGenerator } from './ModelGenerator';
+import { type IModelGenerator } from './ModelGenerator';
 import { isValidResourceLocation } from '../utils/ResourceLocation';
 
 /**
@@ -25,7 +25,7 @@ export class ModelGenerationError extends Error {
 /**
  * 抽象模型生成器
  */
-export abstract class AbstractModelGenerator implements ModelGenerator {
+export abstract class AbstractModelGenerator implements IModelGenerator {
     protected readonly _modelsToGenerate: Map<string, ModelGeneration> = new Map();
 
     modelsToGenerate(): ModelGeneration[] {

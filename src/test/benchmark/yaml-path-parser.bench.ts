@@ -24,14 +24,14 @@ import { defaultBenchOptions, fastBenchOptions, slowBenchOptions } from './bench
 // Mock TextDocument 实现
 // ========================================
 
-interface MockLine {
+interface IMockLine {
     text: string;
     lineNumber: number;
 }
 
 function createMockDocument(content: string): TextDocument {
     const lines = content.split('\n');
-    const lineData: MockLine[] = lines.map((text, index) => ({
+    const lineData: IMockLine[] = lines.map((text, index) => ({
         text,
         lineNumber: index,
     }));

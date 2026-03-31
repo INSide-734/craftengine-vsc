@@ -144,7 +144,7 @@ export interface IDomainEvent {
  * import { TemplateEvents } from './core/types/DomainEvents';
  *
  * // 发布模板创建事件
- * const event: TemplateEvents.TemplateCreated = {
+ * const event: TemplateEvents.ITemplateCreated = {
  *     id: generateId(),
  *     type: 'template.created',
  *     timestamp: new Date(),
@@ -155,7 +155,7 @@ export interface IDomainEvent {
  * await eventBus.publish('template.created', event);
  *
  * // 订阅模板事件
- * eventBus.subscribe('template.created', (event: TemplateEvents.TemplateCreated) => {
+ * eventBus.subscribe('template.created', (event: TemplateEvents.ITemplateCreated) => {
  *     console.log(`New template: ${event.template.name}`);
  *     // 更新 UI、缓存等
  * });
@@ -179,7 +179,7 @@ export namespace TemplateEvents {
      * - 缓存管理器（缓存新模板）
      * - 日志记录器（审计日志）
      */
-    export interface TemplateCreated extends IDomainEvent {
+    export interface ITemplateCreated extends IDomainEvent {
         /** 事件类型固定为 'template.created' */
         type: 'template.created';
         /** 新创建的模板实体 */
@@ -207,7 +207,7 @@ export namespace TemplateEvents {
      * - previousVersion 可能为 undefined（如果没有保留历史版本）
      * - 订阅者应该能够处理部分更新
      */
-    export interface TemplateUpdated extends IDomainEvent {
+    export interface ITemplateUpdated extends IDomainEvent {
         /** 事件类型固定为 'template.updated' */
         type: 'template.updated';
         /** 更新后的模板实体 */
@@ -237,7 +237,7 @@ export namespace TemplateEvents {
      * - 事件只包含模板标识信息，不包含完整模板实体
      * - 订阅者应该在事件发布前缓存必要的模板信息
      */
-    export interface TemplateDeleted extends IDomainEvent {
+    export interface ITemplateDeleted extends IDomainEvent {
         /** 事件类型固定为 'template.deleted' */
         type: 'template.deleted';
         /** 被删除模板的唯一标识符 */
@@ -267,7 +267,7 @@ export namespace TemplateEvents {
      * - templateCount: 加载的模板总数
      * - duration: 重建耗时（毫秒）
      */
-    export interface CacheRebuilt extends IDomainEvent {
+    export interface ICacheRebuilt extends IDomainEvent {
         /** 事件类型固定为 'template.cache.rebuilt' */
         type: 'template.cache.rebuilt';
         /** 重建后的模板总数 */
@@ -303,7 +303,7 @@ export namespace TemplateEvents {
  * import { FileEvents } from './core/types/DomainEvents';
  *
  * // 订阅文件修改事件
- * eventBus.subscribe('file.modified', (event: FileEvents.FileModified) => {
+ * eventBus.subscribe('file.modified', (event: FileEvents.IFileModified) => {
  *     console.log(`File modified: ${event.uri.fsPath}`);
  *     console.log(`Affected templates: ${event.templatesAffected.join(', ')}`);
  *
@@ -331,7 +331,7 @@ export namespace FileEvents {
      * - 模板服务（解析新模板）
      * - 文件索引器（更新索引）
      */
-    export interface FileCreated extends IDomainEvent {
+    export interface IFileCreated extends IDomainEvent {
         /** 事件类型固定为 'file.created' */
         type: 'file.created';
         /** 创建的文件 URI */
@@ -359,7 +359,7 @@ export namespace FileEvents {
      * - templatesAffected 列表帮助订阅者只处理相关模板
      * - 避免不必要的全量重新加载
      */
-    export interface FileModified extends IDomainEvent {
+    export interface IFileModified extends IDomainEvent {
         /** 事件类型固定为 'file.modified' */
         type: 'file.modified';
         /** 修改的文件 URI */
@@ -389,7 +389,7 @@ export namespace FileEvents {
      * - templatesRemoved 列表包含所有在该文件中定义的模板
      * - 订阅者应该处理级联删除和引用清理
      */
-    export interface FileDeleted extends IDomainEvent {
+    export interface IFileDeleted extends IDomainEvent {
         /** 事件类型固定为 'file.deleted' */
         type: 'file.deleted';
         /** 删除的文件 URI */
@@ -424,13 +424,13 @@ export namespace FileEvents {
  * import { ExtensionEvents } from './core/types/DomainEvents';
  *
  * // 监听扩展激活
- * eventBus.subscribe('extension.activated', (event: ExtensionEvents.ExtensionActivated) => {
+ * eventBus.subscribe('extension.activated', (event: ExtensionEvents.IExtensionActivated) => {
  *     console.log(`Extension activated in ${event.activationTime}ms`);
  *     // 初始化依赖此扩展的功能
  * });
  *
  * // 监听配置变更
- * eventBus.subscribe('extension.configuration.changed', (event: ExtensionEvents.ConfigurationChanged) => {
+ * eventBus.subscribe('extension.configuration.changed', (event: ExtensionEvents.IConfigurationChanged) => {
  *     console.log(`Config "${event.key}" changed`);
  *     console.log(`Old: ${event.oldValue}, New: ${event.newValue}`);
  *     // 应用新配置
@@ -458,7 +458,7 @@ export namespace ExtensionEvents {
      * - activationTime: 激活耗时（毫秒）
      * - 用于性能优化和问题诊断
      */
-    export interface ExtensionActivated extends IDomainEvent {
+    export interface IExtensionActivated extends IDomainEvent {
         /** 事件类型固定为 'extension.activated' */
         type: 'extension.activated';
         /** 激活耗时（毫秒） */
@@ -488,7 +488,7 @@ export namespace ExtensionEvents {
      * - 保存待处理数据
      * - 停止后台任务
      */
-    export interface ExtensionDeactivating extends IDomainEvent {
+    export interface IExtensionDeactivating extends IDomainEvent {
         /** 事件类型固定为 'extension.deactivating' */
         type: 'extension.deactivating';
         /** 停用原因，例如：'shutdown', 'disable', 'reload' */
@@ -517,7 +517,7 @@ export namespace ExtensionEvents {
      * - 只在值真正变化时执行操作
      * - 考虑配置变更的副作用
      */
-    export interface ConfigurationChanged extends IDomainEvent {
+    export interface IConfigurationChanged extends IDomainEvent {
         /** 事件类型固定为 'extension.configuration.changed' */
         type: 'extension.configuration.changed';
         /** 变更的配置键，支持点号分隔的路径 */
@@ -557,7 +557,7 @@ export namespace ExtensionEvents {
      * - 计数：count
      * - 百分比：percentage
      */
-    export interface PerformanceMetric extends IDomainEvent {
+    export interface IPerformanceMetric extends IDomainEvent {
         /** 事件类型固定为 'extension.performance.metric' */
         type: 'extension.performance.metric';
         /** 指标名称，使用点号分隔的命名空间 */
@@ -576,19 +576,19 @@ export namespace ExtensionEvents {
  */
 export namespace ItemEvents {
     /** 物品已创建事件 */
-    export interface ItemCreated extends IDomainEvent {
+    export interface IItemCreated extends IDomainEvent {
         type: 'item.created';
         item: IItemId;
     }
 
     /** 物品已删除事件 */
-    export interface ItemDeleted extends IDomainEvent {
+    export interface IItemDeleted extends IDomainEvent {
         type: 'item.deleted';
         itemId: string;
     }
 
     /** 物品已清空事件 */
-    export interface ItemCleared extends IDomainEvent {
+    export interface IItemCleared extends IDomainEvent {
         type: 'item.cleared';
         count: number;
     }
@@ -601,19 +601,19 @@ export namespace ItemEvents {
  */
 export namespace CategoryEvents {
     /** 分类已创建事件 */
-    export interface CategoryCreated extends IDomainEvent {
+    export interface ICategoryCreated extends IDomainEvent {
         type: 'category.created';
         category: ICategory;
     }
 
     /** 分类已删除事件 */
-    export interface CategoryDeleted extends IDomainEvent {
+    export interface ICategoryDeleted extends IDomainEvent {
         type: 'category.deleted';
         categoryId: string;
     }
 
     /** 分类已清空事件 */
-    export interface CategoryCleared extends IDomainEvent {
+    export interface ICategoryCleared extends IDomainEvent {
         type: 'category.cleared';
         count: number;
     }
@@ -626,19 +626,19 @@ export namespace CategoryEvents {
  */
 export namespace TranslationEvents {
     /** 翻译键已创建事件 */
-    export interface TranslationCreated extends IDomainEvent {
+    export interface ITranslationCreated extends IDomainEvent {
         type: 'translation.created';
         translationKey: ITranslationKey;
     }
 
     /** 翻译键已删除事件 */
-    export interface TranslationDeleted extends IDomainEvent {
+    export interface ITranslationDeleted extends IDomainEvent {
         type: 'translation.deleted';
         fullPath: string;
     }
 
     /** 翻译键已清空事件 */
-    export interface TranslationCleared extends IDomainEvent {
+    export interface ITranslationCleared extends IDomainEvent {
         type: 'translation.cleared';
         count: number;
     }
@@ -663,7 +663,7 @@ export enum DataStatus {
  */
 export namespace DataEvents {
     /** 数据状态变更事件 */
-    export interface DataStatusChanged extends IDomainEvent {
+    export interface IDataStatusChanged extends IDomainEvent {
         type: 'data.status.changed';
         status: DataStatus;
         /** 失败原因（仅在 Failed 状态时有值） */

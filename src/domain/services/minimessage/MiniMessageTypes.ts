@@ -1,7 +1,7 @@
 /**
  * MiniMessage 标签信息
  */
-export interface MiniMessageTag {
+export interface IMiniMessageTag {
     /** 标签名称 */
     name: string;
     /** 标签完整内容 */
@@ -29,7 +29,7 @@ export interface MiniMessageTag {
 /**
  * MiniMessage 验证错误
  */
-export interface MiniMessageValidationError {
+export interface IMiniMessageValidationError {
     /** 诊断代码信息 */
     codeInfo: { code: string };
     /** 错误消息 */
@@ -55,9 +55,9 @@ export interface MiniMessageValidationError {
 /**
  * MiniMessage 验证结果
  */
-export interface MiniMessageValidationResult {
+export interface IMiniMessageValidationResult {
     /** 验证错误列表 */
-    errors: MiniMessageValidationError[];
+    errors: IMiniMessageValidationError[];
 }
 
 /**

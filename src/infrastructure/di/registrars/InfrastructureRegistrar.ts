@@ -1,5 +1,4 @@
-import { window, workspace } from 'vscode';
-import type { ExtensionContext } from 'vscode';
+import { window, workspace, type ExtensionContext } from 'vscode';
 import { type IDependencyContainer, ServiceLifetime } from '../../../core/interfaces/IDependencyContainer';
 import { type ILogger } from '../../../core/interfaces/ILogger';
 import { type IConfiguration } from '../../../core/interfaces/IConfiguration';
@@ -57,6 +56,7 @@ function getConfiguredLogLevel(): LogLevel {
         return LogLevel[levelStr as keyof typeof LogLevel] ?? LogLevel.INFO;
     } catch (error) {
         // Logger 尚未注册，使用 console
+        // eslint-disable-next-line no-console
         console.warn('Failed to read logging configuration, using INFO:', error);
         return LogLevel.INFO;
     }
@@ -125,6 +125,7 @@ function setupFileLogging(loggerManager: LoggerManager, context: ExtensionContex
             maxBackupCount,
         });
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.warn('[CraftEngine] Failed to setup file logging:', error);
     }
 }
@@ -134,14 +135,15 @@ function setupFileLogging(loggerManager: LoggerManager, context: ExtensionContex
  */
 export function registerConfigurationServices(container: IDependencyContainer): void {
     const configProvider = new VSCodeConfigurationProvider();
+    const logger = container.resolve<ILogger>(SERVICE_TOKENS.Logger);
 
     container.registerFactory(
         SERVICE_TOKENS.Configuration,
-        () => new ConfigurationManager(configProvider),
+        () => new ConfigurationManager(configProvider, logger),
         ServiceLifetime.Singleton,
     );
 
-    container.resolve<ILogger>(SERVICE_TOKENS.Logger).info('Configuration services registered');
+    logger.info('Configuration services registered');
 }
 
 /**

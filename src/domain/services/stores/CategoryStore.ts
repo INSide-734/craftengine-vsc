@@ -98,10 +98,8 @@ export class CategoryStore implements ICategoryRepository {
      * 添加分类
      */
     async addCategory(category: ICategory): Promise<void> {
-        this.addCategoryInternal(category);
-        await this.publishCategoryCreated(
-            this.categories.get(category.id.startsWith('#') ? category.id : `#${category.id}`)!,
-        );
+        const normalizedCategory = this.addCategoryInternal(category);
+        await this.publishCategoryCreated(normalizedCategory);
     }
 
     /**

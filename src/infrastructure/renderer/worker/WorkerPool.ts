@@ -5,22 +5,22 @@
 import { Worker } from 'worker_threads';
 import * as path from 'path';
 import * as os from 'os';
-import type { RenderOptions } from '../types/index';
+import type { IRenderOptions } from '../types/index';
 
-interface PendingTask {
+interface IPendingTask {
     modelPath: string;
     resolve: (buffer: Buffer) => void;
     reject: (error: Error) => void;
     timeoutId?: NodeJS.Timeout;
 }
 
-interface WorkerInfo {
+interface IWorkerInfo {
     worker: Worker;
     busy: boolean;
     currentTaskId: number | null;
 }
 
-interface RenderProgress {
+interface IRenderProgress {
     total: number;
     completed: number;
     successful: number;
@@ -28,9 +28,9 @@ interface RenderProgress {
     currentModel?: string;
 }
 
-type ProgressCallback = (progress: RenderProgress) => void;
+type ProgressCallback = (progress: IRenderProgress) => void;
 
-export interface BatchRenderResult {
+export interface IBatchRenderResult {
     modelPath: string;
     success: boolean;
     buffer?: Buffer;
@@ -41,10 +41,10 @@ export interface BatchRenderResult {
  * Worker 线程池
  */
 export class WorkerPool {
-    private workers: WorkerInfo[] = [];
-    private taskQueue: Array<PendingTask & { taskId: number }> = [];
+    private workers: IWorkerInfo[] = [];
+    private taskQueue: Array<IPendingTask & { taskId: number }> = [];
     private taskIdCounter = 0;
-    private pendingTasks = new Map<number, PendingTask & { taskId: number }>();
+    private pendingTasks = new Map<number, IPendingTask & { taskId: number }>();
     /** 默认任务超时（毫秒） */
     private static readonly DEFAULT_TASK_TIMEOUT = 30000;
     /** 默认 Worker 终止超时（毫秒） */
@@ -56,7 +56,7 @@ export class WorkerPool {
     private terminated = false;
 
     constructor(
-        private readonly options: RenderOptions,
+        private readonly options: IRenderOptions,
         private readonly poolSize: number = Math.max(1, os.cpus().length - 1),
         private readonly taskTimeout: number = WorkerPool.DEFAULT_TASK_TIMEOUT,
         workerTerminateTimeout?: number,
@@ -81,7 +81,7 @@ export class WorkerPool {
                     workerData: { options: this.options },
                 });
 
-                const workerInfo: WorkerInfo = {
+                const workerInfo: IWorkerInfo = {
                     worker,
                     busy: false,
                     currentTaskId: null,
@@ -100,6 +100,7 @@ export class WorkerPool {
                 });
 
                 worker.on('error', (error) => {
+                    // eslint-disable-next-line no-console
                     console.error(`Worker error: ${error.message}`);
                     if (workerInfo.currentTaskId !== null) {
                         const pending = this.pendingTasks.get(workerInfo.currentTaskId);
@@ -114,6 +115,7 @@ export class WorkerPool {
 
                 worker.on('exit', (code) => {
                     if (code !== 0) {
+                        // eslint-disable-next-line no-console
                         console.error(`Worker exited with code ${code}`);
                     }
                 });
@@ -141,7 +143,7 @@ export class WorkerPool {
      *
      * 终止旧 worker 并创建新 worker 替代，避免超时后旧任务仍在执行导致数据竞争
      */
-    private replaceWorker(workerInfo: WorkerInfo): void {
+    private replaceWorker(workerInfo: IWorkerInfo): void {
         const index = this.workers.indexOf(workerInfo);
         if (index === -1) {
             return;
@@ -158,7 +160,7 @@ export class WorkerPool {
             workerData: { options: this.options },
         });
 
-        const newWorkerInfo: WorkerInfo = {
+        const newWorkerInfo: IWorkerInfo = {
             worker: newWorker,
             busy: false,
             currentTaskId: null,
@@ -172,6 +174,7 @@ export class WorkerPool {
         });
 
         newWorker.on('error', (error) => {
+            // eslint-disable-next-line no-console
             console.error(`Worker error: ${error.message}`);
             if (newWorkerInfo.currentTaskId !== null) {
                 const pending = this.pendingTasks.get(newWorkerInfo.currentTaskId);
@@ -186,6 +189,7 @@ export class WorkerPool {
 
         newWorker.on('exit', (code) => {
             if (code !== 0) {
+                // eslint-disable-next-line no-console
                 console.error(`Worker exited with code ${code}`);
             }
         });
@@ -196,7 +200,7 @@ export class WorkerPool {
     /**
      * 处理 Worker 返回的结果
      */
-    private handleWorkerResult(workerInfo: WorkerInfo, message: Record<string, unknown>): void {
+    private handleWorkerResult(workerInfo: IWorkerInfo, message: Record<string, unknown>): void {
         const { taskId, success, buffer, error } = message as {
             taskId: number;
             success: boolean;
@@ -235,6 +239,7 @@ export class WorkerPool {
             return;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const task = this.taskQueue.shift()!;
         availableWorker.busy = true;
         availableWorker.currentTaskId = task.taskId;
@@ -285,13 +290,13 @@ export class WorkerPool {
      * @param modelPaths 模型路径列表
      * @param onProgress 进度回调
      */
-    async renderBatch(modelPaths: string[], onProgress?: ProgressCallback): Promise<BatchRenderResult[]> {
+    async renderBatch(modelPaths: string[], onProgress?: ProgressCallback): Promise<IBatchRenderResult[]> {
         if (!this.initialized) {
             await this.initialize();
         }
 
-        const results: BatchRenderResult[] = [];
-        const progress: RenderProgress = {
+        const results: IBatchRenderResult[] = [];
+        const progress: IRenderProgress = {
             total: modelPaths.length,
             completed: 0,
             successful: 0,

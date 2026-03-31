@@ -6,17 +6,17 @@
 
 import { type Key } from '../utils/Key';
 import { type ResourceKey } from './ResourceKey';
-import { type Holder, HolderKind, type HolderOwner } from './Holder';
+import { type IHolder, HolderKind, type IHolderOwner } from './Holder';
 
 /**
  * 持有者引用
  */
-export class HolderReference<T> implements Holder<T> {
-    private readonly owner: HolderOwner<T>;
+export class HolderReference<T> implements IHolder<T> {
+    private readonly owner: IHolderOwner<T>;
     private _key: ResourceKey<T> | undefined;
     private _value: T | undefined;
 
-    constructor(owner: HolderOwner<T>, key?: ResourceKey<T>, value?: T) {
+    constructor(owner: IHolderOwner<T>, key?: ResourceKey<T>, value?: T) {
         this.owner = owner;
         this._key = key;
         this._value = value;
@@ -25,14 +25,14 @@ export class HolderReference<T> implements Holder<T> {
     /**
      * 创建持有者引用
      */
-    static create<T>(owner: HolderOwner<T>, registryKey: ResourceKey<T>): HolderReference<T> {
+    static create<T>(owner: IHolderOwner<T>, registryKey: ResourceKey<T>): HolderReference<T> {
         return new HolderReference<T>(owner, registryKey, undefined);
     }
 
     /**
      * 创建常量持有者引用
      */
-    static createConstant<T>(owner: HolderOwner<T>, registryKey: ResourceKey<T>, value: T): HolderReference<T> {
+    static createConstant<T>(owner: IHolderOwner<T>, registryKey: ResourceKey<T>, value: T): HolderReference<T> {
         return new ConstantHolderReference<T>(owner, registryKey, value);
     }
 
@@ -61,7 +61,7 @@ export class HolderReference<T> implements Holder<T> {
         return this.key().equals(key);
     }
 
-    serializableIn(owner: HolderOwner<T>): boolean {
+    serializableIn(owner: IHolderOwner<T>): boolean {
         return this.owner.canSerializeIn(owner);
     }
 
@@ -108,7 +108,7 @@ export class HolderReference<T> implements Holder<T> {
  * 常量持有者引用
  */
 class ConstantHolderReference<T> extends HolderReference<T> {
-    constructor(owner: HolderOwner<T>, key: ResourceKey<T>, value: T) {
+    constructor(owner: IHolderOwner<T>, key: ResourceKey<T>, value: T) {
         super(owner, key, value);
     }
 

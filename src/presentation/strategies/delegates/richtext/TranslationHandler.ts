@@ -2,8 +2,8 @@ import { CompletionItem, CompletionItemKind, MarkdownString, type CancellationTo
 import { type IDataStoreService } from '../../../../core/interfaces/IDataStoreService';
 import { type ITranslationKey } from '../../../../core/interfaces/ITranslation';
 import { type ILogger } from '../../../../core/interfaces/ILogger';
-import { type CompletionItemWithStrategy } from '../../../types/CompletionTypes';
-import { type TranslationMode, type TranslationValidationStatus, PATTERNS, COMMON_LANGUAGES } from './types';
+import { type ICompletionItemWithStrategy } from '../../../types/CompletionTypes';
+import { type TranslationMode, type ITranslationValidationStatus, PATTERNS, COMMON_LANGUAGES } from './types';
 
 /**
  * 翻译键补全处理器
@@ -74,10 +74,10 @@ export class TranslationHandler {
         const insertText = isTagMode ? `${translationKey.key}>` : translationKey.key;
         const detail =
             mode === 'i18n'
-                ? '🌐 Server-side translation'
+                ? 'Server-side translation'
                 : mode === 'l10n'
-                  ? '🌍 Client-side translation'
-                  : '🔑 Translation Key';
+                  ? 'Client-side translation'
+                  : 'Translation Key';
 
         const item = new CompletionItem(translationKey.key, CompletionItemKind.Value);
         item.insertText = insertText;
@@ -88,7 +88,7 @@ export class TranslationHandler {
         if (translationKey.value) {
             const md = new MarkdownString();
             md.isTrusted = true;
-            md.appendMarkdown(`## 🔑 \`${translationKey.key}\`\n\n`);
+            md.appendMarkdown(`## \`${translationKey.key}\`\n\n`);
             md.appendMarkdown(`**Language:** \`${translationKey.languageCode}\`\n\n`);
             md.appendMarkdown(`**Value:** ${translationKey.value}\n\n`);
             if (isTagMode) {
@@ -98,8 +98,8 @@ export class TranslationHandler {
             item.documentation = md;
         }
 
-        (item as CompletionItemWithStrategy)._strategy = this.strategyName;
-        (item as CompletionItemWithStrategy)._translationKey = translationKey.key;
+        (item as ICompletionItemWithStrategy)._strategy = this.strategyName;
+        (item as ICompletionItemWithStrategy)._translationKey = translationKey.key;
 
         return item;
     }
@@ -127,7 +127,7 @@ export class TranslationHandler {
 
             if (keys.length === 0) {
                 item.documentation = this.buildNotFoundDocumentation(keyName);
-                item.detail = `${item.detail} ⚠️ Not found`;
+                item.detail = `${item.detail}  Not found`;
                 return item;
             }
 
@@ -136,7 +136,7 @@ export class TranslationHandler {
 
             const issueCount = validationStatus.errors.length + validationStatus.warnings.length;
             if (issueCount > 0) {
-                item.detail = `${item.detail} ⚠️ ${issueCount} issue(s)`;
+                item.detail = `${item.detail}  ${issueCount} issue(s)`;
             }
 
             return item;
@@ -151,8 +151,8 @@ export class TranslationHandler {
     /**
      * 验证翻译键状态
      */
-    private validateTranslationKey(keys: ITranslationKey[]): TranslationValidationStatus {
-        const status: TranslationValidationStatus = {
+    private validateTranslationKey(keys: ITranslationKey[]): ITranslationValidationStatus {
+        const status: ITranslationValidationStatus = {
             hasErrors: false,
             hasWarnings: false,
             errors: [],
@@ -203,40 +203,40 @@ export class TranslationHandler {
     private buildDetailedDocumentation(
         keyName: string,
         keys: ITranslationKey[],
-        validationStatus: TranslationValidationStatus,
+        validationStatus: ITranslationValidationStatus,
     ): MarkdownString {
         const md = new MarkdownString();
         md.isTrusted = true;
 
-        md.appendMarkdown(`## 🔑 Translation Key: \`${keyName}\`\n\n`);
+        md.appendMarkdown(`## Translation Key: \`${keyName}\`\n\n`);
 
         if (validationStatus.hasErrors) {
-            md.appendMarkdown('### ❌ Errors\n\n');
+            md.appendMarkdown('###  Errors\n\n');
             validationStatus.errors.forEach((e) => md.appendMarkdown(`- ${e}\n`));
             md.appendMarkdown('\n');
         }
 
         if (validationStatus.hasWarnings) {
-            md.appendMarkdown('### ⚠️ Warnings\n\n');
+            md.appendMarkdown('###  Warnings\n\n');
             validationStatus.warnings.forEach((w) => md.appendMarkdown(`- ${w}\n`));
             md.appendMarkdown('\n');
         }
 
         if (validationStatus.missingLanguages.length > 0) {
-            md.appendMarkdown('### 💡 Missing Translations\n\n');
+            md.appendMarkdown('###  Missing Translations\n\n');
             validationStatus.missingLanguages.forEach((l) => md.appendMarkdown(`- \`${l}\`\n`));
             md.appendMarkdown('\n');
         }
 
-        md.appendMarkdown('### 🌍 Available Translations\n\n');
+        md.appendMarkdown('### Available Translations\n\n');
         const sortedKeys = [...keys].sort((a, b) => a.languageCode.localeCompare(b.languageCode));
         for (const key of sortedKeys) {
             const isEmpty = !key.value || key.value.trim() === '';
-            const icon = isEmpty ? '⚠️' : '✅';
+            const icon = isEmpty ? '' : '';
             md.appendMarkdown(`${icon} **\`${key.languageCode}\`**: ${key.value || '(empty)'}\n`);
         }
 
-        md.appendMarkdown('\n---\n\n### 📋 Usage\n\n');
+        md.appendMarkdown('\n---\n\n###  Usage\n\n');
         md.appendCodeblock(
             `# i18n (server-side)\nitem-name: "<i18n:${keyName}>"\n\n# l10n (client-side)\nitem-name: "<l10n:${keyName}>"`,
             'yaml',
@@ -252,13 +252,13 @@ export class TranslationHandler {
         const md = new MarkdownString();
         md.isTrusted = true;
 
-        md.appendMarkdown(`## ⚠️ Translation Key Not Found: \`${keyName}\`\n\n`);
+        md.appendMarkdown(`##  Translation Key Not Found: \`${keyName}\`\n\n`);
         md.appendMarkdown('This translation key does not exist in any translation files.\n\n');
-        md.appendMarkdown('### 💡 Suggestions\n\n');
+        md.appendMarkdown('###  Suggestions\n\n');
         md.appendMarkdown('1. **Create the translation key** in your translation files\n');
         md.appendMarkdown('2. **Check for typos** in the key name\n');
         md.appendMarkdown('3. **Verify the key exists** in the correct language files\n\n');
-        md.appendMarkdown('### 📋 Example\n\n');
+        md.appendMarkdown('###  Example\n\n');
         md.appendCodeblock(`translations:\n  en:\n    ${keyName}: "Your translation here"`, 'yaml');
 
         return md;

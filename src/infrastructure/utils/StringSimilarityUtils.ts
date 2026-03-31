@@ -15,4 +15,4 @@ export {
     filterAndSort,
 } from '../../core/utils/StringSimilarityUtils';
 
-export type { FindSimilarOptions, SimilarityResult } from '../../core/utils/StringSimilarityUtils';
+export type { IFindSimilarOptions, ISimilarityResult } from '../../core/utils/StringSimilarityUtils';

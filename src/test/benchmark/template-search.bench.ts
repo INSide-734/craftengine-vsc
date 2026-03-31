@@ -10,7 +10,7 @@ import { defaultBenchOptions, fastBenchOptions } from './bench-options';
 // 模拟模板数据
 // ========================================
 
-interface MockTemplate {
+interface IMockTemplate {
     id: string;
     name: string;
     usageCount: number;
@@ -22,10 +22,10 @@ interface MockTemplate {
  *
  * 模板名称使用 namespace:category/type 格式
  */
-function generateTemplates(count: number): MockTemplate[] {
+function generateTemplates(count: number): IMockTemplate[] {
     const categories = ['model', 'settings', 'sound', 'loot_table', 'recipe', 'block_state'];
     const types = ['generated', 'handheld', 'layered', 'ore', 'wood', 'stone', 'planks', 'button'];
-    const templates: MockTemplate[] = [];
+    const templates: IMockTemplate[] = [];
 
     for (let i = 0; i < count; i++) {
         const category = categories[i % categories.length];
@@ -53,17 +53,17 @@ const templates5000 = generateTemplates(5000);
 // 搜索算法
 // ========================================
 
-function prefixMatch(templates: MockTemplate[], prefix: string): MockTemplate[] {
+function prefixMatch(templates: IMockTemplate[], prefix: string): IMockTemplate[] {
     const lowerPrefix = prefix.toLowerCase();
     return templates.filter((t) => t.name.toLowerCase().startsWith(lowerPrefix));
 }
 
-// function containsMatch(templates: MockTemplate[], query: string): MockTemplate[] {
+// function containsMatch(templates: IMockTemplate[], query: string): IMockTemplate[] {
 //     const lowerQuery = query.toLowerCase();
 //     return templates.filter(t => t.name.toLowerCase().includes(lowerQuery));
 // }
 
-function fuzzyMatch(templates: MockTemplate[], query: string): MockTemplate[] {
+function fuzzyMatch(templates: IMockTemplate[], query: string): IMockTemplate[] {
     const lowerQuery = query.toLowerCase();
     return templates.filter((t) => {
         const name = t.name.toLowerCase();
@@ -77,7 +77,7 @@ function fuzzyMatch(templates: MockTemplate[], query: string): MockTemplate[] {
     });
 }
 
-function calculateScore(template: MockTemplate, query: string): number {
+function calculateScore(template: IMockTemplate, query: string): number {
     const name = template.name.toLowerCase();
     const lowerQuery = query.toLowerCase();
 
@@ -106,7 +106,7 @@ function calculateScore(template: MockTemplate, query: string): number {
     return score;
 }
 
-function sortByRelevance(templates: MockTemplate[], query: string): MockTemplate[] {
+function sortByRelevance(templates: IMockTemplate[], query: string): IMockTemplate[] {
     return [...templates].sort((a, b) => {
         const scoreA = calculateScore(a, query);
         const scoreB = calculateScore(b, query);
@@ -114,11 +114,11 @@ function sortByRelevance(templates: MockTemplate[], query: string): MockTemplate
     });
 }
 
-function sortByUsage(templates: MockTemplate[]): MockTemplate[] {
+function sortByUsage(templates: IMockTemplate[]): IMockTemplate[] {
     return [...templates].sort((a, b) => b.usageCount - a.usageCount);
 }
 
-function sortByName(templates: MockTemplate[]): MockTemplate[] {
+function sortByName(templates: IMockTemplate[]): IMockTemplate[] {
     return [...templates].sort((a, b) => a.name.localeCompare(b.name));
 }
 

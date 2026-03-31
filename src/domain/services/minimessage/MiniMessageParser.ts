@@ -13,9 +13,9 @@ import {
 } from '../../../core/constants/DiagnosticCodes';
 import { MINIMESSAGE_MESSAGES } from '../../../core/constants/DiagnosticMessages';
 import {
-    type MiniMessageTag,
-    type MiniMessageValidationError,
-    type MiniMessageValidationResult,
+    type IMiniMessageTag,
+    type IMiniMessageValidationError,
+    type IMiniMessageValidationResult,
     type IMiniMessageDataProvider,
 } from './MiniMessageTypes';
 
@@ -40,8 +40,8 @@ export class MiniMessageParser {
      * @param lineNum 行号
      * @returns 验证结果
      */
-    validateLine(line: string, lineNum: number): MiniMessageValidationResult {
-        const errors: MiniMessageValidationError[] = [];
+    validateLine(line: string, lineNum: number): IMiniMessageValidationResult {
+        const errors: IMiniMessageValidationError[] = [];
 
         // 提取行中的所有标签
         const tags = this.extractTags(line, lineNum);
@@ -60,8 +60,8 @@ export class MiniMessageParser {
     /**
      * 提取行中的所有标签
      */
-    extractTags(line: string, lineNum: number): MiniMessageTag[] {
-        const tags: MiniMessageTag[] = [];
+    extractTags(line: string, lineNum: number): IMiniMessageTag[] {
+        const tags: IMiniMessageTag[] = [];
 
         // 提取开始标签和自闭合标签
         let match: RegExpExecArray | null;
@@ -119,8 +119,8 @@ export class MiniMessageParser {
     /**
      * 验证单个标签
      */
-    private validateTag(tag: MiniMessageTag): MiniMessageValidationError[] {
-        const errors: MiniMessageValidationError[] = [];
+    private validateTag(tag: IMiniMessageTag): IMiniMessageValidationError[] {
+        const errors: IMiniMessageValidationError[] = [];
 
         if (tag.isClosing) {
             return errors;
@@ -169,8 +169,8 @@ export class MiniMessageParser {
     /**
      * 验证标签参数
      */
-    private validateTagArguments(tag: MiniMessageTag): MiniMessageValidationError[] {
-        const errors: MiniMessageValidationError[] = [];
+    private validateTagArguments(tag: IMiniMessageTag): IMiniMessageValidationError[] {
+        const errors: IMiniMessageValidationError[] = [];
 
         switch (tag.name) {
             case 'color':
@@ -287,9 +287,9 @@ export class MiniMessageParser {
     /**
      * 检查标签匹配
      */
-    private checkTagMatching(tags: MiniMessageTag[]): MiniMessageValidationError[] {
-        const errors: MiniMessageValidationError[] = [];
-        const openTags: MiniMessageTag[] = [];
+    private checkTagMatching(tags: IMiniMessageTag[]): IMiniMessageValidationError[] {
+        const errors: IMiniMessageValidationError[] = [];
+        const openTags: IMiniMessageTag[] = [];
 
         for (const tag of tags) {
             if (tag.isClosing) {
@@ -360,7 +360,7 @@ export class MiniMessageParser {
     /**
      * 查找匹配的开始标签
      */
-    private findMatchingOpenTag(openTags: MiniMessageTag[], tagName: string, isNegation: boolean): number {
+    private findMatchingOpenTag(openTags: IMiniMessageTag[], tagName: string, isNegation: boolean): number {
         for (let i = openTags.length - 1; i >= 0; i--) {
             const openTag = openTags[i];
             if (openTag.name === tagName) {
@@ -395,7 +395,7 @@ export class MiniMessageParser {
     /**
      * 创建验证错误
      */
-    private createError(tag: MiniMessageTag, message: string, codeInfo: { code: string }): MiniMessageValidationError {
+    private createError(tag: IMiniMessageTag, message: string, codeInfo: { code: string }): IMiniMessageValidationError {
         return {
             codeInfo,
             message,

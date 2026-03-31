@@ -9,12 +9,13 @@ import { GeometricalModel, LayeredModel, type Model } from '../model/Model';
 import { Scene } from '../scene/Scene';
 import { ItemDefinitionCache } from '../item/ItemDefinitionCache';
 import { ItemModelResolver } from '../item/ItemModelResolver';
-import type { RenderOptions, RenderContext, ModelJson } from '../types/index';
+import type { IRenderOptions, IModelJson } from '../types/index';
+import type { IRenderContext } from '../types/item-definition';
 
 /**
  * 默认渲染选项
  */
-const DEFAULT_OPTIONS: Required<RenderOptions> = {
+const DEFAULT_OPTIONS: Required<IRenderOptions> = {
     renderWidth: 512,
     renderHeight: 512,
     exportWidth: 128,
@@ -32,14 +33,14 @@ const DEFAULT_OPTIONS: Required<RenderOptions> = {
  * 将 Minecraft 方块/物品模型渲染为 2D 图像
  */
 export class MinecraftModelRenderer {
-    private readonly options: Required<RenderOptions>;
+    private readonly options: Required<IRenderOptions>;
     private readonly loader: ResourceLoader;
     private readonly modelCache: ModelCache;
     private readonly resolvedModelCache: ResolvedModelCache;
     private readonly itemDefinitionCache: ItemDefinitionCache;
     private readonly itemModelResolver: ItemModelResolver;
 
-    constructor(options: RenderOptions = {}) {
+    constructor(options: IRenderOptions = {}) {
         this.options = { ...DEFAULT_OPTIONS, ...options };
         this.loader = new ResourceLoader(this.options.resourcePacks, this.options.useInternalResources);
         // TextureCache 初始化后自动注册到 loader，通过 loader 间接使用
@@ -99,7 +100,7 @@ export class MinecraftModelRenderer {
      * @param modelJson 模型 JSON 定义
      * @returns PNG 格式的 Buffer
      */
-    async renderModelFromJson(modelJson: ModelJson): Promise<Buffer> {
+    async renderModelFromJson(modelJson: IModelJson): Promise<Buffer> {
         // 从 JSON 创建 UnresolvedModel
         const unresolved = await this.modelCache.createFromJson(modelJson);
         const model = await unresolved.resolve();
@@ -124,7 +125,7 @@ export class MinecraftModelRenderer {
      * // 渲染特定时间的时钟
      * await renderer.renderItem('clock', { timeOfDay: 0.5 });
      */
-    async renderItem(itemId: string, context: RenderContext = {}): Promise<Buffer> {
+    async renderItem(itemId: string, context: IRenderContext = {}): Promise<Buffer> {
         // 1. 尝试加载 1.21+ 物品定义
         const definition = this.itemDefinitionCache.get(itemId);
 
@@ -207,7 +208,7 @@ export class MinecraftModelRenderer {
     /**
      * 渲染物品并保存到文件
      */
-    async renderItemToFile(itemId: string, outputPath: string, context: RenderContext = {}): Promise<void> {
+    async renderItemToFile(itemId: string, outputPath: string, context: IRenderContext = {}): Promise<void> {
         const buffer = await this.renderItem(itemId, context);
         await fs.writeFile(outputPath, buffer);
     }

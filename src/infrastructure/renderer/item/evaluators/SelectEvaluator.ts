@@ -1,4 +1,4 @@
-import type { SelectItemModel, ItemModel, RenderContext } from '../../types/item-definition';
+import type { ISelectItemModel, IRenderContext, ItemModel } from '../../types/item-definition';
 
 /**
  * Select 条件求值器
@@ -7,7 +7,7 @@ export class SelectEvaluator {
     /**
      * 评估 select 模型，返回匹配的子模型
      */
-    evaluate(model: SelectItemModel, context: RenderContext): ItemModel | null {
+    evaluate(model: ISelectItemModel, context: IRenderContext): ItemModel | null {
         const propertyValue = this.getPropertyValue(model.property, model, context);
 
         if (propertyValue === null || propertyValue === undefined) {
@@ -29,7 +29,7 @@ export class SelectEvaluator {
     /**
      * 获取属性值
      */
-    private getPropertyValue(property: string, model: SelectItemModel, context: RenderContext): string | number | null {
+    private getPropertyValue(property: string, model: ISelectItemModel, context: IRenderContext): string | number | null {
         const prop = property.replace(/^minecraft:/, '');
 
         switch (prop) {

@@ -15,7 +15,7 @@ import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
 /**
  * 版本条件补全选项
  */
-export interface VersionConditionCompletionOptions {
+export interface IVersionConditionCompletionOptions {
     /** 是否为键名位置（键名需要添加冒号和换行） */
     isKeyPosition: boolean;
     /** 是否包含 default 键补全项 */
@@ -105,7 +105,7 @@ export class VersionConditionHelper {
      * @param options 补全选项
      * @returns 补全项数组
      */
-    async createCompletionItems(options: VersionConditionCompletionOptions): Promise<CompletionItem[]> {
+    async createCompletionItems(options: IVersionConditionCompletionOptions): Promise<CompletionItem[]> {
         // 确保配置已加载
         await this.ensureConfigLoaded();
 
@@ -247,8 +247,8 @@ export class VersionConditionHelper {
             const item = new CompletionItem(condition, CompletionItemKind.Value);
             item.insertText = new SnippetString(`${prefix}>=\${1|${ver.version}|}${suffix}`);
             item.detail = ver.isLatest
-                ? `📅 ${this.formatDate(ver.releaseTime)} ⭐ Latest`
-                : `📅 ${this.formatDate(ver.releaseTime)}`;
+                ? ` ${this.formatDate(ver.releaseTime)}  Latest`
+                : ` ${this.formatDate(ver.releaseTime)}`;
             item.documentation = new MarkdownString(`Version condition for **${ver.version}** and above`);
             item.sortText = `100-${index.toString().padStart(3, '0')}`;
             item.filterText = `$$ ${ver.version}`;

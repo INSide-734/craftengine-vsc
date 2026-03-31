@@ -8,7 +8,7 @@ import { HttpUtils } from '../utils/HttpUtils';
 /**
  * Mojang 版本清单 API 响应结构
  */
-interface VersionManifestResponse {
+interface IVersionManifestResponse {
     latest: {
         release: string;
         snapshot: string;
@@ -274,7 +274,7 @@ export class MinecraftVersionService implements IMinecraftVersionService {
      * 从指定 URL 获取版本列表
      */
     private async fetchVersionsFromUrl(url: string): Promise<IMinecraftVersion[]> {
-        const data = await HttpUtils.fetchJson<VersionManifestResponse>(url, this.requestTimeout);
+        const data = await HttpUtils.fetchJson<IVersionManifestResponse>(url, this.requestTimeout);
 
         // 只保留正式版，过滤掉 snapshot、old_beta、old_alpha
         const releaseVersions = data.versions

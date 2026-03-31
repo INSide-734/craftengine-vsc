@@ -2,12 +2,12 @@ import sharp from 'sharp';
 import { ResourceId } from '../resource/ResourceId';
 import { type ResourceLoader } from '../resource/ResourceLoader';
 import { LRUCache } from '../../../../core/utils/LRUCache';
-import type { ImageData } from '../../types/index';
+import type { IImageData } from '../../types/index';
 
 /**
  * 纹理缓存选项
  */
-interface TextureOptions {
+interface ITextureOptions {
     id: string;
     rotation: number;
     fromX: number;
@@ -26,14 +26,14 @@ export class TextureCache {
     private static readonly DEFAULT_TEXTURE_CACHE_SIZE = 500;
 
     // 原始图像缓存（LRU）
-    private readonly imageCache: LRUCache<string, ImageData>;
+    private readonly imageCache: LRUCache<string, IImageData>;
     // 处理后的纹理缓存（LRU）
-    private readonly textureCache: LRUCache<string, ImageData>;
+    private readonly textureCache: LRUCache<string, IImageData>;
 
     /**
      * 空纹理（1x1 透明）
      */
-    static readonly EMPTY_TEXTURE: ImageData = {
+    static readonly EMPTY_TEXTURE: IImageData = {
         width: 1,
         height: 1,
         data: Buffer.from([0, 0, 0, 0]), // RGBA
@@ -65,7 +65,7 @@ export class TextureCache {
         fromY: number,
         toX: number,
         toY: number,
-    ): Promise<ImageData> {
+    ): Promise<IImageData> {
         // 检查纹理路径是否有效（跳过未解析的纹理变量）
         if (id.startsWith('#')) {
             return TextureCache.EMPTY_TEXTURE;
@@ -108,7 +108,7 @@ export class TextureCache {
     /**
      * 获取原始图像
      */
-    private async getRawImage(id: ResourceId): Promise<ImageData> {
+    private async getRawImage(id: ResourceId): Promise<IImageData> {
         const cached = this.imageCache.get(id.key);
         if (cached) {
             return cached;
@@ -117,7 +117,7 @@ export class TextureCache {
         const buffer = this.loader.getTextureBuffer(id);
         const { data, info } = await sharp(buffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
 
-        const image: ImageData = {
+        const image: IImageData = {
             width: info.width,
             height: info.height,
             data,
@@ -130,7 +130,7 @@ export class TextureCache {
     /**
      * 裁剪图像（带边界检查）
      */
-    private async cropImage(img: ImageData, x: number, y: number, w: number, h: number): Promise<ImageData> {
+    private async cropImage(img: IImageData, x: number, y: number, w: number, h: number): Promise<IImageData> {
         // 边界检查和修正
         const safeX = Math.max(0, Math.min(x, img.width - 1));
         const safeY = Math.max(0, Math.min(y, img.height - 1));
@@ -156,7 +156,7 @@ export class TextureCache {
      * 应用 UV 坐标截取
      * 直接移植 Kotlin 的 getWithUV 算法
      */
-    private async applyUV(img: ImageData, fromX: number, fromY: number, toX: number, toY: number): Promise<ImageData> {
+    private async applyUV(img: IImageData, fromX: number, fromY: number, toX: number, toY: number): Promise<IImageData> {
         // 计算像素坐标
         const x1 = Math.ceil(fromX * img.width);
         const y1 = Math.ceil(fromY * img.height);
@@ -200,7 +200,7 @@ export class TextureCache {
     /**
      * 旋转图像
      */
-    private async rotateImage(img: ImageData, degrees: number): Promise<ImageData> {
+    private async rotateImage(img: IImageData, degrees: number): Promise<IImageData> {
         const { data, info } = await sharp(img.data, {
             raw: { width: img.width, height: img.height, channels: 4 },
         })
@@ -214,7 +214,7 @@ export class TextureCache {
     /**
      * 生成缓存键
      */
-    private getCacheKey(options: TextureOptions): string {
+    private getCacheKey(options: ITextureOptions): string {
         return `${options.id}:${options.rotation}:${options.fromX}:${options.fromY}:${options.toX}:${options.toY}`;
     }
 }

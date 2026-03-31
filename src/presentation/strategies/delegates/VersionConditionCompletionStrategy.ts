@@ -12,7 +12,7 @@ import {
 import { type ILogger } from '../../../core/interfaces/ILogger';
 import { type IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
-import { type CompletionItemWithStrategy } from '../../types/CompletionTypes';
+import { type ICompletionItemWithStrategy } from '../../types/CompletionTypes';
 
 /**
  * 补全阶段类型
@@ -22,7 +22,7 @@ type CompletionStageType = 'operator' | 'version' | 'range-end' | 'complete' | '
 /**
  * 补全阶段信息
  */
-interface CompletionStage {
+interface ICompletionStage {
     /** 阶段类型 */
     type: CompletionStageType;
     /** 操作符（>=, <, <=, =, 或空表示范围模式） */
@@ -36,7 +36,7 @@ interface CompletionStage {
 /**
  * 版本条件操作符定义
  */
-interface VersionOperator {
+interface IVersionOperator {
     /** 操作符符号 */
     symbol: string;
     /** 显示标签 */
@@ -52,7 +52,7 @@ interface VersionOperator {
 /**
  * 版本条件操作符列表
  */
-const VERSION_OPERATORS: VersionOperator[] = [
+const VERSION_OPERATORS: IVersionOperator[] = [
     { symbol: '>=', label: '$$>=', description: 'Greater than or equal', common: true, example: '$$>=1.21.4' },
     { symbol: '<', label: '$$<', description: 'Less than', common: true, example: '$$<1.21.2' },
     { symbol: '<=', label: '$$<=', description: 'Less than or equal', example: '$$<=1.20.4' },
@@ -146,6 +146,7 @@ export class VersionConditionCompletionStrategy implements ICompletionStrategy {
                     return await this.provideVersionCompletions(stage.operator || '', stage.partialVersion);
 
                 case 'range-end':
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     return await this.provideRangeEndCompletions(stage.startVersion!);
 
                 case 'complete':
@@ -169,7 +170,7 @@ export class VersionConditionCompletionStrategy implements ICompletionStrategy {
      * - complete: 版本条件已完成
      * - none: 不在版本条件上下文中
      */
-    private detectCompletionStage(linePrefix: string): CompletionStage {
+    private detectCompletionStage(linePrefix: string): ICompletionStage {
         // 完整版本条件（已完成）
         // 匹配: "$$>=1.21.4" 或 "$$1.20.1~1.21.3" (后面没有更多输入)
         if (
@@ -226,7 +227,7 @@ export class VersionConditionCompletionStrategy implements ICompletionStrategy {
      */
     private provideOperatorCompletions(): ICompletionResult {
         const items = VERSION_OPERATORS.map((op, index) => {
-            const item = new CompletionItem(op.label, CompletionItemKind.Operator) as CompletionItemWithStrategy;
+            const item = new CompletionItem(op.label, CompletionItemKind.Operator) as ICompletionItemWithStrategy;
 
             item.detail = op.description;
 
@@ -234,7 +235,7 @@ export class VersionConditionCompletionStrategy implements ICompletionStrategy {
             md.appendMarkdown(`## ${op.description}\n\n`);
             md.appendMarkdown(`**Example:** \`${op.example}\`\n\n`);
             if (op.symbol === '') {
-                md.appendMarkdown('> 📌 Use this format to specify a version range (both endpoints included)\n');
+                md.appendMarkdown('> Use this format to specify a version range (both endpoints included)\n');
             }
             item.documentation = md;
 
@@ -278,12 +279,12 @@ export class VersionConditionCompletionStrategy implements ICompletionStrategy {
         }
 
         const items = filteredVersions.map((ver, index) => {
-            const item = new CompletionItem(ver.version, CompletionItemKind.Constant) as CompletionItemWithStrategy;
+            const item = new CompletionItem(ver.version, CompletionItemKind.Constant) as ICompletionItemWithStrategy;
 
             // 设置详情
-            let detail = `📅 ${this.formatDate(ver.releaseTime)}`;
+            let detail = ` ${this.formatDate(ver.releaseTime)}`;
             if (ver.isLatest) {
-                detail += ' ⭐ Latest';
+                detail += '  Latest';
             }
             item.detail = detail;
 
@@ -329,18 +330,18 @@ export class VersionConditionCompletionStrategy implements ICompletionStrategy {
         );
 
         const items = filteredVersions.map((ver, index) => {
-            const item = new CompletionItem(ver.version, CompletionItemKind.Constant) as CompletionItemWithStrategy;
+            const item = new CompletionItem(ver.version, CompletionItemKind.Constant) as ICompletionItemWithStrategy;
 
-            let detail = `📅 ${this.formatDate(ver.releaseTime)}`;
+            let detail = ` ${this.formatDate(ver.releaseTime)}`;
             if (ver.isLatest) {
-                detail += ' ⭐ Latest';
+                detail += '  Latest';
             }
             item.detail = detail;
 
             // 创建文档
             const md = new MarkdownString();
             md.appendMarkdown(`## Version Range End\n\n`);
-            md.appendMarkdown(`| 🏷️ Property | 📄 Value |\n`);
+            md.appendMarkdown(`|  Property |  Value |\n`);
             md.appendMarkdown(`|:------------|:---------|\n`);
             md.appendMarkdown(`| **Start** | \`${startVersion}\` |\n`);
             md.appendMarkdown(`| **End** | \`${ver.version}\` |\n`);
@@ -377,7 +378,7 @@ export class VersionConditionCompletionStrategy implements ICompletionStrategy {
 
         md.appendMarkdown(`## Minecraft ${ver.version}\n\n`);
 
-        md.appendMarkdown(`| 🏷️ Property | 📄 Value |\n`);
+        md.appendMarkdown(`|  Property |  Value |\n`);
         md.appendMarkdown(`|:------------|:---------|\n`);
         md.appendMarkdown(`| **Release Date** | ${this.formatDate(ver.releaseTime)} |\n`);
 
@@ -387,7 +388,7 @@ export class VersionConditionCompletionStrategy implements ICompletionStrategy {
             md.appendMarkdown(`**Result:** \`$$${operator}${ver.version}\`\n`);
         } else {
             md.appendMarkdown(`**Result:** \`$$${ver.version}~[end_version]\`\n`);
-            md.appendMarkdown(`\n> 💡 Type \`~\` after this version to specify the range end\n`);
+            md.appendMarkdown(`\n>  Type \`~\` after this version to specify the range end\n`);
         }
 
         return md;

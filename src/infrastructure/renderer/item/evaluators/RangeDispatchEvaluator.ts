@@ -1,4 +1,4 @@
-import type { RangeDispatchItemModel, ItemModel, RenderContext } from '../../types/item-definition';
+import type { IRangeDispatchItemModel, IRenderContext, ItemModel } from '../../types/item-definition';
 
 /**
  * RangeDispatch 条件求值器
@@ -7,7 +7,7 @@ export class RangeDispatchEvaluator {
     /**
      * 评估范围分发，返回匹配的模型
      */
-    evaluate(model: RangeDispatchItemModel, context: RenderContext): ItemModel | null {
+    evaluate(model: IRangeDispatchItemModel, context: IRenderContext): ItemModel | null {
         const value = this.getPropertyValue(model.property, model, context);
 
         if (value === null) {
@@ -33,7 +33,7 @@ export class RangeDispatchEvaluator {
     /**
      * 获取属性值
      */
-    private getPropertyValue(property: string, _model: RangeDispatchItemModel, context: RenderContext): number | null {
+    private getPropertyValue(property: string, _model: IRangeDispatchItemModel, context: IRenderContext): number | null {
         const prop = property.replace(/^minecraft:/, '');
 
         switch (prop) {

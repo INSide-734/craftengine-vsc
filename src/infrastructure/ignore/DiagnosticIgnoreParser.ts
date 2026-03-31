@@ -10,15 +10,15 @@ import { type IDiagnosticIgnoreParser } from '../../core/interfaces/IDiagnosticP
 const IGNORE_FILE_NAMES = ['.craftignore', '.gitignore'] as const;
 
 /** 缓存条目 */
-interface IgnoreCacheEntry {
+interface IIgnoreCacheEntry {
     /** 规则列表 */
-    rules: IgnoreRule[];
+    rules: IIgnoreRule[];
     /** 各忽略文件的修改时间（key 为文件名） */
     mtimes: Map<string, number>;
 }
 
 /** 解析后的忽略规则 */
-interface IgnoreRule {
+interface IIgnoreRule {
     /** 原始模式字符串 */
     pattern: string;
     /** 编译后的正则表达式 */
@@ -45,7 +45,7 @@ interface IgnoreRule {
  */
 export class DiagnosticIgnoreParser implements IDiagnosticIgnoreParser {
     /** 每个工作区文件夹的规则缓存（key 为文件夹 fsPath） */
-    private readonly cache = new Map<string, IgnoreCacheEntry>();
+    private readonly cache = new Map<string, IIgnoreCacheEntry>();
 
     /**
      * 检查文件是否应该被忽略
@@ -86,7 +86,7 @@ export class DiagnosticIgnoreParser implements IDiagnosticIgnoreParser {
      * @param folderPath 工作区文件夹路径
      * @returns 解析后的忽略规则列表
      */
-    private getRulesForFolder(folderPath: string): IgnoreRule[] {
+    private getRulesForFolder(folderPath: string): IIgnoreRule[] {
         // 收集各忽略文件的 mtime，用于缓存校验
         const currentMtimes = new Map<string, number>();
         for (const fileName of IGNORE_FILE_NAMES) {
@@ -112,7 +112,7 @@ export class DiagnosticIgnoreParser implements IDiagnosticIgnoreParser {
         }
 
         // 按优先级从低到高加载规则（.gitignore 先，.craftignore 后）
-        const allRules: IgnoreRule[] = [];
+        const allRules: IIgnoreRule[] = [];
         for (const fileName of [...IGNORE_FILE_NAMES].reverse()) {
             if (currentMtimes.has(fileName)) {
                 const filePath = path.join(folderPath, fileName);
@@ -146,7 +146,7 @@ export class DiagnosticIgnoreParser implements IDiagnosticIgnoreParser {
      * @param filePath .craftignore 文件路径
      * @returns 解析后的规则列表
      */
-    private parseIgnoreFile(filePath: string): IgnoreRule[] {
+    private parseIgnoreFile(filePath: string): IIgnoreRule[] {
         let content: string;
         try {
             content = fs.readFileSync(filePath, 'utf-8');
@@ -154,7 +154,7 @@ export class DiagnosticIgnoreParser implements IDiagnosticIgnoreParser {
             return [];
         }
 
-        const rules: IgnoreRule[] = [];
+        const rules: IIgnoreRule[] = [];
 
         for (const rawLine of content.split(/\r?\n/)) {
             const line = rawLine.trim();
@@ -179,7 +179,7 @@ export class DiagnosticIgnoreParser implements IDiagnosticIgnoreParser {
      * @param line 去除首尾空白后的行内容
      * @returns 解析后的规则，如果无法解析则返回 undefined
      */
-    private parseLine(line: string): IgnoreRule | undefined {
+    private parseLine(line: string): IIgnoreRule | undefined {
         let pattern = line;
         let negated = false;
         let directoryOnly = false;
@@ -296,7 +296,7 @@ export class DiagnosticIgnoreParser implements IDiagnosticIgnoreParser {
      * @param rules 忽略规则列表
      * @returns 是否应该忽略
      */
-    private matchRules(relativePath: string, rules: IgnoreRule[]): boolean {
+    private matchRules(relativePath: string, rules: IIgnoreRule[]): boolean {
         let ignored = false;
 
         for (const rule of rules) {

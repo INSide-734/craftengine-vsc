@@ -266,7 +266,7 @@ export class TextDocument {
         return this._content.substring(startOffset, endOffset);
     }
 
-    lineAt(line: number | Position): TextLine {
+    lineAt(line: number | Position): ITextLine {
         const lineNumber = typeof line === 'number' ? line : line.line;
         const text = this._lines[lineNumber] || '';
         return {
@@ -354,7 +354,7 @@ export class TextDocument {
 /**
  * TextLine 接口
  */
-export interface TextLine {
+export interface ITextLine {
     readonly lineNumber: number;
     readonly text: string;
     readonly range: Range;
@@ -444,7 +444,7 @@ export class CompletionItem {
     insertText?: string | SnippetString;
     range?: Range | { inserting: Range; replacing: Range };
     commitCharacters?: string[];
-    command?: Command;
+    command?: ICommand;
 
     constructor(label: string | { label: string }, kind?: CompletionItemKind) {
         this.label = label;
@@ -590,7 +590,7 @@ export class CodeAction {
     diagnostics?: Diagnostic[];
     isPreferred?: boolean;
     edit?: WorkspaceEdit;
-    command?: Command;
+    command?: ICommand;
 
     constructor(title: string, kind?: CodeActionKind) {
         this.title = title;
@@ -662,7 +662,7 @@ export class TextEdit {
 // 命令
 // ========================================
 
-export interface Command {
+export interface ICommand {
     title: string;
     command: string;
     tooltip?: string;
@@ -731,14 +731,14 @@ export class Disposable {
 // 状态栏
 // ========================================
 
-export interface StatusBarItem {
+export interface IStatusBarItem {
     alignment: StatusBarAlignment;
     priority?: number;
     text: string;
     tooltip?: string;
     color?: string;
     backgroundColor?: ThemeColor;
-    command?: string | Command;
+    command?: string | ICommand;
     accessibilityInformation?: { label: string; role?: string };
     name?: string;
     show(): void;
@@ -757,7 +757,7 @@ export class ThemeColor {
 // 配置
 // ========================================
 
-export interface WorkspaceConfiguration {
+export interface IWorkspaceConfiguration {
     get<T>(section: string): T | undefined;
     get<T>(section: string, defaultValue: T): T;
     has(section: string): boolean;
@@ -775,13 +775,13 @@ export enum ConfigurationTarget {
 // 取消令牌
 // ========================================
 
-export interface CancellationToken {
+export interface ICancellationToken {
     isCancellationRequested: boolean;
     onCancellationRequested: Event<void>;
 }
 
 export class CancellationTokenSource {
-    token: CancellationToken;
+    token: ICancellationToken;
     private _isCancelled = false;
     private _emitter = new EventEmitter<void>();
 
@@ -809,7 +809,7 @@ export class CancellationTokenSource {
 // 输出通道
 // ========================================
 
-export interface OutputChannel {
+export interface IOutputChannel {
     name: string;
     append(value: string): void;
     appendLine(value: string): void;
@@ -833,11 +833,11 @@ export enum ViewColumn {
 // ========================================
 
 export const workspace = {
-    workspaceFolders: [] as WorkspaceFolder[],
+    workspaceFolders: [] as IWorkspaceFolder[],
 
-    getWorkspaceFolder: vi.fn((_uri: Uri): WorkspaceFolder | undefined => undefined),
+    getWorkspaceFolder: vi.fn((_uri: Uri): IWorkspaceFolder | undefined => undefined),
 
-    getConfiguration: vi.fn((section?: string): WorkspaceConfiguration => {
+    getConfiguration: vi.fn((section?: string): IWorkspaceConfiguration => {
         const configStore: Record<string, any> = {};
         return {
             get: vi.fn(<T>(key: string, defaultValue?: T): T | undefined => {
@@ -884,7 +884,7 @@ export const workspace = {
     },
 };
 
-export interface WorkspaceFolder {
+export interface IWorkspaceFolder {
     readonly uri: Uri;
     readonly name: string;
     readonly index: number;
@@ -902,7 +902,7 @@ export const window = {
     showInputBox: vi.fn(() => Promise.resolve(undefined)),
 
     createOutputChannel: vi.fn(
-        (name: string): OutputChannel => ({
+        (name: string): IOutputChannel => ({
             name,
             append: vi.fn(),
             appendLine: vi.fn(),
@@ -914,7 +914,7 @@ export const window = {
     ),
 
     createStatusBarItem: vi.fn(
-        (alignment?: StatusBarAlignment, priority?: number): StatusBarItem => ({
+        (alignment?: StatusBarAlignment, priority?: number): IStatusBarItem => ({
             alignment: alignment ?? StatusBarAlignment.Left,
             priority,
             text: '',
@@ -924,32 +924,32 @@ export const window = {
         }),
     ),
 
-    activeTextEditor: undefined as TextEditor | undefined,
-    visibleTextEditors: [] as TextEditor[],
+    activeTextEditor: undefined as ITextEditor | undefined,
+    visibleTextEditors: [] as ITextEditor[],
     onDidChangeActiveTextEditor: vi.fn(() => new Disposable(() => {})),
     onDidChangeVisibleTextEditors: vi.fn(() => new Disposable(() => {})),
     onDidChangeTextEditorSelection: vi.fn(() => new Disposable(() => {})),
 };
 
-export interface TextEditor {
+export interface ITextEditor {
     readonly document: TextDocument;
     selection: Selection;
     selections: readonly Selection[];
     readonly visibleRanges: readonly Range[];
-    readonly options: TextEditorOptions;
-    edit(callback: (editBuilder: TextEditorEdit) => void): Thenable<boolean>;
+    readonly options: ITextEditorOptions;
+    edit(callback: (editBuilder: ITextEditorEdit) => void): Thenable<boolean>;
     insertSnippet(snippet: SnippetString, location?: Position | Range): Thenable<boolean>;
     revealRange(range: Range, revealType?: TextEditorRevealType): void;
 }
 
-export interface TextEditorOptions {
+export interface ITextEditorOptions {
     tabSize?: number | string;
     insertSpaces?: boolean | string;
     cursorStyle?: TextEditorCursorStyle;
     lineNumbers?: TextEditorLineNumbersStyle;
 }
 
-export interface TextEditorEdit {
+export interface ITextEditorEdit {
     replace(location: Position | Range | Selection, value: string): void;
     insert(location: Position, value: string): void;
     delete(location: Range | Selection): void;

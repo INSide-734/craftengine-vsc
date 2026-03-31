@@ -11,7 +11,7 @@
  */
 
 // 从 Core 层重导出异步初始化器
-export { AsyncInitializer, createAsyncInitializer } from '../../core/utils';
+export { IAsyncInitializer, createAsyncInitializer } from '../../core/utils';
 
 // 从独立文件重导出类
 export { Debouncer } from './Debouncer';
@@ -71,7 +71,7 @@ export function withTimeout<T>(
 /**
  * 重试选项
  */
-export interface RetryOptions {
+export interface IRetryOptions {
     /** 最大重试次数，默认为 3 */
     maxRetries?: number;
     /** 重试间隔（毫秒），默认为 1000 */
@@ -93,7 +93,7 @@ export interface RetryOptions {
  * @param options - 重试选项
  * @returns Promise
  */
-export async function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
+export async function retry<T>(fn: () => Promise<T>, options: IRetryOptions = {}): Promise<T> {
     const {
         maxRetries = 3,
         retryDelay = 1000,

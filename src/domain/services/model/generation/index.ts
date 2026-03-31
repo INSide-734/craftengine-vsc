@@ -5,3 +5,6 @@
 export * from './ModelGeneration';
 export * from './ModelGenerator';
 export * from './AbstractModelGenerator';
+export * from './ModelPathExtractor';
+export * from './ModelJsonBuilder';
+export * from './SimplifiedConfigConverter';

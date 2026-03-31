@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { type JSONSchema7 } from 'json-schema';
-import { type JsonSchemaNode } from '../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../core/types/JsonSchemaTypes';
 import {
     type ISchemaParser,
     type ISchemaParseResult,
@@ -44,6 +44,7 @@ export class SchemaLoader implements ISchemaParser {
 
         // 检查缓存（使用绝对路径作为键）
         if (this.schemaCache.has(filePath)) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             return this.schemaCache.get(filePath)!;
         }
 
@@ -59,7 +60,7 @@ export class SchemaLoader implements ISchemaParser {
             const resolved = await this.resolveSchema(schema, schemaDir);
 
             // 提取依赖
-            const dependencies = this.extractDependencies(schema as unknown as JsonSchemaNode);
+            const dependencies = this.extractDependencies(schema as unknown as IJsonSchemaNode);
 
             const result: ISchemaParseResult = {
                 schema,
@@ -113,14 +114,14 @@ export class SchemaLoader implements ISchemaParser {
                 // 将外部 schema 的 $defs 合并到根 schema，使内部引用能正确解析
                 if (rootSchema && externalSchema.resolved.$defs) {
                     this.mergeDefs(
-                        rootSchema as unknown as JsonSchemaNode,
-                        externalSchema.resolved.$defs as Record<string, JsonSchemaNode>,
+                        rootSchema as unknown as IJsonSchemaNode,
+                        externalSchema.resolved.$defs as Record<string, IJsonSchemaNode>,
                     );
                 }
-                if (rootSchema && (externalSchema.resolved as JsonSchemaNode).definitions) {
+                if (rootSchema && (externalSchema.resolved as IJsonSchemaNode).definitions) {
                     this.mergeDefs(
-                        rootSchema as unknown as JsonSchemaNode,
-                        (externalSchema.resolved as JsonSchemaNode).definitions as Record<string, JsonSchemaNode>,
+                        rootSchema as unknown as IJsonSchemaNode,
+                        (externalSchema.resolved as IJsonSchemaNode).definitions as Record<string, IJsonSchemaNode>,
                         'definitions',
                     );
                 }
@@ -296,7 +297,7 @@ export class SchemaLoader implements ISchemaParser {
         const resolved = JSON.parse(JSON.stringify(schema)) as JSONSchema7;
 
         // 传递顶层 schema 作为内部引用的基础
-        await this.resolveSchemaRefs(resolved as unknown as JsonSchemaNode, resolved, baseSchemaPath);
+        await this.resolveSchemaRefs(resolved as unknown as IJsonSchemaNode, resolved, baseSchemaPath);
 
         return resolved;
     }
@@ -313,7 +314,7 @@ export class SchemaLoader implements ISchemaParser {
      * @param baseSchemaPath 当前 schema 文件的目录路径
      */
     private async resolveSchemaRefs(
-        node: JsonSchemaNode,
+        node: IJsonSchemaNode,
         rootSchema: JSONSchema7,
         baseSchemaPath?: string,
     ): Promise<void> {
@@ -344,12 +345,12 @@ export class SchemaLoader implements ISchemaParser {
 
                 // 将外部 schema 的 $defs 合并到根 schema，使内部引用能正确解析
                 if (resolvedCopy.$defs) {
-                    this.mergeDefs(rootSchema as unknown as JsonSchemaNode, resolvedCopy.$defs);
+                    this.mergeDefs(rootSchema as unknown as IJsonSchemaNode, resolvedCopy.$defs);
                     delete resolvedCopy.$defs;
                 }
                 // 同样处理 definitions（JSON Schema draft-07 的写法）
                 if (resolvedCopy.definitions) {
-                    this.mergeDefs(rootSchema as unknown as JsonSchemaNode, resolvedCopy.definitions, 'definitions');
+                    this.mergeDefs(rootSchema as unknown as IJsonSchemaNode, resolvedCopy.definitions, 'definitions');
                     delete resolvedCopy.definitions;
                 }
 
@@ -369,11 +370,11 @@ export class SchemaLoader implements ISchemaParser {
             if (Array.isArray(value)) {
                 for (const item of value) {
                     if (item && typeof item === 'object') {
-                        await this.resolveSchemaRefs(item as JsonSchemaNode, rootSchema, baseSchemaPath);
+                        await this.resolveSchemaRefs(item as IJsonSchemaNode, rootSchema, baseSchemaPath);
                     }
                 }
             } else if (typeof value === 'object' && value !== null) {
-                await this.resolveSchemaRefs(value as JsonSchemaNode, rootSchema, baseSchemaPath);
+                await this.resolveSchemaRefs(value as IJsonSchemaNode, rootSchema, baseSchemaPath);
             }
         }
     }
@@ -384,7 +385,7 @@ export class SchemaLoader implements ISchemaParser {
      * @param defs 要合并的定义
      * @param key 定义的键名（$defs 或 definitions）
      */
-    private mergeDefs(rootSchema: JsonSchemaNode, defs: Record<string, unknown>, key: string = '$defs'): void {
+    private mergeDefs(rootSchema: IJsonSchemaNode, defs: Record<string, unknown>, key: string = '$defs'): void {
         if (!rootSchema[key]) {
             rootSchema[key] = {};
         }
@@ -419,7 +420,7 @@ export class SchemaLoader implements ISchemaParser {
     /**
      * 提取 schema 依赖
      */
-    private extractDependencies(schema: JsonSchemaNode, deps: Set<string> = new Set()): string[] {
+    private extractDependencies(schema: IJsonSchemaNode, deps: Set<string> = new Set()): string[] {
         if (!schema || typeof schema !== 'object') {
             return Array.from(deps);
         }
@@ -439,11 +440,11 @@ export class SchemaLoader implements ISchemaParser {
             if (Array.isArray(value)) {
                 value.forEach((item: unknown) => {
                     if (item && typeof item === 'object') {
-                        this.extractDependencies(item as JsonSchemaNode, deps);
+                        this.extractDependencies(item as IJsonSchemaNode, deps);
                     }
                 });
             } else if (typeof value === 'object' && value !== null) {
-                this.extractDependencies(value as JsonSchemaNode, deps);
+                this.extractDependencies(value as IJsonSchemaNode, deps);
             }
         }
 

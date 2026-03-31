@@ -1,5 +1,5 @@
 import { type Vector3d } from '../../vector/Vector3d';
-import type { Ray } from './Ray';
+import type { IRay } from './Ray';
 
 /**
  * 相机类
@@ -12,7 +12,7 @@ export class Camera {
     readonly w: number;
     readonly h: number;
 
-    private readonly rayCache: Ray[][];
+    private readonly rayCache: IRay[][];
 
     constructor(
         public readonly origin: Vector3d,
@@ -38,8 +38,8 @@ export class Camera {
     /**
      * 创建光线缓存
      */
-    private createRayCache(width: number, height: number): Ray[][] {
-        const cache: Ray[][] = [];
+    private createRayCache(width: number, height: number): IRay[][] {
+        const cache: IRay[][] = [];
         for (let x = 0; x < width; x++) {
             cache[x] = [];
             for (let y = 0; y < height; y++) {
@@ -52,14 +52,14 @@ export class Camera {
     /**
      * 获取指定像素的光线
      */
-    getRay(pixelX: number, pixelY: number): Ray {
+    getRay(pixelX: number, pixelY: number): IRay {
         return this.rayCache[pixelX][pixelY];
     }
 
     /**
      * 创建从相机原点到指定像素的光线
      */
-    private makeRay(pixelX: number, pixelY: number, imageWidth: number, imageHeight: number): Ray {
+    private makeRay(pixelX: number, pixelY: number, imageWidth: number, imageHeight: number): IRay {
         // 归一化像素坐标到 [-1, 1]
         const x = (2.0 * pixelX) / imageWidth - 1.0;
         const y = (2.0 * (imageHeight - pixelY)) / imageHeight - 1.0;

@@ -103,7 +103,7 @@ export function calculateSimilarity(s1: string, s2: string, caseSensitive: boole
 /**
  * 相似项搜索选项
  */
-export interface FindSimilarOptions {
+export interface IFindSimilarOptions {
     /** 最小相似度阈值，默认为 0.5 */
     threshold?: number;
     /** 返回的最大结果数，默认为 5 */
@@ -115,7 +115,7 @@ export interface FindSimilarOptions {
 /**
  * 相似项搜索结果
  */
-export interface SimilarityResult<T> {
+export interface ISimilarityResult<T> {
     /** 原始项 */
     item: T;
     /** 用于比较的字符串 */
@@ -144,11 +144,11 @@ export interface SimilarityResult<T> {
 export function findSimilarStrings(
     target: string,
     candidates: string[],
-    options: FindSimilarOptions = {},
-): SimilarityResult<string>[] {
+    options: IFindSimilarOptions = {},
+): ISimilarityResult<string>[] {
     const { threshold = 0.5, maxResults = 5, caseSensitive = false } = options;
 
-    const results: SimilarityResult<string>[] = [];
+    const results: ISimilarityResult<string>[] = [];
 
     for (const candidate of candidates) {
         const similarity = calculateSimilarity(target, candidate, caseSensitive);
@@ -194,11 +194,11 @@ export function findSimilarItems<T>(
     target: string,
     candidates: T[],
     valueExtractor: (item: T) => string,
-    options: FindSimilarOptions = {},
-): SimilarityResult<T>[] {
+    options: IFindSimilarOptions = {},
+): ISimilarityResult<T>[] {
     const { threshold = 0.5, maxResults = 5, caseSensitive = false } = options;
 
-    const results: SimilarityResult<T>[] = [];
+    const results: ISimilarityResult<T>[] = [];
 
     for (const candidate of candidates) {
         const value = valueExtractor(candidate);
@@ -239,8 +239,8 @@ export function findSimilarItems<T>(
 export function getBestMatch(
     target: string,
     candidates: string[],
-    options: Omit<FindSimilarOptions, 'maxResults'> = {},
-): SimilarityResult<string> | null {
+    options: Omit<IFindSimilarOptions, 'maxResults'> = {},
+): ISimilarityResult<string> | null {
     const results = findSimilarStrings(target, candidates, {
         ...options,
         maxResults: 1,

@@ -27,7 +27,7 @@ export enum Direction {
 /**
  * 元素旋转信息
  */
-export interface ElementRotation {
+export interface IElementRotation {
     origin: Vector3d;
     axis: Axis;
     angle: number;
@@ -37,7 +37,7 @@ export interface ElementRotation {
 /**
  * 图像数据 (替代 Java 的 BufferedImage)
  */
-export interface ImageData {
+export interface IImageData {
     width: number;
     height: number;
     data: Buffer; // RGBA 格式
@@ -46,17 +46,17 @@ export interface ImageData {
 /**
  * 模型元素
  */
-export interface Element {
+export interface IElement {
     from: Vector3d;
     to: Vector3d;
-    rotation: ElementRotation | null;
-    faces: Map<Direction, ImageData>;
+    rotation: IElementRotation | null;
+    faces: Map<Direction, IImageData>;
 }
 
 /**
  * 光线
  */
-export interface Ray {
+export interface IRay {
     origin: Vector3d;
     direction: Vector3d;
 }
@@ -64,7 +64,7 @@ export interface Ray {
 /**
  * 光线与物体的交点
  */
-export interface Intersection {
+export interface IIntersection {
     multiplier: number; // 环境光遮蔽系数
     t: number; // 光线参数（距离）
     color: number; // ARGB 格式颜色
@@ -73,7 +73,7 @@ export interface Intersection {
 /**
  * 渲染器选项
  */
-export interface RenderOptions {
+export interface IRenderOptions {
     renderWidth?: number;
     renderHeight?: number;
     exportWidth?: number;
@@ -89,10 +89,10 @@ export interface RenderOptions {
 /**
  * JSON 模型文件结构
  */
-export interface ModelJson {
+export interface IModelJson {
     parent?: string;
     textures?: Record<string, string>;
-    elements?: ElementJson[];
+    elements?: IElementJson[];
     ambientocclusion?: boolean;
     display?: {
         gui?: {
@@ -103,7 +103,7 @@ export interface ModelJson {
     };
 }
 
-export interface ElementJson {
+export interface IElementJson {
     from: [number, number, number];
     to: [number, number, number];
     rotation?: {
@@ -112,10 +112,10 @@ export interface ElementJson {
         angle: number;
         rescale?: boolean;
     };
-    faces?: Record<string, FaceJson>;
+    faces?: Record<string, IFaceJson>;
 }
 
-export interface FaceJson {
+export interface IFaceJson {
     texture: string;
     uv?: [number, number, number, number];
     rotation?: number;

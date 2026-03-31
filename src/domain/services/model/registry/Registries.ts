@@ -6,12 +6,12 @@
 
 import { Key } from '../utils/Key';
 import { ResourceKey } from './ResourceKey';
-import { type Registry } from './Registry';
+import { type IRegistry } from './Registry';
 
 /**
  * 创建注册表键
  */
-function createRegistryKey<T>(name: string): ResourceKey<Registry<T>> {
+function createRegistryKey<T>(name: string): ResourceKey<IRegistry<T>> {
     return ResourceKey.createRegistryKey<T>(Key.of(`craftengine:${name}`));
 }
 

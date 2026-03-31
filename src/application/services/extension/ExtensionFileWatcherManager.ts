@@ -56,29 +56,31 @@ export class ExtensionFileWatcherManager {
      * 设置文件变更处理器
      */
     private setupFileChangeHandler(): void {
-        this.fileChangeUnsubscribe = this.fileWatcher.onFileChange(async (event) => {
+        this.fileChangeUnsubscribe = this.fileWatcher.onFileChange((event) => {
             this.logger.debug('File change detected', {
                 file: event.uri.fsPath,
                 type: event.type,
             });
 
-            try {
-                // 根据文件变更类型处理
-                switch (event.type) {
-                    case 'created':
-                    case 'modified':
-                        await this.fileHandler.handleFileModified(event.uri);
-                        break;
-                    case 'deleted':
-                        await this.fileHandler.handleFileDeleted(event.uri);
-                        break;
+            void (async () => {
+                try {
+                    // 根据文件变更类型处理
+                    switch (event.type) {
+                        case 'created':
+                        case 'modified':
+                            await this.fileHandler.handleFileModified(event.uri);
+                            break;
+                        case 'deleted':
+                            await this.fileHandler.handleFileDeleted(event.uri);
+                            break;
+                    }
+                } catch (error) {
+                    this.logger.error('Error handling file change', error as Error, {
+                        file: event.uri.fsPath,
+                        type: event.type,
+                    });
                 }
-            } catch (error) {
-                this.logger.error('Error handling file change', error as Error, {
-                    file: event.uri.fsPath,
-                    type: event.type,
-                });
-            }
+            })();
         });
     }
 }

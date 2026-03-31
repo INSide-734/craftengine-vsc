@@ -1,4 +1,4 @@
-import { type JsonSchemaNode } from '../types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../types/JsonSchemaTypes';
 
 /**
  * Schema 文件加载器接口
@@ -14,7 +14,7 @@ export interface ISchemaFileLoader {
      * @param useCache - 是否使用缓存，默认 true
      * @returns Schema 对象
      */
-    loadSchema(filename: string, useCache?: boolean): Promise<JsonSchemaNode>;
+    loadSchema(filename: string, useCache?: boolean): Promise<IJsonSchemaNode>;
 
     /**
      * 清除缓存
@@ -34,5 +34,5 @@ export interface ISchemaFileLoader {
      * @param filename - Schema 文件名
      * @returns Schema 对象
      */
-    reloadSchema?(filename: string): Promise<JsonSchemaNode>;
+    reloadSchema?(filename: string): Promise<IJsonSchemaNode>;
 }

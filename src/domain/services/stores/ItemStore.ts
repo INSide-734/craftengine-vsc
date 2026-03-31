@@ -347,13 +347,19 @@ export class ItemStore implements IItemIdRepository {
         if (!this.namespaceIndex.has(item.namespace)) {
             this.namespaceIndex.set(item.namespace, new Set());
         }
-        this.namespaceIndex.get(item.namespace)!.add(item.id);
+        const namespaceSet = this.namespaceIndex.get(item.namespace);
+        if (namespaceSet) {
+            namespaceSet.add(item.id);
+        }
 
         // 文件索引
         if (!this.fileIndex.has(item.sourceFile)) {
             this.fileIndex.set(item.sourceFile, new Set());
         }
-        this.fileIndex.get(item.sourceFile)!.add(item.id);
+        const fileSet = this.fileIndex.get(item.sourceFile);
+        if (fileSet) {
+            fileSet.add(item.id);
+        }
     }
 
     private removeFromIndexes(item: IItemId): void {

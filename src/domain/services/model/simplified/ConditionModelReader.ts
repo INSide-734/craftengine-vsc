@@ -5,14 +5,14 @@
  */
 
 import { type Key } from '../utils/Key';
-import { type SimplifiedModelReader } from './SimplifiedModelReader';
+import { type ISimplifiedModelReader } from './SimplifiedModelReader';
 import { SimplifiedModelConfigError } from './GeneratedModelReader';
 
 /**
  * 条件模型读取器
  * 用于处理基于条件的简化模型配置（如钓鱼竿、鞘翅、盾牌等）
  */
-export class ConditionModelReader implements SimplifiedModelReader {
+export class ConditionModelReader implements ISimplifiedModelReader {
     private readonly model: string;
     private readonly property: string;
     private readonly suffix: string;

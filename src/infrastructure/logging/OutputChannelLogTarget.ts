@@ -50,7 +50,7 @@ export class OutputChannelLogTarget implements ILogTarget {
             }
 
             this.outputChannel.appendLine(message);
-        } catch (error) {
+        } catch {
             this.disposed = true;
         }
     }

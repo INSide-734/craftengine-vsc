@@ -117,6 +117,7 @@ export class ProviderRegistry {
         this.registerCommands(context);
 
         this.logger.info('All providers registered successfully');
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return this.templateDiagnostic!;
     }
 

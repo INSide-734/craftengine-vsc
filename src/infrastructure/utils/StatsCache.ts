@@ -7,7 +7,7 @@
 /**
  * 缓存统计信息
  */
-export interface CacheStats {
+export interface ICacheStats {
     /** 命中次数 */
     hits: number;
     /** 未命中次数 */
@@ -104,7 +104,7 @@ export class StatsCache<K, V> {
     /**
      * 获取统计信息
      */
-    getStats(): CacheStats {
+    getStats(): ICacheStats {
         const total = this.hits + this.misses;
         return {
             hits: this.hits,

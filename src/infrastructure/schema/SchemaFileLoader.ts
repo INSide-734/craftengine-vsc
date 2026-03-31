@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import { type ILogger } from '../../core/interfaces/ILogger';
 import { type ISchemaFileLoader } from '../../core/interfaces/ISchemaFileLoader';
-import { type JsonSchemaNode } from '../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../core/types/JsonSchemaTypes';
 import { LRUCache } from '../../core/utils';
 import { SCHEMA_METADATA } from '../../core/constants/SchemaConstants';
 import { SchemaNotFoundError } from '../../core/errors/ExtensionErrors';
@@ -10,8 +10,8 @@ import { SchemaNotFoundError } from '../../core/errors/ExtensionErrors';
 /**
  * Schema 缓存项
  */
-export interface SchemaCacheEntry {
-    schema: JsonSchemaNode;
+export interface ISchemaCacheEntry {
+    schema: IJsonSchemaNode;
     timestamp: number;
     accessCount: number;
     lastAccess: number;
@@ -52,7 +52,7 @@ export interface SchemaCacheEntry {
  */
 export class SchemaFileLoader implements ISchemaFileLoader {
     /** LRU 缓存实例 */
-    private readonly cache: LRUCache<string, SchemaCacheEntry>;
+    private readonly cache: LRUCache<string, ISchemaCacheEntry>;
     /** 扩展 Schema 文件存储目录 */
     private readonly schemasDir: string;
     /** 工作区 Schema 文件存储目录 */
@@ -106,7 +106,7 @@ export class SchemaFileLoader implements ISchemaFileLoader {
      * @returns Schema 对象，包含元数据
      * @throws {Error} 如果文件不存在或解析失败
      */
-    async loadSchema(filename: string, useCache: boolean = true): Promise<JsonSchemaNode> {
+    async loadSchema(filename: string, useCache: boolean = true): Promise<IJsonSchemaNode> {
         try {
             // 检查缓存
             if (useCache) {
@@ -129,7 +129,7 @@ export class SchemaFileLoader implements ISchemaFileLoader {
             } catch {
                 throw new SchemaNotFoundError(filename);
             }
-            const schema: JsonSchemaNode = JSON.parse(content);
+            const schema: IJsonSchemaNode = JSON.parse(content);
 
             // 添加元数据
             schema[SCHEMA_METADATA.SCHEMA_FILE] = filename;
@@ -200,7 +200,7 @@ export class SchemaFileLoader implements ISchemaFileLoader {
      * @param filename Schema 文件名
      * @returns Schema 对象
      */
-    async reloadSchema(filename: string): Promise<JsonSchemaNode> {
+    async reloadSchema(filename: string): Promise<IJsonSchemaNode> {
         this.logger.info('Reloading schema file', { filename });
         return this.loadSchema(filename, false);
     }

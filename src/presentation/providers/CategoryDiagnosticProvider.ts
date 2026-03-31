@@ -13,7 +13,7 @@ import { type IYamlPathParser } from '../../core/interfaces/IYamlPathParser';
 /**
  * 分类引用信息
  */
-interface CategoryReference {
+interface ICategoryReference {
     /** 分类 ID（带 # 前缀） */
     id: string;
     /** 引用位置范围 */
@@ -61,11 +61,11 @@ export class CategoryDiagnosticProvider extends BaseDiagnosticProvider {
         const diagnostics: Diagnostic[] = [];
 
         // 查找所有分类引用
-        const references = await this.findCategoryReferences(document);
+        const references = await this.findICategoryReferences(document);
 
         // 验证每个引用
         for (const ref of references) {
-            const validationDiagnostics = await this.validateCategoryReference(ref, document);
+            const validationDiagnostics = await this.validateICategoryReference(ref, document);
             diagnostics.push(...validationDiagnostics);
         }
 
@@ -75,8 +75,8 @@ export class CategoryDiagnosticProvider extends BaseDiagnosticProvider {
     /**
      * 查找文档中的分类引用
      */
-    private async findCategoryReferences(document: TextDocument): Promise<CategoryReference[]> {
-        const references: CategoryReference[] = [];
+    private async findICategoryReferences(document: TextDocument): Promise<ICategoryReference[]> {
+        const references: ICategoryReference[] = [];
         const text = document.getText();
         const lines = text.split('\n');
 
@@ -129,7 +129,7 @@ export class CategoryDiagnosticProvider extends BaseDiagnosticProvider {
     /**
      * 验证分类引用
      */
-    private async validateCategoryReference(ref: CategoryReference, document: TextDocument): Promise<Diagnostic[]> {
+    private async validateICategoryReference(ref: ICategoryReference, document: TextDocument): Promise<Diagnostic[]> {
         const diagnostics: Diagnostic[] = [];
 
         try {

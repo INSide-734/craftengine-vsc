@@ -4,7 +4,7 @@
  * 简化后的内置注册表实现，移除冗余的类型转换。
  */
 
-import { type Registry } from './Registry';
+import { type IRegistry } from './Registry';
 import { SimpleRegistry } from './SimpleRegistry';
 import { Registries } from './Registries';
 import { type ConditionPropertyFactory, type ConditionPropertyReader } from '../condition';
@@ -16,11 +16,11 @@ import { type SpecialModelFactory, type SpecialModelReader } from '../special';
 // 物品模型工厂和读取器接口
 // ============================================
 
-export interface ItemModelFactory {
+export interface IItemModelFactory {
     create(arguments_: Record<string, unknown>): unknown;
 }
 
-export interface ItemModelReader {
+export interface IItemModelReader {
     read(json: Record<string, unknown>): unknown;
 }
 
@@ -28,7 +28,7 @@ export interface ItemModelReader {
 // 辅助函数：创建注册表
 // ============================================
 
-function createRegistry<T>(registryKey: unknown): Registry<T> {
+function createRegistry<T>(registryKey: unknown): IRegistry<T> {
     return new SimpleRegistry<T>(registryKey as never);
 }
 
@@ -37,8 +37,8 @@ function createRegistry<T>(registryKey: unknown): Registry<T> {
 // ============================================
 
 export const BuiltInRegistries = {
-    ITEM_MODEL_FACTORY: createRegistry<ItemModelFactory>(Registries.ITEM_MODEL_FACTORY),
-    ITEM_MODEL_READER: createRegistry<ItemModelReader>(Registries.ITEM_MODEL_READER),
+    ITEM_MODEL_FACTORY: createRegistry<IItemModelFactory>(Registries.ITEM_MODEL_FACTORY),
+    ITEM_MODEL_READER: createRegistry<IItemModelReader>(Registries.ITEM_MODEL_READER),
     CONDITION_PROPERTY_FACTORY: createRegistry<ConditionPropertyFactory>(Registries.CONDITION_PROPERTY_FACTORY),
     CONDITION_PROPERTY_READER: createRegistry<ConditionPropertyReader>(Registries.CONDITION_PROPERTY_READER),
     RANGE_DISPATCH_PROPERTY_FACTORY: createRegistry<RangeDispatchPropertyFactory>(

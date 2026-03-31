@@ -310,6 +310,12 @@
     "dev": "pnpm run clean && node esbuild.mjs --watch"
   },
   "devDependencies": {
+    "@img/sharp-darwin-arm64": "^0.34.5",
+    "@img/sharp-darwin-x64": "^0.34.5",
+    "@img/sharp-linux-arm64": "^0.34.5",
+    "@img/sharp-linux-x64": "^0.34.5",
+    "@img/sharp-win32-ia32": "^0.34.5",
+    "@img/sharp-win32-x64": "^0.34.5",
     "@types/adm-zip": "^0.5.7",
     "@types/glob": "^8.1.0",
     "@types/node": "22.x",
@@ -323,6 +329,7 @@
     "@vscode/vsce": "^3.7.1",
     "cross-env": "^10.0.0",
     "esbuild": "^0.27.3",
+    "esbuild-plugin-copy": "^2.1.1",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "glob": "^13.0.6",
@@ -335,7 +342,7 @@
     "@types/json-schema": "^7.0.15",
     "adm-zip": "^0.5.16",
     "ajv": "^8.18.0",
-    "sharp": "^0.33.0",
+    "sharp": "^0.34.5",
     "yaml": "^2.8.1"
   },
   "pnpm": {

@@ -3,7 +3,7 @@ import type * as vscode from 'vscode';
 /**
  * 文档变更追踪信息
  */
-export interface DocumentChangeInfo {
+export interface IDocumentChangeInfo {
     /** 变更的行范围 */
     changedLines: Set<number>;
     /** 变更时间戳 */
@@ -21,7 +21,7 @@ export interface DocumentChangeInfo {
  */
 export class DocumentChangeTracker {
     /** 文档变更追踪 */
-    private readonly documentChanges = new Map<string, DocumentChangeInfo>();
+    private readonly documentChanges = new Map<string, IDocumentChangeInfo>();
 
     /** 诊断执行版本追踪（用于取消过时的诊断任务） */
     private readonly executionVersions = new Map<string, number>();
@@ -66,7 +66,7 @@ export class DocumentChangeTracker {
     /**
      * 获取文档的变更信息
      */
-    getChangeInfo(uri: string): DocumentChangeInfo | undefined {
+    getChangeInfo(uri: string): IDocumentChangeInfo | undefined {
         return this.documentChanges.get(uri);
     }
 

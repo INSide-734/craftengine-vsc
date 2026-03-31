@@ -8,9 +8,9 @@
 
 import { Key } from '../utils/Key';
 import {
-    type Property,
-    type PropertyFactory,
-    type PropertyReader,
+    type IProperty,
+    type IPropertyFactory,
+    type IPropertyReader,
     SimpleProperty,
     SimplePropertyFactory,
     SimplePropertyReader,
@@ -22,9 +22,9 @@ import { type IModelPropertyDefinition } from '../../../../core/types/ConfigType
 // 特殊模型接口（保持向后兼容）
 // ============================================
 
-export type SpecialModel = Property;
-export type SpecialModelFactory = PropertyFactory<SpecialModel>;
-export type SpecialModelReader = PropertyReader<SpecialModel>;
+export type SpecialModel = IProperty;
+export type SpecialModelFactory = IPropertyFactory<SpecialModel>;
+export type SpecialModelReader = IPropertyReader<SpecialModel>;
 
 // ============================================
 // 简单特殊模型

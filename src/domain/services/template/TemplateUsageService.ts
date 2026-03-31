@@ -128,7 +128,7 @@ export class TemplateUsageService {
             .map((t: ITemplate) => ({
                 templateName: t.name,
                 usageCount: t.usageCount,
-                lastUsedAt: t.lastUsedAt!,
+                lastUsedAt: t.lastUsedAt ?? new Date(),
             }));
     }
 }

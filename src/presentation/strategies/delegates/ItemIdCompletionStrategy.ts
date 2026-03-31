@@ -11,14 +11,14 @@ import { type ILogger } from '../../../core/interfaces/ILogger';
 import { type IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
 import { type IItemTypeDisplayConfig } from '../../../core/types/ConfigTypes';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
-import { type CompletionItemWithStrategy } from '../../types/CompletionTypes';
+import { type ICompletionItemWithStrategy } from '../../types/CompletionTypes';
 import { getRelativePath, extractCompletionPrefix } from '../../../infrastructure/utils/StringUtils';
 
 /** 默认物品类型配置（回退值） */
 const DEFAULT_ITEM_TYPE_CONFIG: Record<string, IItemTypeDisplayConfig> = {
-    block: { icon: '🧱', label: 'Block' },
-    furniture: { icon: '🪑', label: 'Furniture' },
-    item: { icon: '📦', label: 'Item' },
+    block: { icon: '', label: 'Block' },
+    furniture: { icon: '', label: 'Furniture' },
+    item: { icon: '', label: 'Item' },
 };
 
 /**
@@ -130,7 +130,7 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
             ? `${config.icon} ${item.material}`
             : `${config.icon} Custom ${config.label}`;
         completionItem.insertText = item.id;
-        (completionItem as CompletionItemWithStrategy)._strategy = this.name;
+        (completionItem as ICompletionItemWithStrategy)._strategy = this.name;
 
         return completionItem;
     }
@@ -143,7 +143,7 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
         md.supportHtml = true;
 
         md.appendMarkdown(`## ${config.icon} ${item.id}\n\n`);
-        md.appendMarkdown('| 🏷️ Property | 📄 Value |\n');
+        md.appendMarkdown('|  Property |  Value |\n');
         md.appendMarkdown('|:------------|:---------|\n');
         md.appendMarkdown(`| **Type** | \`${config.label}\` |\n`);
         md.appendMarkdown(`| **Namespace** | \`${item.namespace}\` |\n`);
@@ -153,16 +153,16 @@ export class ItemIdCompletionStrategy implements ICompletionStrategy {
             md.appendMarkdown(`| **Material** | \`${item.material}\` |\n`);
         }
 
-        md.appendMarkdown('\n---\n\n### 📋 Source Information\n\n');
-        md.appendMarkdown(`| 📁 Source File | \`${getRelativePath(item.sourceFile)}\` |\n`);
+        md.appendMarkdown('\n---\n\n###  Source Information\n\n');
+        md.appendMarkdown(`|  Source File | \`${getRelativePath(item.sourceFile)}\` |\n`);
         md.appendMarkdown('|:--------------|:---------|\n');
 
         if (item.lineNumber !== undefined) {
-            md.appendMarkdown(`| 📍 Line Number | \`${item.lineNumber + 1}\` |\n`);
+            md.appendMarkdown(`|  Line Number | \`${item.lineNumber + 1}\` |\n`);
         }
 
         md.appendMarkdown(
-            `\n> **💡 Tip:** This is a custom ${config.label.toLowerCase()} defined in your configuration.\n`,
+            `\n> ** Tip:** This is a custom ${config.label.toLowerCase()} defined in your configuration.\n`,
         );
 
         return md;

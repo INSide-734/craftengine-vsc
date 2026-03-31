@@ -5,7 +5,7 @@ import AdmZip from 'adm-zip';
 /**
  * 资源包接口
  */
-export interface ResourcePack {
+export interface IResourcePack {
     /**
      * 获取资源的 Buffer
      * @param resourcePath 资源路径
@@ -20,7 +20,7 @@ export interface ResourcePack {
  * 1. 标准资源包: <pack>/assets/<namespace>/...
  * 2. 命名空间目录: <namespace>/models/..., <namespace>/textures/...
  */
-export class DirectoryResourcePack implements ResourcePack {
+export class DirectoryResourcePack implements IResourcePack {
     private readonly dir: string;
     private readonly structureType: 'standard' | 'namespace';
     private readonly detectedNamespace: string | null;
@@ -82,7 +82,7 @@ export class DirectoryResourcePack implements ResourcePack {
 /**
  * ZIP 资源包
  */
-export class ZipResourcePack implements ResourcePack {
+export class ZipResourcePack implements IResourcePack {
     private readonly zip: AdmZip;
 
     constructor(file: string) {
@@ -106,7 +106,7 @@ export class ZipResourcePack implements ResourcePack {
  * 内部资源包
  * 从项目内置的 assets/ 目录加载资源
  */
-export class InternalResourcePack implements ResourcePack {
+export class InternalResourcePack implements IResourcePack {
     private readonly rootDir: string;
 
     constructor() {

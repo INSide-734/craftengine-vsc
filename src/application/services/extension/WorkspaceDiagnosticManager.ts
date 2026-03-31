@@ -145,7 +145,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
         this.fileDiagnosticState.delete(uri.toString());
 
         // 发布事件
-        this.eventBus.publish('diagnostics.fileDeleted', {
+        void this.eventBus.publish('diagnostics.fileDeleted', {
             id: this.generateEventId('diag-file-deleted'),
             type: 'diagnostics.fileDeleted',
             timestamp: new Date(),
@@ -224,7 +224,7 @@ export class WorkspaceDiagnosticManager implements Disposable {
         }
         this.fileDiagnosticState.clear();
 
-        this.eventBus.publish('diagnostics.cleared', {
+        void this.eventBus.publish('diagnostics.cleared', {
             id: this.generateEventId('diag-cleared'),
             type: 'diagnostics.cleared',
             timestamp: new Date(),

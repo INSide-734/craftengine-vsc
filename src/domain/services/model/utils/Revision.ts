@@ -5,7 +5,7 @@
  */
 
 import { MinecraftVersion, MinecraftVersions } from './MinecraftVersion';
-import { type IRevision, type IMinecraftVersionInfo } from '../../../../core/interfaces/IModelGenerator';
+import { type IRevision as ICoreRevision, type IMinecraftVersionInfo } from '../../../../core/interfaces/IModelGenerator';
 
 /**
  * 未来版本常量
@@ -17,7 +17,7 @@ export const FUTURE_VERSION = new MinecraftVersion('1.99.99');
  *
  * 定义版本修订的基本操作，扩展自 IModelGenerator 的 Revision 接口
  */
-export interface Revision extends IRevision {
+export interface IRevision extends ICoreRevision {
     /** 最小资源包版本 */
     readonly minPackVersion: number;
     /** 最大资源包版本 */
@@ -40,7 +40,7 @@ export interface Revision extends IRevision {
  *
  * 表示从某个版本开始的修订
  */
-export class SinceRevision implements Revision {
+export class SinceRevision implements IRevision {
     private readonly _minVersion: MinecraftVersion;
     private _versionString?: string;
 
@@ -82,7 +82,7 @@ export class SinceRevision implements Revision {
         return this._minVersion.packFormat;
     }
 
-    equals(other: Revision | null | undefined): boolean {
+    equals(other: IRevision | null | undefined): boolean {
         if (!other || !(other instanceof SinceRevision)) {
             return false;
         }
@@ -103,7 +103,7 @@ export class SinceRevision implements Revision {
  *
  * 表示从某个版本到另一个版本的修订
  */
-export class FromToRevision implements Revision {
+export class FromToRevision implements IRevision {
     private readonly _minVersion: MinecraftVersion;
     private readonly _maxVersion: MinecraftVersion;
     private _versionString?: string;
@@ -149,7 +149,7 @@ export class FromToRevision implements Revision {
         return this._versionString;
     }
 
-    equals(other: Revision | null | undefined): boolean {
+    equals(other: IRevision | null | undefined): boolean {
         if (!other || !(other instanceof FromToRevision)) {
             return false;
         }
@@ -170,14 +170,14 @@ export class FromToRevision implements Revision {
 /**
  * 创建 Since 修订
  */
-export function since(minecraftVersion: MinecraftVersion): Revision {
+export function since(minecraftVersion: MinecraftVersion): IRevision {
     return new SinceRevision(minecraftVersion);
 }
 
 /**
  * 创建 FromTo 修订
  */
-export function fromTo(from: MinecraftVersion, to: MinecraftVersion): Revision {
+export function fromTo(from: MinecraftVersion, to: MinecraftVersion): IRevision {
     return new FromToRevision(from, to);
 }
 
@@ -191,11 +191,11 @@ export const Revisions = {
     since,
     fromTo,
     /** 从 1.21.4 开始 */
-    get SINCE_1_21_4(): Revision {
+    get SINCE_1_21_4(): IRevision {
         return since(MinecraftVersions.V1_21_4);
     },
     /** 从 1.21.2 开始 */
-    get SINCE_1_21_2(): Revision {
+    get SINCE_1_21_2(): IRevision {
         return since(MinecraftVersions.V1_21_2);
     },
 };

@@ -61,6 +61,7 @@ export function getNestedValue<T = unknown>(
  */
 export function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
     const keys = path.split('.');
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const lastKey = keys.pop()!;
     let current = obj;
 
@@ -92,6 +93,7 @@ export function setNestedValue(obj: Record<string, unknown>, path: string, value
  */
 export function deleteNestedValue(obj: Record<string, unknown>, path: string): boolean {
     const keys = path.split('.');
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const lastKey = keys.pop()!;
     let current: unknown = obj;
 

@@ -15,7 +15,7 @@ import { type TintConfig, type TintType, type TintValue } from '../../../core/in
  *
  * 所有着色类型的基础接口
  */
-export interface Tint {
+export interface ITint {
     /** 着色类型 */
     readonly type: TintType | string;
 
@@ -64,7 +64,7 @@ export function tintValueToJson(value: TintValue): TintValue {
 /**
  * 常量 Tint
  */
-export class ConstantTint implements Tint {
+export class ConstantTint implements ITint {
     readonly type = 'minecraft:constant' as const;
     private readonly value: TintValue;
 
@@ -88,7 +88,7 @@ export class ConstantTint implements Tint {
 /**
  * 自定义模型数据 Tint
  */
-export class CustomModelDataTint implements Tint {
+export class CustomModelDataTint implements ITint {
     readonly type = 'minecraft:custom_model_data' as const;
     private readonly defaultValue: TintValue;
     private readonly index: number;
@@ -119,7 +119,7 @@ export class CustomModelDataTint implements Tint {
 /**
  * 草地 Tint
  */
-export class GrassTint implements Tint {
+export class GrassTint implements ITint {
     readonly type = 'minecraft:grass' as const;
 
     toJson(): Record<string, unknown> {
@@ -136,7 +136,7 @@ export class GrassTint implements Tint {
 /**
  * 简单默认 Tint（用于染料、烟火、地图颜色、药水、队伍）
  */
-export class SimpleDefaultTint implements Tint {
+export class SimpleDefaultTint implements ITint {
     readonly type: TintType;
     private readonly defaultValue?: TintValue;
 
@@ -168,12 +168,12 @@ export class SimpleDefaultTint implements Tint {
 /**
  * Tint 工厂类型映射（延迟初始化）
  */
-let TINT_FACTORIES: Record<string, (config: Record<string, unknown>) => Tint> | null = null;
+let TINT_FACTORIES: Record<string, (config: Record<string, unknown>) => ITint> | null = null;
 
 /**
  * 构建默认的 Tint 工厂映射（硬编码回退）
  */
-function buildDefaultTintFactories(): Record<string, (config: Record<string, unknown>) => Tint> {
+function buildDefaultTintFactories(): Record<string, (config: Record<string, unknown>) => ITint> {
     return {
         'minecraft:constant': ConstantTint.fromConfig,
         constant: ConstantTint.fromConfig,
@@ -195,7 +195,7 @@ function buildDefaultTintFactories(): Record<string, (config: Record<string, unk
 }
 
 /** 专用工厂类映射 */
-const SPECIAL_FACTORY_MAP: Record<string, (config: Record<string, unknown>) => Tint> = {
+const SPECIAL_FACTORY_MAP: Record<string, (config: Record<string, unknown>) => ITint> = {
     constant: ConstantTint.fromConfig,
     custom_model_data: CustomModelDataTint.fromConfig,
     grass: GrassTint.fromConfig,
@@ -210,7 +210,7 @@ export function initializeTintFactories(tintTypesConfig: {
     specialFactories: string[];
     simpleDefaultTypes: string[];
 }): void {
-    const factories: Record<string, (config: Record<string, unknown>) => Tint> = {};
+    const factories: Record<string, (config: Record<string, unknown>) => ITint> = {};
 
     // 注册专用工厂类型
     for (const typeName of tintTypesConfig.specialFactories) {
@@ -234,7 +234,7 @@ export function initializeTintFactories(tintTypesConfig: {
 /**
  * 获取 Tint 工厂映射（延迟初始化）
  */
-function getTintFactories(): Record<string, (config: Record<string, unknown>) => Tint> {
+function getTintFactories(): Record<string, (config: Record<string, unknown>) => ITint> {
     if (!TINT_FACTORIES) {
         TINT_FACTORIES = buildDefaultTintFactories();
     }
@@ -247,7 +247,7 @@ function getTintFactories(): Record<string, (config: Record<string, unknown>) =>
  * @param config - Tint 配置对象
  * @returns Tint 实例
  */
-export function createTint(config: TintConfig | Record<string, unknown>): Tint {
+export function createTint(config: TintConfig | Record<string, unknown>): ITint {
     const type = String(config.type ?? 'minecraft:constant');
     const factory = getTintFactories()[type];
 
@@ -265,7 +265,7 @@ export function createTint(config: TintConfig | Record<string, unknown>): Tint {
  * @param configs - Tint 配置列表
  * @returns Tint 数组
  */
-export function createTints(configs: unknown[]): Tint[] {
+export function createTints(configs: unknown[]): ITint[] {
     if (!Array.isArray(configs)) {
         return [];
     }

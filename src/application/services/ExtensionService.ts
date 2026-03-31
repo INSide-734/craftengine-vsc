@@ -9,11 +9,10 @@ import { type IConfiguration } from '../../core/interfaces/IConfiguration';
 import { type IEventBus } from '../../core/interfaces/IEventBus';
 import { type IDataStoreService } from '../../core/interfaces/IDataStoreService';
 import { type IFileWatcher } from '../../core/interfaces/IFileWatcher';
-import { EVENT_TYPES } from '../../core/constants/ServiceTokens';
+import { EVENT_TYPES, SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { type IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
 import { generateEventId } from '../../core/utils';
 import { ServiceContainer } from '../../infrastructure/ServiceContainer';
-import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import {
     ExtensionStatistics,
     ExtensionHealthChecker,

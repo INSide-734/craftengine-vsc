@@ -10,7 +10,7 @@ import { type IDataStoreService } from '../../../core/interfaces/IDataStoreServi
 import { type IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
 import { MiniMessageDataLoader } from '../../../infrastructure/schema/data-loaders';
-import { type CompletionItemWithStrategy } from '../../types/CompletionTypes';
+import { type ICompletionItemWithStrategy } from '../../types/CompletionTypes';
 import { type RichTextCompletionType, type TranslationMode, PATTERNS } from './richtext/types';
 import { MiniMessageHandler } from './richtext/MiniMessageHandler';
 import { TranslationHandler } from './richtext/TranslationHandler';
@@ -136,9 +136,9 @@ export class RichTextCompletionStrategy implements ICompletionStrategy {
                 return item;
             }
 
-            const translationKey = (item as CompletionItemWithStrategy)._translationKey;
+            const translationKey = (item as ICompletionItemWithStrategy)._translationKey;
             if (translationKey) {
-                return this.translationHandler.resolveTranslationKeyItem(item, translationKey, token);
+                return await this.translationHandler.resolveTranslationKeyItem(item, translationKey, token);
             }
 
             return item;

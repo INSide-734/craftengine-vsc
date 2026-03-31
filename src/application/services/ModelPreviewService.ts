@@ -16,11 +16,7 @@ import { type ILogger } from '../../core/interfaces/ILogger';
 import { type IConfiguration } from '../../core/interfaces/IConfiguration';
 import { type IDataStoreService } from '../../core/interfaces/IDataStoreService';
 import { type IModelGenerator, type IMinecraftModelJson } from '../../core/interfaces/IModelGenerator';
-import {
-    type IModelPreviewService,
-    type PreviewOptions,
-    type PreviewResult,
-} from '../../core/interfaces/IModelPreviewService';
+import { type IModelPreviewService } from '../../core/interfaces/IModelPreviewService';
 import { type ITemplateExpander } from '../../core/interfaces/ITemplateExpander';
 import { type IRendererAdapter } from '../../core/interfaces/IRendererAdapter';
 import { type IYamlParser } from '../../core/interfaces/IYamlParser';
@@ -73,7 +69,7 @@ export class ModelPreviewService implements IModelPreviewService {
     /**
      * 预览物品模型
      */
-    async previewItem(itemId: string, options?: PreviewOptions): Promise<PreviewResult> {
+    async previewItem(itemId: string, options?: IPreviewOptions): Promise<IPreviewResult> {
         const startTime = performance.now();
 
         try {
@@ -168,7 +164,7 @@ export class ModelPreviewService implements IModelPreviewService {
     /**
      * 预览原始模型路径
      */
-    async previewModel(modelPath: string, options?: PreviewOptions): Promise<PreviewResult> {
+    async previewModel(modelPath: string, options?: IPreviewOptions): Promise<IPreviewResult> {
         try {
             this.logger.info('Starting model preview', { modelPath });
 
@@ -196,7 +192,7 @@ export class ModelPreviewService implements IModelPreviewService {
     /**
      * 预览自定义模型 JSON
      */
-    async previewCustomModel(modelJson: IMinecraftModelJson, options?: PreviewOptions): Promise<PreviewResult> {
+    async previewCustomModel(modelJson: IMinecraftModelJson, options?: IPreviewOptions): Promise<IPreviewResult> {
         try {
             this.logger.info('Starting custom model preview', {
                 parent: modelJson.parent,
@@ -255,7 +251,7 @@ export class ModelPreviewService implements IModelPreviewService {
     /**
      * 初始化渲染器
      */
-    private async initializeRenderer(options?: PreviewOptions): Promise<void> {
+    private async initializeRenderer(options?: IPreviewOptions): Promise<void> {
         const mergedOptions = this.getMergedOptions(options);
 
         // 调试：打印渲染器初始化选项
@@ -271,7 +267,7 @@ export class ModelPreviewService implements IModelPreviewService {
     /**
      * 获取合并后的选项
      */
-    private getMergedOptions(options?: PreviewOptions): PreviewOptions {
+    private getMergedOptions(options?: IPreviewOptions): IPreviewOptions {
         // 从配置中读取默认值
         const configResourcePacks = this.configuration.get<string[]>('craftengine.preview.resourcePacks', []);
         const configUseInternal = this.configuration.get<boolean>('craftengine.preview.useInternalResources', true);

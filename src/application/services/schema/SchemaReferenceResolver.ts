@@ -1,14 +1,13 @@
 import * as path from 'path';
 import { type ILogger } from '../../../core/interfaces/ILogger';
 import { type ISchemaFileLoader } from '../../../core/interfaces/ISchemaFileLoader';
-import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
 import { SCHEMA_METADATA, SCHEMA_RESOLUTION } from './SchemaConstants';
 
 /**
  * Schema 引用解析上下文
  */
-interface RefResolutionContext {
-    schema: JsonSchemaNode;
+interface IRefResolutionContext {
+    schema: IJsonSchemaNode;
     visited: Set<string>;
     depth: number;
     maxDepth: number;
@@ -25,7 +24,7 @@ const CIRCULAR_REF_KEY = '__circularRefMarker__';
 /**
  * 检查 Schema 是否被标记为循环引用
  */
-export function isCircularRef(schema: JsonSchemaNode): boolean {
+export function isCircularRef(schema: IJsonSchemaNode): boolean {
     return schema && typeof schema === 'object' && schema[CIRCULAR_REF_KEY] === true;
 }
 
@@ -49,14 +48,14 @@ export class SchemaReferenceResolver {
      * @returns 解析后的 Schema
      */
     async resolveReferences(
-        schema: JsonSchemaNode,
+        schema: IJsonSchemaNode,
         maxDepth: number = SCHEMA_RESOLUTION.DEFAULT_MAX_DEPTH,
-        contextSchema?: JsonSchemaNode,
-    ): Promise<JsonSchemaNode> {
+        contextSchema?: IJsonSchemaNode,
+    ): Promise<IJsonSchemaNode> {
         // 优先使用 Schema 上标记的上下文（由之前的外部引用解析设置）
         // 这样可以正确解析外部 Schema 中的内部引用
         const effectiveContext =
-            (schema?.[SCHEMA_METADATA.CONTEXT_SCHEMA] as JsonSchemaNode | undefined) || contextSchema || schema;
+            (schema?.[SCHEMA_METADATA.CONTEXT_SCHEMA] as IJsonSchemaNode | undefined) || contextSchema || schema;
 
         // 确定当前 Schema 文件目录，优先级：
         // 1. schema[SCHEMA_METADATA.SCHEMA_DIR]（直接保存的目录路径）
@@ -73,7 +72,7 @@ export class SchemaReferenceResolver {
                 : (effectiveContext?.[SCHEMA_METADATA.SCHEMA_DIR] as string | undefined);
         }
 
-        const context: RefResolutionContext = {
+        const context: IRefResolutionContext = {
             schema: effectiveContext,
             visited: new Set<string>(),
             depth: 0,
@@ -87,7 +86,7 @@ export class SchemaReferenceResolver {
     /**
      * 带上下文的引用解析
      */
-    private async resolveWithContext(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
+    private async resolveWithContext(schema: IJsonSchemaNode, context: IRefResolutionContext): Promise<IJsonSchemaNode> {
         if (!schema || context.depth >= context.maxDepth) {
             if (context.depth >= context.maxDepth) {
                 this.logger.debug('Max resolution depth reached', {
@@ -141,7 +140,7 @@ export class SchemaReferenceResolver {
     /**
      * 解析 $ref 引用
      */
-    private async resolveRef(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
+    private async resolveRef(schema: IJsonSchemaNode, context: IRefResolutionContext): Promise<IJsonSchemaNode> {
         const ref = schema.$ref as string;
 
         // 循环引用检测：使用当前链路的副本，避免不同分支间的误判
@@ -165,8 +164,8 @@ export class SchemaReferenceResolver {
             // 分离文件路径和内部路径
             const [filePart, internalPath] = ref.split('#');
 
-            let targetSchema: JsonSchemaNode;
-            let externalSchemaRoot: JsonSchemaNode | null = null;
+            let targetSchema: IJsonSchemaNode;
+            let externalSchemaRoot: IJsonSchemaNode | null = null;
             let newSchemaDir: string | undefined = context.currentSchemaDir;
             let resolvedFilename: string | undefined;
 
@@ -201,7 +200,7 @@ export class SchemaReferenceResolver {
 
             // 合并其他属性
             const { $ref: _ref, ...rest } = schema;
-            const resolved: JsonSchemaNode = { ...targetSchema, ...rest };
+            const resolved: IJsonSchemaNode = { ...targetSchema, ...rest };
 
             // 确定用于递归解析的上下文 Schema
             // 1. 如果是外部引用，使用外部 Schema 作为新上下文
@@ -265,13 +264,13 @@ export class SchemaReferenceResolver {
      * 注意：除了合并 allOf 中的 Schema，还需要保留原始 Schema 中的其他属性
      * （如 patternProperties、required 等），否则这些属性会丢失
      */
-    private async resolveAllOf(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
+    private async resolveAllOf(schema: IJsonSchemaNode, context: IRefResolutionContext): Promise<IJsonSchemaNode> {
         const resolvedSchemas = await Promise.all(
-            (schema.allOf as JsonSchemaNode[]).map((s: JsonSchemaNode) => this.resolveWithContext(s, context)),
+            (schema.allOf as IJsonSchemaNode[]).map((s: IJsonSchemaNode) => this.resolveWithContext(s, context)),
         );
 
         // 提取原始 Schema 中除 allOf 之外的属性
-        const { allOf, ...restOfOriginalSchema } = schema;
+        const { allOf: _allOf, ...restOfOriginalSchema } = schema;
 
         // 合并 allOf 中解析的 Schema，然后将原始 Schema 的其他属性也合并进来
         // 原始 Schema 的属性优先级更高（放在最后）
@@ -284,9 +283,9 @@ export class SchemaReferenceResolver {
     /**
      * 解析 oneOf
      */
-    private async resolveOneOf(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
+    private async resolveOneOf(schema: IJsonSchemaNode, context: IRefResolutionContext): Promise<IJsonSchemaNode> {
         const resolvedSchemas = await Promise.all(
-            (schema.oneOf as JsonSchemaNode[]).map((s: JsonSchemaNode) => this.resolveWithContext(s, context)),
+            (schema.oneOf as IJsonSchemaNode[]).map((s: IJsonSchemaNode) => this.resolveWithContext(s, context)),
         );
 
         const result = { ...schema, oneOf: resolvedSchemas };
@@ -298,9 +297,9 @@ export class SchemaReferenceResolver {
     /**
      * 解析 anyOf
      */
-    private async resolveAnyOf(schema: JsonSchemaNode, context: RefResolutionContext): Promise<JsonSchemaNode> {
+    private async resolveAnyOf(schema: IJsonSchemaNode, context: IRefResolutionContext): Promise<IJsonSchemaNode> {
         const resolvedSchemas = await Promise.all(
-            (schema.anyOf as JsonSchemaNode[]).map((s: JsonSchemaNode) => this.resolveWithContext(s, context)),
+            (schema.anyOf as IJsonSchemaNode[]).map((s: IJsonSchemaNode) => this.resolveWithContext(s, context)),
         );
 
         const result = { ...schema, anyOf: resolvedSchemas };
@@ -314,7 +313,7 @@ export class SchemaReferenceResolver {
      *
      * 导航到内部路径后，确保返回的子对象继承父 Schema 的元数据
      */
-    private navigateSchemaPath(schema: JsonSchemaNode, internalPath: string): JsonSchemaNode | undefined {
+    private navigateSchemaPath(schema: IJsonSchemaNode, internalPath: string): IJsonSchemaNode | undefined {
         const parts = internalPath.split('/').filter((p) => p);
         let current: unknown = schema;
 
@@ -329,11 +328,11 @@ export class SchemaReferenceResolver {
         // 如果导航到的是一个对象，确保它继承父 Schema 的元数据
         // 这对于正确解析嵌套的相对路径引用至关重要
         if (current && typeof current === 'object' && !Array.isArray(current)) {
-            const currentNode = current as JsonSchemaNode;
+            const currentNode = current as IJsonSchemaNode;
             const hasFile = !currentNode[SCHEMA_METADATA.SCHEMA_FILE] && !!schema[SCHEMA_METADATA.SCHEMA_FILE];
             const hasDir = !currentNode[SCHEMA_METADATA.SCHEMA_DIR] && !!schema[SCHEMA_METADATA.SCHEMA_DIR];
             if (hasFile || hasDir) {
-                const merged: JsonSchemaNode = { ...currentNode };
+                const merged: IJsonSchemaNode = { ...currentNode };
                 if (hasFile) {
                     merged[SCHEMA_METADATA.SCHEMA_FILE] = schema[SCHEMA_METADATA.SCHEMA_FILE];
                 }
@@ -344,13 +343,13 @@ export class SchemaReferenceResolver {
             }
         }
 
-        return current as JsonSchemaNode | undefined;
+        return current as IJsonSchemaNode | undefined;
     }
 
     /**
      * 查找 Schema 根
      */
-    private findSchemaRoot(schema: JsonSchemaNode): JsonSchemaNode | null {
+    private findSchemaRoot(schema: IJsonSchemaNode): IJsonSchemaNode | null {
         return schema && typeof schema === 'object' ? schema : null;
     }
 
@@ -365,9 +364,9 @@ export class SchemaReferenceResolver {
      * @param context 当前解析上下文
      */
     private preserveMetadata(
-        result: JsonSchemaNode,
-        originalSchema: JsonSchemaNode,
-        context: RefResolutionContext,
+        result: IJsonSchemaNode,
+        originalSchema: IJsonSchemaNode,
+        context: IRefResolutionContext,
     ): void {
         // 保留 SCHEMA_FILE：优先使用原始 Schema 的值，否则从上下文 schema 获取
         if (!result[SCHEMA_METADATA.SCHEMA_FILE]) {
@@ -394,8 +393,8 @@ export class SchemaReferenceResolver {
      * 保留第一个非空值，确保来自外部引用的目录上下文不会被丢失。
      * 但 __contextSchema__ 应该使用后面的值（用于解析内部引用）。
      */
-    private mergeSchemas(schemas: JsonSchemaNode[]): JsonSchemaNode {
-        const result: JsonSchemaNode = {};
+    private mergeSchemas(schemas: IJsonSchemaNode[]): IJsonSchemaNode {
+        const result: IJsonSchemaNode = {};
         // 这些元数据属性保留第一个非空值（用于相对路径解析）
         const keepFirstKeys: string[] = [
             SCHEMA_METADATA.SCHEMA_DIR,

@@ -1,6 +1,11 @@
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import prettierConfig from "eslint-config-prettier";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default [
     {
@@ -18,7 +23,8 @@ export default [
             ecmaVersion: 2022,
             sourceType: "module",
             parserOptions: {
-                projectService: true,
+                project: join(__dirname, 'tsconfig.json'),
+                tsconfigRootDir: __dirname,
             },
         },
 

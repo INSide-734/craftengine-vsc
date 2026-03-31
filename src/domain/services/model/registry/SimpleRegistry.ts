@@ -5,7 +5,7 @@
  */
 
 import { type ResourceKey } from './ResourceKey';
-import { type Registry } from './Registry';
+import { type IRegistry } from './Registry';
 import { AbstractMappedRegistry } from './MappedRegistry';
 import { HolderReference } from './HolderReference';
 
@@ -14,7 +14,7 @@ import { HolderReference } from './HolderReference';
  * 用于存储常量绑定的注册表项
  */
 export class SimpleRegistry<T> extends AbstractMappedRegistry<T> {
-    constructor(key: ResourceKey<Registry<T>>) {
+    constructor(key: ResourceKey<IRegistry<T>>) {
         super(key);
     }
 

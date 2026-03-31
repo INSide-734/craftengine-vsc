@@ -5,7 +5,7 @@ import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { MiniMessageDataLoader } from '../../infrastructure/schema/data-loaders';
 import { generateEventId } from '../../infrastructure/utils';
 import { BaseDiagnosticProvider } from './BaseDiagnosticProvider';
-import { MiniMessageParser, type MiniMessageValidationError } from '../../domain/services/minimessage';
+import { MiniMessageParser, type IMiniMessageValidationError } from '../../domain/services/minimessage';
 
 /**
  * MiniMessage 诊断提供者
@@ -76,7 +76,7 @@ export class MiniMessageDiagnosticProvider extends BaseDiagnosticProvider {
     /**
      * 将领域层验证错误转换为 VS Code Diagnostic
      */
-    private convertToDiagnostic(error: MiniMessageValidationError, document: TextDocument): Diagnostic | null {
+    private convertToDiagnostic(error: IMiniMessageValidationError, document: TextDocument): Diagnostic | null {
         const range = new Range(error.startLine, error.startCharacter, error.endLine, error.endCharacter);
 
         const diagnostic = this.createDiagnostic(range, error.message, error.codeInfo);

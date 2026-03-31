@@ -10,7 +10,7 @@ import { type Key } from '../utils/Key';
  * 简化模型读取器接口
  * 用于将简化的模型配置转换为完整的模型定义
  */
-export interface SimplifiedModelReader {
+export interface ISimplifiedModelReader {
     /**
      * 从纹理和可选模型路径转换为模型定义
      * @param textures 纹理列表

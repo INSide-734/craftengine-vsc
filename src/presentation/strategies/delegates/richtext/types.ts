@@ -16,7 +16,7 @@ export type RichTextCompletionType =
 /**
  * 翻译键验证状态
  */
-export interface TranslationValidationStatus {
+export interface ITranslationValidationStatus {
     /** 是否有错误 */
     hasErrors: boolean;
     /** 是否有警告 */

@@ -1,10 +1,6 @@
 import { CompletionItem, CompletionItemKind, MarkdownString, SnippetString } from 'vscode';
-import {
-    type MiniMessageDataLoader,
-    type MiniMessageTagDefinition,
-    type MiniMessageTagArgument,
-} from '../../../../infrastructure/schema/data-loaders';
-import { type CompletionItemWithStrategy } from '../../../types/CompletionTypes';
+import { type MiniMessageDataLoader } from '../../../../infrastructure/schema/data-loaders';
+import { type ICompletionItemWithStrategy } from '../../../types/CompletionTypes';
 import { PATTERNS } from './types';
 import { type IMiniMessageCategoryConfig } from '../../../../core/types/ConfigTypes';
 import { type IDataConfigLoader } from '../../../../core/interfaces/IDataConfigLoader';
@@ -75,7 +71,7 @@ export class MiniMessageHandler {
     /**
      * 创建标签补全项
      */
-    private createTagCompletionItem(tag: MiniMessageTagDefinition, displayName: string): CompletionItem {
+    private createTagCompletionItem(tag: IMiniMessageTagDefinition, displayName: string): CompletionItem {
         const item = new CompletionItem(displayName, this.getCompletionItemKind(tag.category));
 
         // 设置插入文本
@@ -91,7 +87,7 @@ export class MiniMessageHandler {
         item.documentation = this.buildTagDocumentation(tag);
         item.sortText = this.getCategorySortPrefix(tag.category) + displayName;
         item.filterText = displayName;
-        (item as CompletionItemWithStrategy)._strategy = this.strategyName;
+        (item as ICompletionItemWithStrategy)._strategy = this.strategyName;
 
         return item;
     }
@@ -99,7 +95,7 @@ export class MiniMessageHandler {
     /**
      * 构建标签的 Markdown 文档
      */
-    private buildTagDocumentation(tag: MiniMessageTagDefinition): MarkdownString {
+    private buildTagDocumentation(tag: IMiniMessageTagDefinition): MarkdownString {
         const doc = new MarkdownString();
         doc.isTrusted = true;
 
@@ -357,7 +353,7 @@ export class MiniMessageHandler {
     /**
      * 根据参数定义生成补全项
      */
-    private getArgumentCompletionsFromDefinition(argDef: MiniMessageTagArgument): CompletionItem[] {
+    private getArgumentCompletionsFromDefinition(argDef: IMiniMessageTagArgument): CompletionItem[] {
         if (argDef.type === 'enum' && argDef.enumValues) {
             return this.createEnumCompletions(argDef.enumValues, argDef.description);
         }

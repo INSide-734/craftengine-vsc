@@ -8,7 +8,7 @@ import { type IJsonSchema } from '../../../core/interfaces/ISchemaService';
  * 用于分析 Schema 中 patternProperties 的正则表达式，
  * 提取其特征以生成合适的补全提示和代码片段
  */
-export interface PatternAnalysis {
+export interface IPatternAnalysis {
     /** 具体字段名，如 ^items(#.*)?$ 中的 "items" */
     concreteFieldName?: string;
     /** 是否为命名空间模式，如 namespace:name */
@@ -33,7 +33,7 @@ export class SchemaKeyDocumentationBuilder {
     /**
      * 分析正则模式，提取其特征
      */
-    analyzePattern(pattern: string, schema?: IJsonSchema): PatternAnalysis {
+    analyzePattern(pattern: string, schema?: IJsonSchema): IPatternAnalysis {
         const isVersionCondition = pattern.includes('\\$\\$') || pattern.startsWith('^\\$\\$');
         const completionKey = schema?.['x-completion-key'] as string | undefined;
 
@@ -72,7 +72,7 @@ export class SchemaKeyDocumentationBuilder {
     /**
      * 根据模式分析结果获取显示标签
      */
-    getPatternLabel(analysis: PatternAnalysis): string {
+    getPatternLabel(analysis: IPatternAnalysis): string {
         if (analysis.concreteFieldName) {
             return analysis.concreteFieldName;
         }
@@ -88,7 +88,7 @@ export class SchemaKeyDocumentationBuilder {
     /**
      * 根据模式分析结果生成代码片段
      */
-    generatePatternSnippet(analysis: PatternAnalysis): SnippetString {
+    generatePatternSnippet(analysis: IPatternAnalysis): SnippetString {
         if (analysis.concreteFieldName) {
             return new SnippetString(`${analysis.concreteFieldName}:\n  $0`);
         }

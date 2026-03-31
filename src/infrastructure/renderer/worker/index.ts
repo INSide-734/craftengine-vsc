@@ -1,1 +1,1 @@
-export { WorkerPool, type BatchRenderResult } from './WorkerPool';
+export { WorkerPool, type IBatchRenderResult } from './WorkerPool';

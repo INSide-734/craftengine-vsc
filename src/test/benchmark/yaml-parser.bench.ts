@@ -378,7 +378,7 @@ function generateMiniMessageRichConfig(itemCount: number): string {
     data:
       item-name: "<!i><gradient:#FF5555:#55FF55:#5555FF><i18n:item.${itemName}></gradient>"
       lore:
-        - "<hover:show_text:'<gray>Click for details</gray>'><yellow>⭐ <i18n:lore.rarity.legendary></yellow></hover>"
+        - "<hover:show_text:'<gray>Click for details</gray>'><yellow> <i18n:lore.rarity.legendary></yellow></hover>"
         - ""
         - "<rainbow>✦ Special Effect ✦</rainbow>"
         - "<gradient:red:gold><bold><i18n:lore.damage></bold></gradient>"

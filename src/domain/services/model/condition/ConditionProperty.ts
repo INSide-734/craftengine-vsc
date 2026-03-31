@@ -8,9 +8,9 @@
 
 import { Key } from '../utils/Key';
 import {
-    type Property,
-    type PropertyFactory,
-    type PropertyReader,
+    type IProperty,
+    type IPropertyFactory,
+    type IPropertyReader,
     SimpleProperty,
     SimplePropertyFactory,
     SimplePropertyReader,
@@ -25,17 +25,17 @@ import { type IModelPropertyDefinition } from '../../../../core/types/ConfigType
 /**
  * 条件属性接口
  */
-export type ConditionProperty = Property;
+export type ConditionProperty = IProperty;
 
 /**
  * 条件属性工厂接口
  */
-export type ConditionPropertyFactory = PropertyFactory<ConditionProperty>;
+export type ConditionPropertyFactory = IPropertyFactory<ConditionProperty>;
 
 /**
  * 条件属性读取器接口
  */
-export type ConditionPropertyReader = PropertyReader<ConditionProperty>;
+export type ConditionPropertyReader = IPropertyReader<ConditionProperty>;
 
 // ============================================
 // 简单条件属性

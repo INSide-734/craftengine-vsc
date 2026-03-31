@@ -236,7 +236,7 @@ export class VSCodeFileWatcher implements IFileWatcher {
 
         // 发布事件总线事件
         const eventType = this.getEventTypeForFileChange(event.type);
-        this.eventBus?.publish(eventType, {
+        void this.eventBus?.publish(eventType, {
             id: generateEventId('file'),
             type: eventType,
             timestamp: event.timestamp,

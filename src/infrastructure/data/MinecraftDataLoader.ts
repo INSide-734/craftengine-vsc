@@ -8,7 +8,7 @@ import { HttpUtils } from '../utils/HttpUtils';
 /**
  * PrismarineJS minecraft-data 原始数据结构
  */
-interface PrismarineEnchantment {
+interface IPrismarineEnchantment {
     id: number;
     name: string;
     displayName: string;
@@ -24,7 +24,7 @@ interface PrismarineEnchantment {
     discoverable?: boolean;
 }
 
-interface PrismarineEntity {
+interface IPrismarineEntity {
     id: number;
     internalId?: number;
     name: string;
@@ -35,19 +35,19 @@ interface PrismarineEntity {
     category?: string;
 }
 
-interface PrismarineParticle {
+interface IPrismarineParticle {
     id: number;
     name: string;
 }
 
-interface PrismarineEffect {
+interface IPrismarineEffect {
     id: number;
     name: string;
     displayName: string;
     type: 'good' | 'bad';
 }
 
-interface PrismarineBiome {
+interface IPrismarineBiome {
     id: number;
     name: string;
     displayName: string;
@@ -58,7 +58,7 @@ interface PrismarineBiome {
     dimension?: string;
 }
 
-interface PrismarineBlock {
+interface IPrismarineBlock {
     id: number;
     name: string;
     displayName: string;
@@ -83,7 +83,7 @@ interface PrismarineBlock {
     material?: string;
 }
 
-interface PrismarineItem {
+interface IPrismarineItem {
     id: number;
     name: string;
     displayName: string;
@@ -93,7 +93,7 @@ interface PrismarineItem {
     repairWith?: string[];
 }
 
-interface PrismarineAttribute {
+interface IPrismarineAttribute {
     name: string;
     resource: string;
     min: number;
@@ -104,7 +104,7 @@ interface PrismarineAttribute {
 /**
  * PrismarineJS 伤害类型原始数据结构
  */
-interface PrismarineDamageType {
+interface IPrismarineDamageType {
     name: string;
     scaling: string;
     exhaustion: number;
@@ -115,7 +115,7 @@ interface PrismarineDamageType {
 /**
  * PrismarineJS 游戏事件原始数据结构
  */
-interface PrismarineGameEvent {
+interface IPrismarineGameEvent {
     id: number;
     name: string;
 }
@@ -123,7 +123,7 @@ interface PrismarineGameEvent {
 /**
  * 标签数据原始格式（从 registries.json 或单独标签文件）
  */
-interface TagData {
+interface ITagData {
     values: string[];
 }
 
@@ -222,8 +222,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 附魔数据数组
      */
-    async loadEnchantments(version: string): Promise<PrismarineEnchantment[]> {
-        const data = await this.loadDataFile<PrismarineEnchantment[]>(version, 'enchantments.json');
+    async loadEnchantments(version: string): Promise<IPrismarineEnchantment[]> {
+        const data = await this.loadDataFile<IPrismarineEnchantment[]>(version, 'enchantments.json');
         return data ?? [];
     }
 
@@ -233,8 +233,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 实体数据数组
      */
-    async loadEntities(version: string): Promise<PrismarineEntity[]> {
-        const data = await this.loadDataFile<PrismarineEntity[]>(version, 'entities.json');
+    async loadEntities(version: string): Promise<IPrismarineEntity[]> {
+        const data = await this.loadDataFile<IPrismarineEntity[]>(version, 'entities.json');
         return data ?? [];
     }
 
@@ -244,8 +244,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 粒子效果数据数组
      */
-    async loadParticles(version: string): Promise<PrismarineParticle[]> {
-        const data = await this.loadDataFile<PrismarineParticle[]>(version, 'particles.json');
+    async loadParticles(version: string): Promise<IPrismarineParticle[]> {
+        const data = await this.loadDataFile<IPrismarineParticle[]>(version, 'particles.json');
         return data ?? [];
     }
 
@@ -255,8 +255,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 药水效果数据数组
      */
-    async loadEffects(version: string): Promise<PrismarineEffect[]> {
-        const data = await this.loadDataFile<PrismarineEffect[]>(version, 'effects.json');
+    async loadEffects(version: string): Promise<IPrismarineEffect[]> {
+        const data = await this.loadDataFile<IPrismarineEffect[]>(version, 'effects.json');
         return data ?? [];
     }
 
@@ -266,8 +266,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 生物群系数据数组
      */
-    async loadBiomes(version: string): Promise<PrismarineBiome[]> {
-        const data = await this.loadDataFile<PrismarineBiome[]>(version, 'biomes.json');
+    async loadBiomes(version: string): Promise<IPrismarineBiome[]> {
+        const data = await this.loadDataFile<IPrismarineBiome[]>(version, 'biomes.json');
         return data ?? [];
     }
 
@@ -313,8 +313,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 方块数据数组
      */
-    async loadBlocks(version: string): Promise<PrismarineBlock[]> {
-        const data = await this.loadDataFile<PrismarineBlock[]>(version, 'blocks.json');
+    async loadBlocks(version: string): Promise<IPrismarineBlock[]> {
+        const data = await this.loadDataFile<IPrismarineBlock[]>(version, 'blocks.json');
         return data ?? [];
     }
 
@@ -324,8 +324,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 物品数据数组
      */
-    async loadItems(version: string): Promise<PrismarineItem[]> {
-        const data = await this.loadDataFile<PrismarineItem[]>(version, 'items.json');
+    async loadItems(version: string): Promise<IPrismarineItem[]> {
+        const data = await this.loadDataFile<IPrismarineItem[]>(version, 'items.json');
         return data ?? [];
     }
 
@@ -335,8 +335,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 属性数据数组
      */
-    async loadAttributes(version: string): Promise<PrismarineAttribute[]> {
-        const data = await this.loadDataFile<PrismarineAttribute[]>(version, 'attributes.json');
+    async loadAttributes(version: string): Promise<IPrismarineAttribute[]> {
+        const data = await this.loadDataFile<IPrismarineAttribute[]>(version, 'attributes.json');
         return data ?? [];
     }
 
@@ -373,7 +373,7 @@ export class MinecraftDataLoader {
                 const promises = batch.map(async (tagFileName) => {
                     const tagName = tagFileName.replace('.json', '');
                     const tagUrl = this.buildTagContentUrl(version, tagType, tagFileName);
-                    const tagData = await HttpUtils.fetchFromMultipleSources<TagData>(
+                    const tagData = await HttpUtils.fetchFromMultipleSources<ITagData>(
                         [tagUrl],
                         this.requestTimeout,
                         this.logger,
@@ -465,8 +465,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 伤害类型数据数组
      */
-    async loadDamageTypes(version: string): Promise<PrismarineDamageType[]> {
-        const data = await this.loadDataFile<PrismarineDamageType[]>(version, 'damageTypes.json');
+    async loadDamageTypes(version: string): Promise<IPrismarineDamageType[]> {
+        const data = await this.loadDataFile<IPrismarineDamageType[]>(version, 'damageTypes.json');
         return data ?? [];
     }
 
@@ -476,8 +476,8 @@ export class MinecraftDataLoader {
      * @param version Minecraft 版本号
      * @returns 游戏事件数据数组
      */
-    async loadGameEvents(version: string): Promise<PrismarineGameEvent[]> {
-        const data = await this.loadDataFile<PrismarineGameEvent[]>(version, 'gameEvents.json');
+    async loadGameEvents(version: string): Promise<IPrismarineGameEvent[]> {
+        const data = await this.loadDataFile<IPrismarineGameEvent[]>(version, 'gameEvents.json');
         return data ?? [];
     }
 

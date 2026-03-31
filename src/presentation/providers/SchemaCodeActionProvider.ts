@@ -121,7 +121,7 @@ export class SchemaCodeActionProvider implements CodeActionProvider {
     }
 
     private createFixTypeActions(diagnostic: Diagnostic, document: TextDocument): CodeAction[] {
-        const match = diagnostic.message.match(/expected[:\s]+(?:📦|📋|📝|🔢)?(?:[\s]*)(\w+)/);
+        const match = diagnostic.message.match(/expected[:\s]+(?:|||)?(?:[\s]*)(\w+)/);
         if (!match) {
             return [];
         }

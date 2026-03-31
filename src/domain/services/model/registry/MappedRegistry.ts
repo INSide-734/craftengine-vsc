@@ -6,23 +6,23 @@
 
 import { Key } from '../utils/Key';
 import { type ResourceKey } from './ResourceKey';
-import { type Registry } from './Registry';
-import { type WritableRegistry } from './WritableRegistry';
-import { type HolderOwner } from './Holder';
+import { type IRegistry } from './Registry';
+import { type IWritableRegistry } from './WritableRegistry';
+import { type IHolderOwner } from './Holder';
 import { type HolderReference } from './HolderReference';
 
 /**
  * 抽象映射注册表
  */
-export abstract class AbstractMappedRegistry<T> implements WritableRegistry<T> {
-    protected readonly _key: ResourceKey<Registry<T>>;
+export abstract class AbstractMappedRegistry<T> implements IWritableRegistry<T> {
+    protected readonly _key: ResourceKey<IRegistry<T>>;
     protected readonly byResourceLocation: Map<string, HolderReference<T>>;
     protected readonly byResourceKey: Map<string, HolderReference<T>>;
     protected readonly byId: HolderReference<T>[];
     protected readonly valueToId: Map<T, number>;
     protected readonly valueToKey: Map<T, Key>;
 
-    constructor(key: ResourceKey<Registry<T>>) {
+    constructor(key: ResourceKey<IRegistry<T>>) {
         this._key = key;
         this.byResourceLocation = new Map();
         this.byResourceKey = new Map();
@@ -31,7 +31,7 @@ export abstract class AbstractMappedRegistry<T> implements WritableRegistry<T> {
         this.valueToKey = new Map();
     }
 
-    key(): ResourceKey<Registry<T>> {
+    key(): ResourceKey<IRegistry<T>> {
         return this._key;
     }
 
@@ -111,7 +111,7 @@ export abstract class AbstractMappedRegistry<T> implements WritableRegistry<T> {
         return this.byResourceKey.size === 0;
     }
 
-    canSerializeIn(other: HolderOwner<T>): boolean {
+    canSerializeIn(other: IHolderOwner<T>): boolean {
         return other === this;
     }
 

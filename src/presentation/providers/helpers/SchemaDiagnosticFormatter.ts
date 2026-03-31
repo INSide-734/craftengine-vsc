@@ -153,14 +153,14 @@ export class SchemaDiagnosticFormatter {
                 if (match) {
                     return SCHEMA_MESSAGES.required(match[1]);
                 }
-                return error.message.replace(/^❌\s*/, '');
+                return error.message.replace(/^\s*/, '');
             }
             case 'type': {
                 const match = error.message.match(/expected\s+(.+)$/i);
                 if (match) {
-                    return SCHEMA_MESSAGES.type(match[1].replace(/[📝🔢✓📦📋∅\s]/g, '').trim());
+                    return SCHEMA_MESSAGES.type(match[1].replace(/[✓\s]/g, '').trim());
                 }
-                return error.message.replace(/^⚠️\s*/, '');
+                return error.message.replace(/^\s*/, '');
             }
             case 'enum': {
                 const match = error.message.match(/Allowed:\s*(.+)$/);
@@ -168,14 +168,14 @@ export class SchemaDiagnosticFormatter {
                     const values = match[1].split('|').map((v) => v.trim().replace(/"/g, ''));
                     return SCHEMA_MESSAGES.enum(values);
                 }
-                return error.message.replace(/^❌\s*/, '');
+                return error.message.replace(/^\s*/, '');
             }
             case 'additionalProperties': {
                 const match = error.message.match(/Unknown property "([^"]+)"/);
                 if (match) {
                     return SCHEMA_MESSAGES.additionalProperties(match[1]);
                 }
-                return error.message.replace(/^💡\s*/, '');
+                return error.message.replace(/^\s*/, '');
             }
             case 'pattern':
                 return SCHEMA_MESSAGES.pattern();
@@ -184,31 +184,31 @@ export class SchemaDiagnosticFormatter {
                 if (match) {
                     return SCHEMA_MESSAGES.minLength(parseInt(match[1], 10));
                 }
-                return error.message.replace(/^⚠️\s*/, '');
+                return error.message.replace(/^\s*/, '');
             }
             case 'maxLength': {
                 const match = error.message.match(/maximum\s+(\d+)/);
                 if (match) {
                     return SCHEMA_MESSAGES.maxLength(parseInt(match[1], 10));
                 }
-                return error.message.replace(/^⚠️\s*/, '');
+                return error.message.replace(/^\s*/, '');
             }
             case 'minimum': {
                 const match = error.message.match(/minimum is\s+(\d+)/);
                 if (match) {
                     return SCHEMA_MESSAGES.minimum(parseInt(match[1], 10));
                 }
-                return error.message.replace(/^⚠️\s*/, '');
+                return error.message.replace(/^\s*/, '');
             }
             case 'maximum': {
                 const match = error.message.match(/maximum is\s+(\d+)/);
                 if (match) {
                     return SCHEMA_MESSAGES.maximum(parseInt(match[1], 10));
                 }
-                return error.message.replace(/^⚠️\s*/, '');
+                return error.message.replace(/^\s*/, '');
             }
             default:
-                return error.message.replace(/^(?:❌|⚠️|💡|📝|🔢|✓|📦|📋|∅|➕|✂️|⬆️|⬇️|🗑️|📏)\s*/g, '');
+                return error.message.replace(/^(?:|||||✓|||||||||)\s*/g, '');
         }
     }
 

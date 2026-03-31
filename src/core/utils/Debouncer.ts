@@ -1,3 +1,5 @@
+import { type ILogger } from '../interfaces/ILogger';
+
 /**
  * 防抖工具类
  *
@@ -6,7 +8,7 @@
  *
  * @example
  * ```typescript
- * const debouncer = new Debouncer();
+ * const debouncer = new Debouncer(logger);
  *
  * // 在文档变化时更新诊断（防抖 500ms）
  * document.onDidChange(() => {
@@ -23,6 +25,13 @@ export class Debouncer {
     private timers = new Map<string, NodeJS.Timeout>();
 
     /**
+     * 构造函数
+     *
+     * @param logger - 可选的日志记录器，用于记录错误
+     */
+    constructor(private readonly logger?: ILogger) {}
+
+    /**
      * 执行防抖函数
      *
      * @param key - 防抖键，用于区分不同的防抖任务
@@ -37,14 +46,19 @@ export class Debouncer {
         }
 
         // 设置新的定时器
-        const timer = setTimeout(async () => {
+        const timer = setTimeout(() => {
             this.timers.delete(key);
-            try {
-                await fn();
-            } catch (error) {
-                // 工具函数无 Logger 上下文，使用 console
-                console.error(`Debounced function error for key '${key}':`, error);
-            }
+            void (async () => {
+                try {
+                    await fn();
+                } catch (error) {
+                    if (this.logger) {
+                        this.logger.error(`Debounced function error for key '${key}'`, error as Error);
+                    } else {
+                        throw error;
+                    }
+                }
+            })();
         }, delay);
 
         this.timers.set(key, timer);

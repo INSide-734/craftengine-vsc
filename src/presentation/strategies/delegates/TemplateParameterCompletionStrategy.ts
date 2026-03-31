@@ -194,7 +194,7 @@ export class TemplateParameterCompletionStrategy implements ICompletionStrategy 
         item.insertText = new SnippetString(`${param.name}: ${defaultValue}`);
 
         // 设置详细信息
-        const requiredLabel = isRequired ? '🔴 Required' : '🟡 Optional';
+        const requiredLabel = isRequired ? ' Required' : ' Optional';
         const typeLabel = param.type ? ` (${param.type})` : '';
         item.detail = `${requiredLabel}${typeLabel}`;
 
@@ -203,9 +203,9 @@ export class TemplateParameterCompletionStrategy implements ICompletionStrategy 
         md.isTrusted = true;
 
         if (isRequired) {
-            md.appendMarkdown('🔴 **Required Parameter**\n\n');
+            md.appendMarkdown(' **Required Parameter**\n\n');
         } else {
-            md.appendMarkdown('🟡 **Optional Parameter**\n\n');
+            md.appendMarkdown(' **Optional Parameter**\n\n');
         }
 
         if (param.description) {
@@ -443,6 +443,7 @@ export class TemplateParameterCompletionStrategy implements ICompletionStrategy 
     private provideExtendedTypeCompletions(): ICompletionResult {
         const typeNames = this.extendedTypeService.getTypeNames();
         const items: CompletionItem[] = typeNames.map((typeName, index) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const extType = this.extendedTypeService.getTypeDefinition(typeName)!;
             const item = new CompletionItem(extType.name, CompletionItemKind.EnumMember);
             item.sortText = `0_${index.toString().padStart(2, '0')}_${extType.name}`;
@@ -488,7 +489,7 @@ export class TemplateParameterCompletionStrategy implements ICompletionStrategy 
                 const item = new CompletionItem(prop.name, CompletionItemKind.Property);
 
                 item.sortText = isRequired ? `0_${index}_${prop.name}` : `1_${index}_${prop.name}`;
-                item.detail = isRequired ? '🔴 Required' : '🟡 Optional';
+                item.detail = isRequired ? ' Required' : ' Optional';
 
                 // 根据属性类型创建插入文本
                 if (prop.enumValues && prop.enumValues.length > 0) {
@@ -544,6 +545,7 @@ export class TemplateParameterCompletionStrategy implements ICompletionStrategy 
     private createExtendedTypeSnippetItems(): CompletionItem[] {
         const typeNames = this.extendedTypeService.getTypeNames();
         return typeNames.map((typeName, index) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const extType = this.extendedTypeService.getTypeDefinition(typeName)!;
             const item = new CompletionItem(
                 { label: `(${extType.name})`, description: extType.description },

@@ -12,7 +12,7 @@ import {
     type ITemplateParameter,
     type TemplateParameterRecord,
 } from '../../../core/interfaces/ITemplate';
-import { type TemplateReferenceFinder, type TemplateUsage } from './TemplateReferenceFinder';
+import { type TemplateReferenceFinder } from './TemplateReferenceFinder';
 
 /**
  * 模板参数验证器
@@ -36,7 +36,7 @@ export class TemplateParameterValidator {
     /**
      * 验证模板使用
      */
-    async validateTemplateUsage(usage: TemplateUsage, document: TextDocument): Promise<Diagnostic[]> {
+    async validateITemplateUsage(usage: ITemplateUsage, document: TextDocument): Promise<Diagnostic[]> {
         const diagnostics: Diagnostic[] = [];
 
         try {
@@ -121,7 +121,7 @@ export class TemplateParameterValidator {
             // 模板不存在或其他错误
             const diagnostic = new Diagnostic(
                 usage.range,
-                `Unknown template: ${usage.templateName}\n💡 Hint: Check template name or press Ctrl+Space to view available templates`,
+                `Unknown template: ${usage.templateName}\n Hint: Check template name or press Ctrl+Space to view available templates`,
                 DiagnosticSeverity.Error,
             );
             diagnostic.source = TemplateParameterValidator.DIAGNOSTIC_SOURCE;
@@ -146,7 +146,7 @@ export class TemplateParameterValidator {
     async validateTemplateParameters(
         template: ITemplate,
         providedParameters: TemplateParameterRecord,
-        usage: TemplateUsage,
+        usage: ITemplateUsage,
         document: TextDocument,
     ): Promise<Diagnostic[]> {
         const diagnostics: Diagnostic[] = [];
@@ -195,7 +195,7 @@ export class TemplateParameterValidator {
                     diagnostic.relatedInformation = [
                         new DiagnosticRelatedInformation(
                             new Location(document.uri, usage.range),
-                            `💡 Suggestion: ${warning.suggestion}`,
+                            ` Suggestion: ${warning.suggestion}`,
                         ),
                     ];
                 }

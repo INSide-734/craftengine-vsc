@@ -8,7 +8,7 @@ export type ServiceFactory<T> = (container: IDependencyContainer) => T;
 /**
  * 服务注册配置
  */
-export interface ServiceRegistration<T = unknown> {
+export interface IServiceRegistration<T = unknown> {
     /** 服务令牌 */
     token: symbol;
     /** 工厂函数 */
@@ -27,7 +27,7 @@ export function dynamicImport<T>(modulePath: string): T {
 /**
  * 批量注册服务到容器
  */
-export function registerServices(container: IDependencyContainer, registrations: ServiceRegistration[]): void {
+export function registerServices(container: IDependencyContainer, registrations: IServiceRegistration[]): void {
     for (const { token, factory, lifetime = ServiceLifetime.Singleton } of registrations) {
         container.registerFactory(token, factory, lifetime);
     }

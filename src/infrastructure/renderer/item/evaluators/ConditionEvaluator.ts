@@ -1,4 +1,4 @@
-import type { ConditionItemModel, RenderContext } from '../../types/item-definition';
+import type { IConditionItemModel, IRenderContext } from '../../types/item-definition';
 
 /**
  * Condition 条件求值器
@@ -7,7 +7,7 @@ export class ConditionEvaluator {
     /**
      * 评估条件，返回 true 或 false
      */
-    evaluate(model: ConditionItemModel, context: RenderContext): boolean {
+    evaluate(model: IConditionItemModel, context: IRenderContext): boolean {
         const prop = model.property.replace(/^minecraft:/, '');
 
         switch (prop) {

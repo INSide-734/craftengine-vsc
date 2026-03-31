@@ -5,7 +5,7 @@ import { type ILogEntry, type ILogTarget, LogLevel } from '../../core/interfaces
 /**
  * 文件日志配置选项
  */
-export interface FileLogTargetOptions {
+export interface IFileLogTargetOptions {
     /** 最大文件大小（字节），默认 10MB */
     maxFileSize?: number;
     /** 最大备份文件数量，默认 5 */
@@ -37,7 +37,7 @@ export class FileLogTarget implements ILogTarget {
 
     constructor(
         private readonly logFilePath: string,
-        options?: FileLogTargetOptions,
+        options?: IFileLogTargetOptions,
     ) {
         this.maxFileSize = options?.maxFileSize ?? 10 * 1024 * 1024;
         this.maxBackupCount = options?.maxBackupCount ?? 5;
@@ -74,9 +74,11 @@ export class FileLogTarget implements ILogTarget {
 
             // 异步清理旧备份（不阻塞启动）
             this.cleanupOldBackups().catch((err) => {
+                // eslint-disable-next-line no-console
                 console.error('FileLogTarget startup cleanup error:', err);
             });
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('FileLogTarget startup rotation error:', error);
         }
     }
@@ -111,10 +113,12 @@ export class FileLogTarget implements ILogTarget {
             });
 
             this.writeStream.on('error', (error) => {
+                // eslint-disable-next-line no-console
                 console.error('FileLogTarget write error:', error);
                 this.disposed = true;
             });
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('FileLogTarget initialization error:', error);
             this.disposed = true;
         }
@@ -135,8 +139,9 @@ export class FileLogTarget implements ILogTarget {
 
             // 关闭当前流
             if (this.writeStream) {
+                const stream = this.writeStream;
                 await new Promise<void>((resolve) => {
-                    this.writeStream!.end(() => resolve());
+                    stream.end(() => resolve());
                 });
                 this.writeStream = null;
             }
@@ -160,9 +165,11 @@ export class FileLogTarget implements ILogTarget {
 
             // 异步清理旧备份（不阻塞写入）
             this.cleanupOldBackups().catch((err) => {
+                // eslint-disable-next-line no-console
                 console.error('FileLogTarget cleanup error:', err);
             });
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('FileLogTarget rotation error:', error);
         } finally {
             this.rotating = false;
@@ -274,6 +281,7 @@ export class FileLogTarget implements ILogTarget {
             // 检查是否需要轮转（异步执行，不阻塞当前写入）
             if (this.currentFileSize + this.bufferSize + messageSize >= this.maxFileSize && !this.rotating) {
                 this.rotateLogAsync().catch((err) => {
+                    // eslint-disable-next-line no-console
                     console.error('FileLogTarget rotation error:', err);
                 });
             }
@@ -287,6 +295,7 @@ export class FileLogTarget implements ILogTarget {
                 this.flushBuffer();
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('FileLogTarget write error:', error);
         }
     }
@@ -304,8 +313,9 @@ export class FileLogTarget implements ILogTarget {
 
         // 关闭写入流
         if (this.writeStream) {
+            const stream = this.writeStream;
             await new Promise<void>((resolve) => {
-                this.writeStream!.end(() => {
+                stream.end(() => {
                     this.writeStream = null;
                     resolve();
                 });

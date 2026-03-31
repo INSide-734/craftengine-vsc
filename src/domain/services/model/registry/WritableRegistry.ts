@@ -5,13 +5,13 @@
  */
 
 import { type ResourceKey } from './ResourceKey';
-import { type Registry } from './Registry';
+import { type IRegistry } from './Registry';
 import { type HolderReference } from './HolderReference';
 
 /**
  * 可写注册表接口
  */
-export interface WritableRegistry<T> extends Registry<T> {
+export interface IWritableRegistry<T> extends IRegistry<T> {
     /**
      * 注册持有者引用
      */

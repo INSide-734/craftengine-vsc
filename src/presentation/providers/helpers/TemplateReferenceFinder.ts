@@ -17,7 +17,7 @@ import { calculateSimilarity, getIndentLevel } from '../../../infrastructure/uti
 /**
  * 模板使用信息
  */
-export interface TemplateUsage {
+export interface ITemplateUsage {
     templateName: string;
     range: Range;
     parameters: TemplateParameterRecord;
@@ -56,8 +56,8 @@ export class TemplateReferenceFinder {
      *
      * 基于 Schema 的 x-completion-provider 属性判断字段是否期望模板名称
      */
-    async findTemplateUsages(document: TextDocument): Promise<TemplateUsage[]> {
-        const usages: TemplateUsage[] = [];
+    async findTemplateUsages(document: TextDocument): Promise<ITemplateUsage[]> {
+        const usages: ITemplateUsage[] = [];
         const text = document.getText();
         const lines = text.split('\n');
 

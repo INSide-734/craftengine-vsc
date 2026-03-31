@@ -12,7 +12,7 @@ import {
 /**
  * 服务描述符
  */
-interface ServiceDescriptor {
+interface IServiceDescriptor {
     token: string | symbol;
     implementation?: new (...args: unknown[]) => unknown;
     instance?: unknown;
@@ -25,7 +25,7 @@ interface ServiceDescriptor {
  * 依赖注入容器实现
  */
 export class DependencyContainer implements IDependencyContainer {
-    private readonly services = new Map<string | symbol, ServiceDescriptor>();
+    private readonly services = new Map<string | symbol, IServiceDescriptor>();
     private readonly instances = new Map<string | symbol, unknown>();
     private readonly resolutionStack: (string | symbol)[] = [];
     private readonly registrationOrder: (string | symbol)[] = [];
@@ -43,6 +43,7 @@ export class DependencyContainer implements IDependencyContainer {
 
         // 检测服务覆盖
         if (this.services.has(token)) {
+            // eslint-disable-next-line no-console
             console.warn(`[DependencyContainer] Service override detected: ${this.getTokenName(token)}`);
         }
 
@@ -63,6 +64,7 @@ export class DependencyContainer implements IDependencyContainer {
 
         // 检测服务覆盖
         if (this.services.has(token)) {
+            // eslint-disable-next-line no-console
             console.warn(`[DependencyContainer] Service override detected: ${this.getTokenName(token)}`);
         }
 
@@ -89,6 +91,7 @@ export class DependencyContainer implements IDependencyContainer {
 
         // 检测服务覆盖
         if (this.services.has(token)) {
+            // eslint-disable-next-line no-console
             console.warn(`[DependencyContainer] Service override detected: ${this.getTokenName(token)}`);
         }
 
@@ -131,11 +134,14 @@ export class DependencyContainer implements IDependencyContainer {
             throw new CircularDependencyError(cycle);
         }
 
-        const descriptor = this.services.get(token)!;
+        const descriptor = this.services.get(token);
+        if (!descriptor) {
+            return undefined;
+        }
 
         // 单例模式检查
         if (descriptor.lifetime === ServiceLifetime.Singleton && this.instances.has(token)) {
-            return this.instances.get(token) as T | undefined;
+            return this.instances.get(token) as T;
         }
 
         this.resolutionStack.push(token);
@@ -209,6 +215,7 @@ export class DependencyContainer implements IDependencyContainer {
                     await (instance as { dispose(): Promise<void> | void }).dispose();
                 } catch (error) {
                     // dispose 阶段 Logger 可能已销毁，使用 console
+                    // eslint-disable-next-line no-console
                     console.warn('Error disposing service instance:', error);
                 }
             }

@@ -1,7 +1,7 @@
 import { ResourceId } from '../resource/ResourceId';
 import { type ResourceLoader } from '../resource/ResourceLoader';
 import type { UnresolvedModel } from '../UnresolvedModel';
-import type { ModelJson } from '../../types/index';
+import type { IModelJson } from '../../types/index';
 
 // 用于延迟导入，避免循环依赖
 let UnresolvedModelClass: typeof UnresolvedModel | null = null;
@@ -54,7 +54,7 @@ export class ModelCache {
         }
 
         const buffer = this.loader.getModelBuffer(id);
-        const json = JSON.parse(buffer.toString('utf-8')) as ModelJson;
+        const json = JSON.parse(buffer.toString('utf-8')) as IModelJson;
 
         const UnresolvedModelCls = await this.getUnresolvedModelClass();
         const model = new UnresolvedModelCls(id, this.loader, json);
@@ -79,7 +79,7 @@ export class ModelCache {
      * @param virtualId - 虚拟 ID（用于标识）
      * @returns UnresolvedModel 实例
      */
-    async createFromJson(json: ModelJson, virtualId?: string): Promise<UnresolvedModel> {
+    async createFromJson(json: IModelJson, virtualId?: string): Promise<UnresolvedModel> {
         const id = ResourceId.of(virtualId ?? `virtual:generated_${Date.now()}`);
         const UnresolvedModelCls = await this.getUnresolvedModelClass();
         return new UnresolvedModelCls(id, this.loader, json);

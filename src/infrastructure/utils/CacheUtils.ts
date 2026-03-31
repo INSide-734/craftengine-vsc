@@ -9,7 +9,7 @@
 export { LRUCache } from './LRUCache';
 export { TTLCache } from './TTLCache';
 export { StatsCache } from './StatsCache';
-export type { CacheStats } from './StatsCache';
+export type { ICacheStats } from './StatsCache';
 
 /**
  * 获取或设置缓存值的辅助函数

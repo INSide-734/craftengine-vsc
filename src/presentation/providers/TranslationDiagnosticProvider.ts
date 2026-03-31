@@ -329,6 +329,7 @@ export class TranslationDiagnosticProvider extends BaseDiagnosticProvider {
         const translationKeys = new Map<string, { languages: Set<string> }>();
         const keyDiagnostics: Diagnostic[] = [];
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         for (const [langKey, langNode] of translationsNode.children!) {
             const currentLanguage = String(langKey);
             if (langNode.type !== 'object' || !langNode.children) {

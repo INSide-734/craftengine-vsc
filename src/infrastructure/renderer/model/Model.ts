@@ -1,8 +1,7 @@
 import { Vector3d } from '../vector/Vector3d';
-import type { Element, ImageData } from '../types/index';
+import { Axis, type IElement, type IImageData } from '../types/index';
 import type { Scene } from '../scene/Scene';
 import type { Cuboid } from '../scene/geometry/Cuboid';
-import { Axis } from '../types/index';
 
 /**
  * Model 类型（联合类型）
@@ -14,7 +13,7 @@ export type Model = GeometricalModel | LayeredModel;
  */
 export class GeometricalModel {
     constructor(
-        public readonly elements: Element[],
+        public readonly elements: IElement[],
         public readonly ambientOcclusion: boolean,
         public readonly rotation: Vector3d,
         public readonly translation: Vector3d,
@@ -65,12 +64,12 @@ export class GeometricalModel {
  * 层叠模型（2D 物品模型）
  */
 export class LayeredModel {
-    constructor(public readonly layers: ImageData[]) {}
+    constructor(public readonly layers: IImageData[]) {}
 
     /**
      * 合成所有图层为单个图像
      */
-    toImageData(): ImageData {
+    toImageData(): IImageData {
         if (this.layers.length === 0) {
             return {
                 width: 16,

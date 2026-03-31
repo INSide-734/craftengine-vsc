@@ -188,4 +188,132 @@ describe('SchemaValidator', () => {
             expect(mockLogger.debug).toHaveBeenCalledWith('Validation cache cleared (including Ajv internal cache)');
         });
     });
+
+    // ========================================
+    // Bug 修复测试：Schema 重复注册
+    // ========================================
+    describe('Bug: Schema duplicate registration', () => {
+        it('should not throw error when validating same schema multiple times', async () => {
+            // 模拟 index.schema.json 的 Schema
+            vi.mocked(mockSchemaParser.loadSchema).mockResolvedValue({
+                schema: {
+                    $id: 'https://craftengine.dev/schemas/index.schema.json',
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string' },
+                    },
+                },
+                resolved: {
+                    $id: 'https://craftengine.dev/schemas/index.schema.json',
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string' },
+                    },
+                },
+                dependencies: [],
+            });
+
+            const data = { name: 'test' };
+
+            // 第一次验证
+            const result1 = await validator.validate(data, 'index.schema.json');
+            expect(result1.valid).toBe(true);
+
+            // 第二次验证 - 不应该抛出 "schema with key or id already exists" 错误
+            const result2 = await validator.validate(data, 'index.schema.json');
+            expect(result2.valid).toBe(true);
+
+            // 第三次验证 - 确保多次调用都不会出错
+            const result3 = await validator.validate(data, 'index.schema.json');
+            expect(result3.valid).toBe(true);
+        });
+
+        it('should handle schema with $id correctly across multiple validations', async () => {
+            vi.mocked(mockSchemaParser.loadSchema).mockResolvedValue({
+                schema: {
+                    $id: 'https://craftengine.dev/schemas/test.schema.json',
+                    type: 'object',
+                    properties: {
+                        value: { type: 'number' },
+                    },
+                    required: ['value'],
+                },
+                resolved: {
+                    $id: 'https://craftengine.dev/schemas/test.schema.json',
+                    type: 'object',
+                    properties: {
+                        value: { type: 'number' },
+                    },
+                    required: ['value'],
+                },
+                dependencies: [],
+            });
+
+            // 多次验证不同的数据
+            await validator.validate({ value: 1 }, 'test.schema.json');
+            await validator.validate({ value: 2 }, 'test.schema.json');
+            await validator.validate({ value: 3 }, 'test.schema.json');
+
+            // 不应该抛出任何错误
+            expect(true).toBe(true);
+        });
+
+        it('should use Ajv internal cache when schema $id exists', async () => {
+            // 模拟带有 $id 的 schema
+            vi.mocked(mockSchemaParser.loadSchema).mockResolvedValue({
+                schema: {
+                    $id: 'https://craftengine.dev/schemas/cached.schema.json',
+                    type: 'object',
+                    properties: {
+                        test: { type: 'string' },
+                    },
+                },
+                resolved: {
+                    $id: 'https://craftengine.dev/schemas/cached.schema.json',
+                    type: 'object',
+                    properties: {
+                        test: { type: 'string' },
+                    },
+                },
+                dependencies: [],
+            });
+
+            // 第一次验证 - 编译并缓存
+            const result1 = await validator.validate({ test: 'value1' }, 'cached.schema.json');
+            expect(result1.valid).toBe(true);
+
+            // 清除本地缓存但保留 Ajv 内部缓存
+            validator.clearCache();
+
+            // 第二次验证 - 应该从 Ajv 内部缓存获取
+            const result2 = await validator.validate({ test: 'value2' }, 'cached.schema.json');
+            expect(result2.valid).toBe(true);
+        });
+
+        it('should handle schema without $id normally', async () => {
+            // 模拟没有 $id 的 schema
+            vi.mocked(mockSchemaParser.loadSchema).mockResolvedValue({
+                schema: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string' },
+                    },
+                },
+                resolved: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string' },
+                    },
+                },
+                dependencies: [],
+            });
+
+            // 多次验证应该正常工作
+            await validator.validate({ name: 'test1' }, 'no-id.schema.json');
+            await validator.validate({ name: 'test2' }, 'no-id.schema.json');
+            await validator.validate({ name: 'test3' }, 'no-id.schema.json');
+
+            expect(true).toBe(true);
+        });
+    });
 });

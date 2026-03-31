@@ -120,42 +120,42 @@ export class ValidationErrorFormatter {
     private formatErrorMessage(error: ErrorObject): string {
         switch (error.keyword) {
             case 'required':
-                return `❌ Missing required field "${error.params.missingProperty}"`;
+                return ` Missing required field "${error.params.missingProperty}"`;
 
             case 'type':
-                return `⚠️ Type mismatch: expected ${this.formatType(error.params.type)}`;
+                return ` Type mismatch: expected ${this.formatType(error.params.type)}`;
 
             case 'enum':
                 const values = error.params.allowedValues || [];
                 if (values.length <= 3) {
-                    return `❌ Invalid value. Allowed: ${values.map((v: unknown) => `"${v}"`).join(' | ')}`;
+                    return ` Invalid value. Allowed: ${values.map((v: unknown) => `"${v}"`).join(' | ')}`;
                 } else {
-                    return `❌ Invalid value. Must be one of ${values.length} allowed values`;
+                    return ` Invalid value. Must be one of ${values.length} allowed values`;
                 }
 
             case 'pattern':
-                return `⚠️ Format error: ${this.simplifyPatternMessage(error.message || 'invalid format')}`;
+                return ` Format error: ${this.simplifyPatternMessage(error.message || 'invalid format')}`;
 
             case 'additionalProperties':
-                return `💡 Unknown property "${error.params.additionalProperty}"`;
+                return ` Unknown property "${error.params.additionalProperty}"`;
 
             case 'minLength':
-                return `⚠️ Too short: minimum ${error.params.limit} characters required`;
+                return ` Too short: minimum ${error.params.limit} characters required`;
 
             case 'maxLength':
-                return `⚠️ Too long: maximum ${error.params.limit} characters allowed`;
+                return ` Too long: maximum ${error.params.limit} characters allowed`;
 
             case 'minimum':
-                return `⚠️ Value too small: minimum is ${error.params.limit}`;
+                return ` Value too small: minimum is ${error.params.limit}`;
 
             case 'maximum':
-                return `⚠️ Value too large: maximum is ${error.params.limit}`;
+                return ` Value too large: maximum is ${error.params.limit}`;
 
             case 'format':
-                return `⚠️ Invalid ${error.params.format} format`;
+                return ` Invalid ${error.params.format} format`;
 
             default:
-                return error.message ? `⚠️ ${this.capitalizeFirst(error.message)}` : '⚠️ Validation error';
+                return error.message ? ` ${this.capitalizeFirst(error.message)}` : ' Validation error';
         }
     }
 
@@ -174,13 +174,13 @@ export class ValidationErrorFormatter {
      */
     private formatSingleType(type: string): string {
         const typeMap: Record<string, string> = {
-            string: '📝 text',
-            number: '🔢 number',
-            integer: '🔢 integer',
+            string: ' text',
+            number: ' number',
+            integer: ' integer',
             boolean: '✓ true/false',
-            object: '📦 object',
-            array: '📋 list',
-            null: '∅ null',
+            object: ' object',
+            array: ' list',
+            null: ' null',
         };
         return typeMap[type] || type;
     }
@@ -229,7 +229,7 @@ export class ValidationErrorFormatter {
     private getSuggestion(error: ErrorObject): string | undefined {
         switch (error.keyword) {
             case 'required':
-                return `➕ Add missing field:\n    ${error.params.missingProperty}: <value>`;
+                return ` Add missing field:\n    ${error.params.missingProperty}: <value>`;
 
             case 'type':
                 const expectedType = Array.isArray(error.params.type)
@@ -252,28 +252,28 @@ export class ValidationErrorFormatter {
                 break;
 
             case 'additionalProperties':
-                return `🗑️ Remove unknown property or check spelling:\n    "${error.params.additionalProperty}"`;
+                return ` Remove unknown property or check spelling:\n    "${error.params.additionalProperty}"`;
 
             case 'pattern':
-                return `📝 Check the format and fix any syntax errors`;
+                return ` Check the format and fix any syntax errors`;
 
             case 'minLength': {
                 const currentLength = typeof error.data === 'string' ? error.data.length : 0;
                 const needed = error.params.limit - currentLength;
-                return needed > 0 ? `📏 Add at least ${needed} more characters` : '📏 Too short';
+                return needed > 0 ? ` Add at least ${needed} more characters` : ' Too short';
             }
 
             case 'maxLength': {
                 const currentLength = typeof error.data === 'string' ? error.data.length : 0;
                 const excess = currentLength - error.params.limit;
-                return excess > 0 ? `✂️ Remove ${excess} characters` : '✂️ Too long';
+                return excess > 0 ? ` Remove ${excess} characters` : ' Too long';
             }
 
             case 'minimum':
-                return `⬆️ Increase value to at least ${error.params.limit}`;
+                return ` Increase value to at least ${error.params.limit}`;
 
             case 'maximum':
-                return `⬇️ Decrease value to at most ${error.params.limit}`;
+                return ` Decrease value to at most ${error.params.limit}`;
         }
 
         return undefined;
@@ -284,12 +284,12 @@ export class ValidationErrorFormatter {
      */
     private getTypeExample(type: string): string {
         const examples: Record<string, string> = {
-            string: '📝 Example:\n    field: "text value"',
-            number: '🔢 Example:\n    field: 42',
-            integer: '🔢 Example:\n    field: 10',
+            string: ' Example:\n    field: "text value"',
+            number: ' Example:\n    field: 42',
+            integer: ' Example:\n    field: 10',
             boolean: '✓ Example:\n    field: true',
-            object: '📦 Example:\n    field:\n      property: value',
-            array: '📋 Example:\n    field:\n      - item1\n      - item2',
+            object: ' Example:\n    field:\n      property: value',
+            array: ' Example:\n    field:\n      - item1\n      - item2',
         };
 
         return examples[type] || `Change to ${type} type`;

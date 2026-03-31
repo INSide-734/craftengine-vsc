@@ -2,7 +2,7 @@
  * Schema 工具函数和辅助类
  */
 
-import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
 
 /**
  * 从正则表达式模式中提取字段名称
@@ -33,7 +33,7 @@ export function extractFieldNameFromPattern(pattern: string): string | null {
         }
 
         return null;
-    } catch (error) {
+    } catch {
         return null;
     }
 }
@@ -61,7 +61,7 @@ export function getFallbackTopLevelFields(): string[] {
 /**
  * Schema 属性详情
  */
-export interface SchemaPropertyDetails {
+export interface ISchemaPropertyDetails {
     description?: string;
     type?: string | string[];
     examples?: unknown[];
@@ -75,7 +75,7 @@ export interface SchemaPropertyDetails {
 /**
  * Schema 属性信息
  */
-export interface SchemaProperty {
+export interface ISchemaProperty {
     key: string;
-    schema: JsonSchemaNode;
+    schema: IJsonSchemaNode;
 }

@@ -7,12 +7,12 @@ import { DirectionAxis, ALL_DIRECTIONS } from './Direction';
 import {
     Axis,
     Direction,
-    type Element,
-    type ElementRotation,
-    type ImageData,
-    type ModelJson,
-    type ElementJson,
-    type FaceJson,
+    type IElement,
+    type IElementRotation,
+    type IImageData,
+    type IModelJson,
+    type IElementJson,
+    type IFaceJson,
 } from '../types/index';
 import { applyTintToImageData } from '../util/tint';
 
@@ -34,7 +34,7 @@ export class UnresolvedModel {
     constructor(
         id: ResourceId,
         public readonly loader: ResourceLoader,
-        json: ModelJson,
+        json: IModelJson,
     ) {
         // 解析纹理映射
         this.textureNames = new Map(Object.entries(json.textures ?? {}));
@@ -167,7 +167,7 @@ export class UnresolvedModel {
 
         if (layered) {
             // 层叠模型（2D 物品）
-            const layers: ImageData[] = [];
+            const layers: IImageData[] = [];
             let i = 0;
             while (true) {
                 const texture = this.textureNames.get(`layer${i}`);
@@ -198,7 +198,7 @@ export class UnresolvedModel {
                 resolvedTextures.set(key, resolved);
             }
 
-            const resolvedElements: Element[] = [];
+            const resolvedElements: IElement[] = [];
             if (elements) {
                 for (const element of elements) {
                     resolvedElements.push(await element.resolve(resolvedTextures, tints));
@@ -222,12 +222,12 @@ export class UnresolvedModel {
 class UnresolvedElement {
     readonly from: Vector3d;
     readonly to: Vector3d;
-    private readonly rotation: ElementRotation | null;
+    private readonly rotation: IElementRotation | null;
     private readonly faces: Map<Direction, UnresolvedTexture>;
 
     constructor(
         public readonly model: UnresolvedModel,
-        json: ElementJson,
+        json: IElementJson,
     ) {
         this.from = new Vector3d(json.from[0] / 16, json.from[1] / 16, json.from[2] / 16);
         this.to = new Vector3d(json.to[0] / 16, json.to[1] / 16, json.to[2] / 16);
@@ -257,8 +257,8 @@ class UnresolvedElement {
         }
     }
 
-    async resolve(textures: Map<string, string>, tints?: number[]): Promise<Element> {
-        const faceTextures = new Map<Direction, ImageData>();
+    async resolve(textures: Map<string, string>, tints?: number[]): Promise<IElement> {
+        const faceTextures = new Map<Direction, IImageData>();
 
         for (const [dir, unresolvedTex] of this.faces) {
             faceTextures.set(dir, await unresolvedTex.resolve(textures, tints));
@@ -295,7 +295,7 @@ class UnresolvedTexture {
     constructor(
         private readonly element: UnresolvedElement,
         direction: Direction,
-        json: FaceJson,
+        json: IFaceJson,
     ) {
         this.texture = json.texture.replace(/^#/, '');
         this.rotation = json.rotation ?? 0;
@@ -315,7 +315,7 @@ class UnresolvedTexture {
         }
     }
 
-    async resolve(textures: Map<string, string>, tints?: number[]): Promise<ImageData> {
+    async resolve(textures: Map<string, string>, tints?: number[]): Promise<IImageData> {
         const texturePath = textures.get(this.texture);
 
         // 如果纹理未定义或仍是变量引用，返回空纹理（模板模型的正常情况）

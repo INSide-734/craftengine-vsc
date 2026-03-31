@@ -18,7 +18,8 @@ vi.mock('fs', () => ({
 
 // Mock path 模块
 vi.mock('path', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('path')>();
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    const actual: typeof import('path') = await importOriginal();
     return {
         ...actual,
         join: vi.fn((...args: string[]) => args.join('/')),

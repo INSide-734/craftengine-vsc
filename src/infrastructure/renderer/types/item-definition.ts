@@ -8,7 +8,7 @@
 /**
  * 物品定义根结构
  */
-export interface ItemDefinition {
+export interface IItemDefinition {
     model: ItemModel;
 }
 
@@ -18,14 +18,14 @@ export interface ItemDefinition {
  * 所有模型类型的联合
  */
 export type ItemModel =
-    | SimpleItemModel
-    | SpecialItemModel
-    | CompositeItemModel
-    | SelectItemModel
-    | ConditionItemModel
-    | RangeDispatchItemModel
-    | EmptyItemModel
-    | BundleSelectedItemModel;
+    | ISimpleItemModel
+    | ISpecialItemModel
+    | ICompositeItemModel
+    | ISelectItemModel
+    | IConditionItemModel
+    | IRangeDispatchItemModel
+    | IEmptyItemModel
+    | IBundleSelectedItemModel;
 
 // ============= 类型1: 简单模型引用 =============
 
@@ -33,7 +33,7 @@ export type ItemModel =
  * 简单模型引用
  * {"type": "minecraft:model", "model": "minecraft:item/diamond_sword"}
  */
-export interface SimpleItemModel {
+export interface ISimpleItemModel {
     type: 'minecraft:model' | 'model';
     model: string;
     tints?: TintSource[];
@@ -44,7 +44,7 @@ export interface SimpleItemModel {
 /**
  * 特殊模型 (箱子、床、旗帜等)
  */
-export interface SpecialItemModel {
+export interface ISpecialItemModel {
     type: 'minecraft:special' | 'special';
     base: string;
     model: SpecialModelConfig;
@@ -55,70 +55,70 @@ export interface SpecialItemModel {
  * 特殊模型配置
  */
 export type SpecialModelConfig =
-    | ChestSpecialModel
-    | BedSpecialModel
-    | BannerSpecialModel
-    | ShulkerBoxSpecialModel
-    | HeadSpecialModel
-    | ConduitSpecialModel
-    | DecoratedPotSpecialModel
-    | ShieldSpecialModel
-    | TridentSpecialModel
-    | StandingSignSpecialModel
-    | HangingSignSpecialModel;
+    | IChestSpecialModel
+    | IBedSpecialModel
+    | IBannerSpecialModel
+    | IShulkerBoxSpecialModel
+    | IHeadSpecialModel
+    | IConduitSpecialModel
+    | IDecoratedPotSpecialModel
+    | IShieldSpecialModel
+    | ITridentSpecialModel
+    | IStandingSignSpecialModel
+    | IHangingSignSpecialModel;
 
-export interface ChestSpecialModel {
+export interface IChestSpecialModel {
     type: 'minecraft:chest' | 'chest';
     texture: string;
     openness?: number;
 }
 
-export interface BedSpecialModel {
+export interface IBedSpecialModel {
     type: 'minecraft:bed' | 'bed';
     texture: string;
 }
 
-export interface BannerSpecialModel {
+export interface IBannerSpecialModel {
     type: 'minecraft:banner' | 'banner';
     color: string;
 }
 
-export interface ShulkerBoxSpecialModel {
+export interface IShulkerBoxSpecialModel {
     type: 'minecraft:shulker_box' | 'shulker_box';
     texture: string;
     openness?: number;
     orientation?: string;
 }
 
-export interface HeadSpecialModel {
+export interface IHeadSpecialModel {
     type: 'minecraft:head' | 'head';
     kind: string;
     texture?: string;
     animation?: number;
 }
 
-export interface ConduitSpecialModel {
+export interface IConduitSpecialModel {
     type: 'minecraft:conduit' | 'conduit';
 }
 
-export interface DecoratedPotSpecialModel {
+export interface IDecoratedPotSpecialModel {
     type: 'minecraft:decorated_pot' | 'decorated_pot';
 }
 
-export interface ShieldSpecialModel {
+export interface IShieldSpecialModel {
     type: 'minecraft:shield' | 'shield';
 }
 
-export interface TridentSpecialModel {
+export interface ITridentSpecialModel {
     type: 'minecraft:trident' | 'trident';
 }
 
-export interface StandingSignSpecialModel {
+export interface IStandingSignSpecialModel {
     type: 'minecraft:standing_sign' | 'standing_sign';
     wood_type: string;
 }
 
-export interface HangingSignSpecialModel {
+export interface IHangingSignSpecialModel {
     type: 'minecraft:hanging_sign' | 'hanging_sign';
     wood_type: string;
 }
@@ -128,10 +128,10 @@ export interface HangingSignSpecialModel {
 /**
  * 条件选择模型
  */
-export interface SelectItemModel {
+export interface ISelectItemModel {
     type: 'minecraft:select' | 'select';
     property: string;
-    cases: SelectCase[];
+    cases: ISelectCase[];
     fallback?: ItemModel;
     pattern?: string;
     locale?: string;
@@ -141,7 +141,7 @@ export interface SelectItemModel {
     tints?: TintSource[];
 }
 
-export interface SelectCase {
+export interface ISelectCase {
     when: string | string[];
     model: ItemModel;
 }
@@ -151,7 +151,7 @@ export interface SelectCase {
 /**
  * 布尔条件模型
  */
-export interface ConditionItemModel {
+export interface IConditionItemModel {
     type: 'minecraft:condition' | 'condition';
     property: string;
     on_true: ItemModel;
@@ -166,18 +166,18 @@ export interface ConditionItemModel {
 /**
  * 数值范围分发模型
  */
-export interface RangeDispatchItemModel {
+export interface IRangeDispatchItemModel {
     type: 'minecraft:range_dispatch' | 'range_dispatch';
     property: string;
     scale?: number;
-    entries: RangeDispatchEntry[];
+    entries: IRangeDispatchEntry[];
     fallback?: ItemModel;
     normalize?: boolean;
     source?: string;
     tints?: TintSource[];
 }
 
-export interface RangeDispatchEntry {
+export interface IRangeDispatchEntry {
     threshold: number;
     model: ItemModel;
 }
@@ -187,7 +187,7 @@ export interface RangeDispatchEntry {
 /**
  * 复合模型
  */
-export interface CompositeItemModel {
+export interface ICompositeItemModel {
     type: 'minecraft:composite' | 'composite';
     models: ItemModel[];
     tints?: TintSource[];
@@ -195,14 +195,14 @@ export interface CompositeItemModel {
 
 // ============= 类型7: 空模型 =============
 
-export interface EmptyItemModel {
+export interface IEmptyItemModel {
     type: 'minecraft:empty' | 'empty';
     tints?: TintSource[];
 }
 
 // ============= 类型8: 收纳袋选中物品 =============
 
-export interface BundleSelectedItemModel {
+export interface IBundleSelectedItemModel {
     type: 'minecraft:bundle/selected_item' | 'bundle/selected_item';
     tints?: TintSource[];
 }
@@ -210,52 +210,52 @@ export interface BundleSelectedItemModel {
 // ============= 着色源 (Tint Sources) =============
 
 export type TintSource =
-    | ConstantTintSource
-    | DyeTintSource
-    | GrassTintSource
-    | FireworkTintSource
-    | PotionTintSource
-    | MapColorTintSource
-    | TeamTintSource
-    | CustomModelDataTintSource;
+    | IConstantTintSource
+    | IDyeTintSource
+    | IGrassTintSource
+    | IFireworkTintSource
+    | IPotionTintSource
+    | IMapColorTintSource
+    | ITeamTintSource
+    | ICustomModelDataTintSource;
 
-export interface ConstantTintSource {
+export interface IConstantTintSource {
     type: 'minecraft:constant' | 'constant';
     value: number;
 }
 
-export interface DyeTintSource {
+export interface IDyeTintSource {
     type: 'minecraft:dye' | 'dye';
     default: number;
 }
 
-export interface GrassTintSource {
+export interface IGrassTintSource {
     type: 'minecraft:grass' | 'grass';
     temperature?: number;
     downfall?: number;
 }
 
-export interface FireworkTintSource {
+export interface IFireworkTintSource {
     type: 'minecraft:firework' | 'firework';
     default: number;
 }
 
-export interface PotionTintSource {
+export interface IPotionTintSource {
     type: 'minecraft:potion' | 'potion';
     default: number;
 }
 
-export interface MapColorTintSource {
+export interface IMapColorTintSource {
     type: 'minecraft:map_color' | 'map_color';
     default: number;
 }
 
-export interface TeamTintSource {
+export interface ITeamTintSource {
     type: 'minecraft:team' | 'team';
     default: number;
 }
 
-export interface CustomModelDataTintSource {
+export interface ICustomModelDataTintSource {
     type: 'minecraft:custom_model_data' | 'custom_model_data';
     index?: number;
     default: number;
@@ -267,7 +267,7 @@ export interface CustomModelDataTintSource {
  * 渲染条件上下文
  * 用户通过 API 传入，用于解析 select/condition/range_dispatch
  */
-export interface RenderContext {
+export interface IRenderContext {
     // 时间相关
     localTime?: Date;
     timeOfDay?: number;

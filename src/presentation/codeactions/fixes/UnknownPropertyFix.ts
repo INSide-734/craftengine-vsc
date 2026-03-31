@@ -75,8 +75,8 @@ export class UnknownPropertyFix implements IQuickFixProvider {
             return match[1];
         }
 
-        // 匹配旧格式: 💡 Unknown property "propertyName"
-        const oldMatch = diagnostic.message.match(/💡\s*Unknown property "([^"]+)"/);
+        // 匹配旧格式:  Unknown property "propertyName"
+        const oldMatch = diagnostic.message.match(/\s*Unknown property "([^"]+)"/);
         if (oldMatch) {
             return oldMatch[1];
         }

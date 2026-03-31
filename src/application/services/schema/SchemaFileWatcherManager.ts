@@ -251,7 +251,7 @@ export class SchemaFileWatcherManager implements EditorDisposable {
         }
 
         this.debounceTimer = setTimeout(() => {
-            this.flushPendingChanges();
+            void this.flushPendingChanges();
         }, SchemaFileWatcherManager.DEBOUNCE_DELAY);
     }
 

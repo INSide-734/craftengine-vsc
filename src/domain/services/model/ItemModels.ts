@@ -8,8 +8,8 @@
 
 import { Key } from './utils/Key';
 import { ResourceKey } from './registry/ResourceKey';
-import { type WritableRegistry } from './registry/WritableRegistry';
-import { BuiltInRegistries, type ItemModelFactory, type ItemModelReader } from './registry/BuiltInRegistries';
+import { type IWritableRegistry } from './registry/WritableRegistry';
+import { BuiltInRegistries, type IItemModelFactory, type IItemModelReader } from './registry/BuiltInRegistries';
 import { Registries } from './registry/Registries';
 import { InvalidItemModelError } from '../../../core/errors/ExtensionErrors';
 
@@ -53,18 +53,18 @@ export const ITEM_MODEL_TYPES: Record<string, Key> = new Proxy({} as Record<stri
 /**
  * 注册物品模型工厂
  */
-export function registerItemModelFactory(key: Key, factory: ItemModelFactory): void {
-    const registry = BuiltInRegistries.ITEM_MODEL_FACTORY as WritableRegistry<ItemModelFactory>;
-    const resourceKey = ResourceKey.create<ItemModelFactory>(Registries.ITEM_MODEL_FACTORY.getLocation(), key);
+export function registerItemModelFactory(key: Key, factory: IItemModelFactory): void {
+    const registry = BuiltInRegistries.ITEM_MODEL_FACTORY as IWritableRegistry<IItemModelFactory>;
+    const resourceKey = ResourceKey.create<IItemModelFactory>(Registries.ITEM_MODEL_FACTORY.getLocation(), key);
     registry.register(resourceKey, factory);
 }
 
 /**
  * 注册物品模型读取器
  */
-export function registerItemModelReader(key: Key, reader: ItemModelReader): void {
-    const registry = BuiltInRegistries.ITEM_MODEL_READER as WritableRegistry<ItemModelReader>;
-    const resourceKey = ResourceKey.create<ItemModelReader>(Registries.ITEM_MODEL_READER.getLocation(), key);
+export function registerItemModelReader(key: Key, reader: IItemModelReader): void {
+    const registry = BuiltInRegistries.ITEM_MODEL_READER as IWritableRegistry<IItemModelReader>;
+    const resourceKey = ResourceKey.create<IItemModelReader>(Registries.ITEM_MODEL_READER.getLocation(), key);
     registry.register(resourceKey, reader);
 }
 

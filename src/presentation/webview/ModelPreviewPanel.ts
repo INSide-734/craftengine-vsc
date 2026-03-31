@@ -45,8 +45,11 @@ export class ModelPreviewPanel implements Disposable {
 
         this.currentItemId = itemId;
         this.currentImageBuffer = imageBuffer;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.panel!.title = `Preview: ${this.formatItemId(itemId)}`;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.panel!.webview.html = this.getWebviewContent(itemId, imageBuffer);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.panel!.reveal(ViewColumn.Beside);
 
         this.logger.debug('Preview panel shown', { itemId });
@@ -235,7 +238,7 @@ export class ModelPreviewPanel implements Disposable {
         </div>
         <div class="actions">
             <button class="copy-button" id="copyButton" title="Copy image to clipboard">
-                <span class="button-icon">📋</span>
+                <span class="button-icon"></span>
                 <span class="button-text">Copy Image</span>
             </button>
         </div>

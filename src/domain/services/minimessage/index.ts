@@ -1,7 +1,7 @@
 export { MiniMessageParser } from './MiniMessageParser';
 export type {
-    MiniMessageTag,
-    MiniMessageValidationError,
-    MiniMessageValidationResult,
+    IMiniMessageTag,
+    IMiniMessageValidationError,
+    IMiniMessageValidationResult,
     IMiniMessageDataProvider,
 } from './MiniMessageTypes';

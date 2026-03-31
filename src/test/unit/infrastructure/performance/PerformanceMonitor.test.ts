@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PerformanceMonitor, IPerformanceMetric } from '../../../../infrastructure/performance/PerformanceMonitor';
+import { PerformanceMonitor } from '../../../../infrastructure/performance/PerformanceMonitor';
 import { type ILogger } from '../../../../core/interfaces/ILogger';
 import { type IEventBus } from '../../../../core/interfaces/IEventBus';
 import { type IConfiguration } from '../../../../core/interfaces/IConfiguration';

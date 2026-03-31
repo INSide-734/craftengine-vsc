@@ -10,7 +10,7 @@ import { type ILogger } from '../../../core/interfaces/ILogger';
 import { type IDataConfigLoader } from '../../../core/interfaces/IDataConfigLoader';
 import { type ITemplate, type ITemplateParameter } from '../../../core/interfaces/ITemplate';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
-import { type CompletionItemWithStrategy } from '../../types/CompletionTypes';
+import { type ICompletionItemWithStrategy } from '../../types/CompletionTypes';
 import { extractCompletionPrefix } from '../../../infrastructure/utils/StringUtils';
 import { buildTemplateMarkdown } from '../../providers/helpers/TemplateDocumentationBuilder';
 
@@ -141,8 +141,8 @@ export class TemplateNameCompletionStrategy implements ICompletionStrategy {
             const requiredCount = template.getRequiredParameters().length;
             const detail =
                 paramCount > 0
-                    ? `📋 Template (${requiredCount} required, ${paramCount - requiredCount} optional)`
-                    : `📋 Template (no parameters)`;
+                    ? ` Template (${requiredCount} required, ${paramCount - requiredCount} optional)`
+                    : ` Template (no parameters)`;
 
             return {
                 ...item,
@@ -201,12 +201,12 @@ export class TemplateNameCompletionStrategy implements ICompletionStrategy {
             }
 
             item.insertText = snippet;
-            item.detail = `📋 ${template.parameters.length} param${template.parameters.length !== 1 ? 's' : ''} (with arguments)`;
+            item.detail = ` ${template.parameters.length} param${template.parameters.length !== 1 ? 's' : ''} (with arguments)`;
         } else {
             // 仅模板名模式
             item = new CompletionItem(template.name, CompletionItemKind.Snippet);
             item.insertText = template.name;
-            item.detail = `📋 ${template.parameters.length} param${template.parameters.length !== 1 ? 's' : ''}`;
+            item.detail = ` ${template.parameters.length} param${template.parameters.length !== 1 ? 's' : ''}`;
         }
 
         // 设置通用属性
@@ -214,7 +214,7 @@ export class TemplateNameCompletionStrategy implements ICompletionStrategy {
         item.filterText = template.name;
 
         // 设置策略标识，让 BaseCompletionProvider 知道使用哪个策略来解析
-        (item as CompletionItemWithStrategy)._strategy = this.name;
+        (item as ICompletionItemWithStrategy)._strategy = this.name;
 
         // 不设置 documentation，让 resolveCompletionItem 延迟加载详细文档
         // 这样 VSCode 会调用 resolveCompletionItem 来获取详细的模板文档

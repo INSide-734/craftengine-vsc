@@ -7,7 +7,7 @@ import { type IWorkspaceService } from '../../core/interfaces/IWorkspaceService'
 import { type IFileWatcherFactory } from '../../core/interfaces/IFileWatcherFactory';
 import { type IExtensionRegistry } from '../../core/interfaces/IExtensionRegistry';
 import { type ISchemaFileLoader } from '../../core/interfaces/ISchemaFileLoader';
-import { type JsonSchemaNode } from '../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../core/types/JsonSchemaTypes';
 import { type ISchemaService, type IJsonSchema } from '../../core/interfaces/ISchemaService';
 import { type IPerformanceMonitor } from '../../core/interfaces/IPerformanceMonitor';
 import { ServiceNotInitializedError } from '../../core/errors/ExtensionErrors';
@@ -263,7 +263,7 @@ export class SchemaService implements ISchemaService {
 
         const resolver = this.loaderService.getResolver();
         return (await resolver.resolveReferences(
-            schema as unknown as JsonSchemaNode,
+            schema as unknown as IJsonSchemaNode,
             maxDepth,
         )) as unknown as IJsonSchema;
     }

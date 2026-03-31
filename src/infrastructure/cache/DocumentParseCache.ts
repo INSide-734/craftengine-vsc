@@ -269,7 +269,7 @@ export class DocumentParseCache implements IDocumentParseCache {
                     range,
                     keyRange,
                 });
-            } catch (error) {
+            } catch {
                 // 位置超出范围时忽略
                 this.logger.debug('Position out of range', { path: pathKey });
             }
@@ -352,7 +352,7 @@ export class DocumentParseCache implements IDocumentParseCache {
                 range: colonRange,
                 keyRange,
             });
-        } catch (error) {
+        } catch {
             this.logger.debug('Failed to add empty value position', { path: path.join('.') });
         }
     }

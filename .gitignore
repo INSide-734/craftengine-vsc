@@ -10,3 +10,7 @@ docs/
 # 日志文件
 logs/*.log
 /coverage
+
+# 构建产物
+craftengine-vsc-universal-*.json
+craftengine-vsc-*-*.json

@@ -1,7 +1,6 @@
 import { Vector3d } from '../../../vector/Vector3d';
-import type { Ray } from '../../camera/Ray';
-import { type Intersection } from '../../camera/Ray';
-import type { ElementRotation } from '../../../types/index';
+import { type IIntersection, type IRay } from '../../camera/Ray';
+import type { IElementRotation } from '../../../types/index';
 import type { Scene } from '../../Scene';
 
 const BRIGHTNESS_MULTIPLIER = 1.0;
@@ -25,7 +24,7 @@ export abstract class Rectangle {
         public uVec: Vector3d,
         public vVec: Vector3d,
         public normal: Vector3d,
-        rot: ElementRotation | null,
+        rot: IElementRotation | null,
         _ambientOcclusion: boolean,
     ) {
         // 如果有旋转且角度非零，禁用环境光遮蔽
@@ -36,7 +35,7 @@ export abstract class Rectangle {
     /**
      * 应用旋转变换
      */
-    applyRotation(rot: ElementRotation | null): void {
+    applyRotation(rot: IElementRotation | null): void {
         if (rot !== null) {
             const { origin: rotOrigin, axis, angle } = rot;
 
@@ -70,7 +69,7 @@ export abstract class Rectangle {
      * 计算光线与平面的交点
      * @returns 交点坐标和 t 参数，或 null（如果无交点）
      */
-    protected traceToVector(ray: Ray): { point: Vector3d; t: number } | null {
+    protected traceToVector(ray: IRay): { point: Vector3d; t: number } | null {
         const { origin: start, direction } = ray;
 
         const denominator = this.a * direction.x + this.b * direction.y + this.c * direction.z;
@@ -93,7 +92,7 @@ export abstract class Rectangle {
     /**
      * 追踪光线与矩形的交点
      */
-    abstract trace(ray: Ray): Intersection | null;
+    abstract trace(ray: IRay): IIntersection | null;
 
     toString(): string {
         return `Rectangle(origin=${this.origin}, uVec=${this.uVec}, vVec=${this.vVec})`;

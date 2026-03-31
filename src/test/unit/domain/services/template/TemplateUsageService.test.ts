@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TemplateUsageService } from '../../../../../domain/services/template/TemplateUsageService';
-import { type ITemplate, ITemplateParameter } from '../../../../../core/interfaces/ITemplate';
+import { type ITemplate } from '../../../../../core/interfaces/ITemplate';
 import { type IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
 import { type ILogger } from '../../../../../core/interfaces/ILogger';
 import { Template } from '../../../../../domain/entities/Template';

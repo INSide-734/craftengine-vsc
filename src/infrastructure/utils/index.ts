@@ -95,12 +95,12 @@ export {
     filterAndSort,
 } from './StringSimilarityUtils';
 
-export type { FindSimilarOptions, SimilarityResult } from './StringSimilarityUtils';
+export type { IFindSimilarOptions, ISimilarityResult } from './StringSimilarityUtils';
 
 // 缓存工具
 export { LRUCache, TTLCache, StatsCache, getOrSet, getOrSetSync } from './CacheUtils';
 
-export type { CacheStats } from './CacheUtils';
+export type { ICacheStats } from './CacheUtils';
 
 // ID 生成工具
 export {
@@ -131,4 +131,4 @@ export {
     createAsyncInitializer,
 } from './AsyncUtils';
 
-export type { RetryOptions, AsyncInitializer } from './AsyncUtils';
+export type { IRetryOptions, IAsyncInitializer } from './AsyncUtils';

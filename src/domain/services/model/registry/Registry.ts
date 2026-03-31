@@ -6,17 +6,17 @@
 
 import { type Key } from '../utils/Key';
 import { type ResourceKey } from './ResourceKey';
-import { type HolderOwner } from './Holder';
+import { type IHolderOwner } from './Holder';
 import { type HolderReference } from './HolderReference';
 
 /**
  * 注册表接口
  */
-export interface Registry<T> extends HolderOwner<T> {
+export interface IRegistry<T> extends IHolderOwner<T> {
     /**
      * 获取注册表键
      */
-    key(): ResourceKey<Registry<T>>;
+    key(): ResourceKey<IRegistry<T>>;
 
     /**
      * 通过资源键获取值

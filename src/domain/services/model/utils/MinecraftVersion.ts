@@ -251,7 +251,10 @@ export function initializeMinecraftVersions(config: IMinecraftVersionsConfig): v
 export const MinecraftVersions: Record<string, MinecraftVersion> = new Proxy({} as Record<string, MinecraftVersion>, {
     get(_target, prop: string): MinecraftVersion {
         ensureInitialized();
-        const ver = versionsMap![prop];
+        if (!versionsMap) {
+            throw new Error('MinecraftVersions not initialized');
+        }
+        const ver = versionsMap[prop];
         if (!ver) {
             throw new Error(`Unknown MinecraftVersion alias: ${prop}`);
         }

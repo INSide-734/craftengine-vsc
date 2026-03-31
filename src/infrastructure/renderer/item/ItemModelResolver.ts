@@ -1,13 +1,13 @@
 import type {
     ItemModel,
-    ItemDefinition,
-    RenderContext,
-    SimpleItemModel,
-    SpecialItemModel,
-    CompositeItemModel,
-    SelectItemModel,
-    ConditionItemModel,
-    RangeDispatchItemModel,
+    IItemDefinition,
+    ISimpleItemModel,
+    ISpecialItemModel,
+    ICompositeItemModel,
+    ISelectItemModel,
+    IConditionItemModel,
+    IRangeDispatchItemModel,
+    IRenderContext,
     TintSource,
 } from '../types/item-definition';
 import type { ResolvedModelCache } from '../model/cache/ResolvedModelCache';
@@ -20,7 +20,7 @@ import { resolveTintColor } from '../util/tint';
 /**
  * 解析后的模型信息
  */
-export interface ResolvedModelInfo {
+export interface IResolvedModelInfo {
     path: string;
     tints?: number[];
 }
@@ -46,7 +46,7 @@ export class ItemModelResolver {
      * @param context 渲染上下文
      * @returns 解析后的模型列表
      */
-    async resolve(definition: ItemDefinition, context: RenderContext = {}): Promise<Model[]> {
+    async resolve(definition: IItemDefinition, context: IRenderContext = {}): Promise<Model[]> {
         const modelInfos = this.resolveItemModel(definition.model, context);
 
         const models: Model[] = [];
@@ -66,27 +66,27 @@ export class ItemModelResolver {
     /**
      * 递归解析 ItemModel，返回模型信息列表（包含路径和 tints）
      */
-    private resolveItemModel(itemModel: ItemModel, context: RenderContext): ResolvedModelInfo[] {
+    private resolveItemModel(itemModel: ItemModel, context: IRenderContext): IResolvedModelInfo[] {
         const type = this.normalizeType(itemModel.type);
 
         switch (type) {
             case 'model':
-                return this.resolveSimpleModel(itemModel as SimpleItemModel, context);
+                return this.resolveSimpleModel(itemModel as ISimpleItemModel, context);
 
             case 'special':
-                return this.resolveSpecialModel(itemModel as SpecialItemModel, context);
+                return this.resolveSpecialModel(itemModel as ISpecialItemModel, context);
 
             case 'composite':
-                return this.resolveCompositeModel(itemModel as CompositeItemModel, context);
+                return this.resolveCompositeModel(itemModel as ICompositeItemModel, context);
 
             case 'select':
-                return this.resolveSelectModel(itemModel as SelectItemModel, context);
+                return this.resolveSelectModel(itemModel as ISelectItemModel, context);
 
             case 'condition':
-                return this.resolveConditionModel(itemModel as ConditionItemModel, context);
+                return this.resolveConditionModel(itemModel as IConditionItemModel, context);
 
             case 'range_dispatch':
-                return this.resolveRangeDispatchModel(itemModel as RangeDispatchItemModel, context);
+                return this.resolveRangeDispatchModel(itemModel as IRangeDispatchItemModel, context);
 
             case 'empty':
                 return [];
@@ -112,7 +112,7 @@ export class ItemModelResolver {
     /**
      * 解析 TintSource 数组为颜色数组
      */
-    private resolveTints(tintSources: TintSource[] | undefined, context: RenderContext): number[] | undefined {
+    private resolveTints(tintSources: TintSource[] | undefined, context: IRenderContext): number[] | undefined {
         if (!tintSources || tintSources.length === 0) {
             return undefined;
         }
@@ -131,7 +131,7 @@ export class ItemModelResolver {
     /**
      * 解析简单模型引用
      */
-    private resolveSimpleModel(model: SimpleItemModel, context: RenderContext): ResolvedModelInfo[] {
+    private resolveSimpleModel(model: ISimpleItemModel, context: IRenderContext): IResolvedModelInfo[] {
         const modelPath = model.model.replace(/^minecraft:/, '');
         const tints = this.resolveTints(model.tints, context);
         return [{ path: modelPath, tints }];
@@ -141,7 +141,7 @@ export class ItemModelResolver {
      * 解析特殊模型
      * 特殊模型（箱子、潜影盒、床等）需要使用 block/ 路径
      */
-    private resolveSpecialModel(model: SpecialItemModel, context: RenderContext): ResolvedModelInfo[] {
+    private resolveSpecialModel(model: ISpecialItemModel, context: IRenderContext): IResolvedModelInfo[] {
         const basePath = model.base.replace(/^minecraft:/, '');
         const tints = this.resolveTints(model.tints, context);
 
@@ -185,8 +185,8 @@ export class ItemModelResolver {
     /**
      * 解析复合模型
      */
-    private resolveCompositeModel(model: CompositeItemModel, context: RenderContext): ResolvedModelInfo[] {
-        const infos: ResolvedModelInfo[] = [];
+    private resolveCompositeModel(model: ICompositeItemModel, context: IRenderContext): IResolvedModelInfo[] {
+        const infos: IResolvedModelInfo[] = [];
         for (const subModel of model.models) {
             infos.push(...this.resolveItemModel(subModel, context));
         }
@@ -196,7 +196,7 @@ export class ItemModelResolver {
     /**
      * 解析选择模型
      */
-    private resolveSelectModel(model: SelectItemModel, context: RenderContext): ResolvedModelInfo[] {
+    private resolveSelectModel(model: ISelectItemModel, context: IRenderContext): IResolvedModelInfo[] {
         const selectedModel = this.selectEvaluator.evaluate(model, context);
         if (selectedModel) {
             return this.resolveItemModel(selectedModel, context);
@@ -210,7 +210,7 @@ export class ItemModelResolver {
     /**
      * 解析条件模型
      */
-    private resolveConditionModel(model: ConditionItemModel, context: RenderContext): ResolvedModelInfo[] {
+    private resolveConditionModel(model: IConditionItemModel, context: IRenderContext): IResolvedModelInfo[] {
         const condition = this.conditionEvaluator.evaluate(model, context);
         const selectedModel = condition ? model.on_true : model.on_false;
         return this.resolveItemModel(selectedModel, context);
@@ -219,7 +219,7 @@ export class ItemModelResolver {
     /**
      * 解析范围分发模型
      */
-    private resolveRangeDispatchModel(model: RangeDispatchItemModel, context: RenderContext): ResolvedModelInfo[] {
+    private resolveRangeDispatchModel(model: IRangeDispatchItemModel, context: IRenderContext): IResolvedModelInfo[] {
         const selectedModel = this.rangeDispatchEvaluator.evaluate(model, context);
         if (selectedModel) {
             return this.resolveItemModel(selectedModel, context);

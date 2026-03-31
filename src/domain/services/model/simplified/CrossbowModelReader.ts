@@ -5,7 +5,7 @@
  */
 
 import { type Key } from '../utils/Key';
-import { type SimplifiedModelReader } from './SimplifiedModelReader';
+import { type ISimplifiedModelReader } from './SimplifiedModelReader';
 import { SimplifiedModelConfigError } from './GeneratedModelReader';
 
 /** 弩模型所需的纹理/模型数量 */
@@ -24,7 +24,7 @@ function createModelWithGeneration(path: string, parent: string, texture: string
         },
     };
 }
-export class CrossbowModelReader implements SimplifiedModelReader {
+export class CrossbowModelReader implements ISimplifiedModelReader {
     convertFromTextures(textures: string[], optionalModelPaths: string[], id: Key): Record<string, unknown> {
         if (textures.length !== CROSSBOW_REQUIRED_COUNT) {
             throw new SimplifiedModelConfigError(

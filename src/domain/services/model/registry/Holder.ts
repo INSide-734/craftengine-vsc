@@ -18,20 +18,20 @@ export enum HolderKind {
 /**
  * 持有者所有者接口
  */
-export interface HolderOwner<T> {
-    canSerializeIn(other: HolderOwner<T>): boolean;
+export interface IHolderOwner<T> {
+    canSerializeIn(other: IHolderOwner<T>): boolean;
 }
 
 /**
  * 持有者接口
  */
-export interface Holder<T> {
+export interface IHolder<T> {
     value(): T;
     isBound(): boolean;
     matchesKey(id: Key): boolean;
     matchesResourceKey(key: ResourceKey<T>): boolean;
     keyOptional(): ResourceKey<T> | undefined;
     kind(): HolderKind;
-    serializableIn(owner: HolderOwner<T>): boolean;
+    serializableIn(owner: IHolderOwner<T>): boolean;
     registeredName(): string;
 }

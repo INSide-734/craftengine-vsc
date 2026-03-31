@@ -276,15 +276,40 @@ export class SchemaValidator {
         return ValidationLevel.Loose;
     }
 
+    /**
+     * 获取验证函数
+     *
+     * 使用多级缓存策略：
+     * 1. 首先检查本地 LRU 缓存（基于 schemaId + level + hash）
+     * 2. 如果 schema 包含 $id，检查 Ajv 内部缓存避免重复注册
+     * 3. 最后编译新的验证函数并缓存
+     *
+     * @param schemaId Schema 标识符
+     * @param schema JSON Schema 对象
+     * @returns Ajv 验证函数
+     */
     private getValidateFunction(schemaId: string, schema: JSONSchema7): ValidateFunction {
         const schemaHash = this.computeSchemaHash(schema);
         const cacheKey = `${schemaId}_${this.getValidationLevel()}_${schemaHash}`;
 
+        // 第一级缓存：本地 LRU 缓存
         const cached = this.validateCache.get(cacheKey);
         if (cached) {
             return cached;
         }
 
+        // 第二级缓存：Ajv 内部缓存
+        // 如果 schema 包含 $id，需要先检查是否已在 Ajv 中注册
+        // 避免重复注册导致 "schema with key or id already exists" 错误
+        if (schema.$id) {
+            const existingValidate = this.ajv.getSchema(schema.$id);
+            if (existingValidate) {
+                this.validateCache.set(cacheKey, existingValidate);
+                return existingValidate;
+            }
+        }
+
+        // 编译新的验证函数
         const validate = this.ajv.compile(schema);
         this.validateCache.set(cacheKey, validate);
         return validate;

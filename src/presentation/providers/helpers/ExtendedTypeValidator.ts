@@ -20,7 +20,7 @@ import { getIndentLevel } from '../../../infrastructure/utils';
 /**
  * 扩展参数类型使用信息
  */
-export interface ExtendedTypeUsage {
+export interface IExtendedTypeUsage {
     typeName: string;
     typeRange: Range;
     properties: Map<string, { value: string; range: Range; lineNumber: number }>;
@@ -51,10 +51,10 @@ export class ExtendedTypeValidator {
         const diagnostics: Diagnostic[] = [];
 
         try {
-            const extendedTypeUsages = this.findExtendedTypeUsages(document);
+            const extendedTypeUsages = this.findIExtendedTypeUsages(document);
 
             for (const usage of extendedTypeUsages) {
-                const typeDiagnostics = this.validateExtendedTypeUsage(usage, document);
+                const typeDiagnostics = this.validateIExtendedTypeUsage(usage, document);
                 diagnostics.push(...typeDiagnostics);
             }
 
@@ -75,8 +75,8 @@ export class ExtendedTypeValidator {
     /**
      * 查找文档中的扩展参数类型使用
      */
-    findExtendedTypeUsages(document: TextDocument): ExtendedTypeUsage[] {
-        const usages: ExtendedTypeUsage[] = [];
+    findIExtendedTypeUsages(document: TextDocument): IExtendedTypeUsage[] {
+        const usages: IExtendedTypeUsage[] = [];
         const text = document.getText();
         const lines = text.split('\n');
 
@@ -213,7 +213,7 @@ export class ExtendedTypeValidator {
     /**
      * 验证单个扩展参数类型使用
      */
-    validateExtendedTypeUsage(usage: ExtendedTypeUsage, document: TextDocument): Diagnostic[] {
+    validateIExtendedTypeUsage(usage: IExtendedTypeUsage, document: TextDocument): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
         const typeDef = this.extendedTypeService.getTypeDefinition(usage.typeName);
 
@@ -295,7 +295,7 @@ export class ExtendedTypeValidator {
      *
      * 针对不同类型进行深层次的语义验证
      */
-    validateExtendedTypeSemantics(usage: ExtendedTypeUsage, document: TextDocument): Diagnostic[] {
+    validateExtendedTypeSemantics(usage: IExtendedTypeUsage, document: TextDocument): Diagnostic[] {
         switch (usage.typeName) {
             case 'self_increase_int':
                 return this.validateSelfIncreaseIntSemantics(usage, document);
@@ -313,7 +313,7 @@ export class ExtendedTypeValidator {
     /**
      * 验证 self_increase_int 类型的语义
      */
-    private validateSelfIncreaseIntSemantics(usage: ExtendedTypeUsage, document: TextDocument): Diagnostic[] {
+    private validateSelfIncreaseIntSemantics(usage: IExtendedTypeUsage, document: TextDocument): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
 
         const fromProp = usage.properties.get('from');
@@ -385,7 +385,7 @@ export class ExtendedTypeValidator {
     /**
      * 验证 condition 类型的语义
      */
-    private validateConditionSemantics(usage: ExtendedTypeUsage, _document: TextDocument): Diagnostic[] {
+    private validateConditionSemantics(usage: IExtendedTypeUsage, _document: TextDocument): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
 
         const conditionProp = usage.properties.get('condition');
@@ -411,7 +411,7 @@ export class ExtendedTypeValidator {
     /**
      * 验证 when 类型的语义
      */
-    private validateWhenSemantics(usage: ExtendedTypeUsage, _document: TextDocument): Diagnostic[] {
+    private validateWhenSemantics(usage: IExtendedTypeUsage, _document: TextDocument): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
 
         const sourceProp = usage.properties.get('source');
@@ -445,7 +445,7 @@ export class ExtendedTypeValidator {
     /**
      * 验证 expression 类型的语义
      */
-    private validateExpressionSemantics(usage: ExtendedTypeUsage, _document: TextDocument): Diagnostic[] {
+    private validateExpressionSemantics(usage: IExtendedTypeUsage, _document: TextDocument): Diagnostic[] {
         const diagnostics: Diagnostic[] = [];
 
         const expressionProp = usage.properties.get('expression');

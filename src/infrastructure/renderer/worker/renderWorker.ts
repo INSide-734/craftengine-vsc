@@ -4,22 +4,22 @@
  */
 import { parentPort, workerData } from 'worker_threads';
 import { MinecraftModelRenderer } from '../core/MinecraftModelRenderer';
-import type { RenderOptions } from '../types/index';
+import type { IRenderOptions } from '../types/index';
 
-interface RenderTask {
+interface IRenderTask {
     type: 'render';
     taskId: number;
     modelPath: string;
 }
 
-interface InitTask {
+interface IInitTask {
     type: 'init';
-    options: RenderOptions;
+    options: IRenderOptions;
 }
 
-type WorkerTask = RenderTask | InitTask;
+type WorkerTask = IRenderTask | IInitTask;
 
-interface RenderResult {
+interface IRenderResult {
     type: 'result';
     taskId: number;
     success: boolean;
@@ -27,7 +27,7 @@ interface RenderResult {
     error?: string;
 }
 
-interface InitResult {
+interface IInitResult {
     type: 'ready';
 }
 
@@ -36,14 +36,14 @@ let renderer: MinecraftModelRenderer | null = null;
 // 初始化渲染器（从 workerData 获取初始配置）
 if (workerData?.options) {
     renderer = new MinecraftModelRenderer(workerData.options);
-    parentPort?.postMessage({ type: 'ready' } as InitResult);
+    parentPort?.postMessage({ type: 'ready' } as IInitResult);
 }
 
 // 监听主线程消息
-parentPort?.on('message', async (task: WorkerTask) => {
+parentPort?.on('message', (task: WorkerTask) => {
     if (task.type === 'init') {
         renderer = new MinecraftModelRenderer(task.options);
-        parentPort?.postMessage({ type: 'ready' } as InitResult);
+        parentPort?.postMessage({ type: 'ready' } as IInitResult);
         return;
     }
 
@@ -54,25 +54,30 @@ parentPort?.on('message', async (task: WorkerTask) => {
                 taskId: task.taskId,
                 success: false,
                 error: 'Renderer not initialized',
-            } as RenderResult);
+            } as IRenderResult);
             return;
         }
 
-        try {
-            const buffer = await renderer.renderModel(task.modelPath);
-            parentPort?.postMessage({
-                type: 'result',
-                taskId: task.taskId,
-                success: true,
-                buffer,
-            } as RenderResult);
-        } catch (error: unknown) {
-            parentPort?.postMessage({
-                type: 'result',
-                taskId: task.taskId,
-                success: false,
-                error: error instanceof Error ? error.message : String(error),
-            } as RenderResult);
-        }
+        void (async () => {
+            try {
+                if (!renderer) {
+                    throw new Error('Renderer not initialized');
+                }
+                const buffer = await renderer.renderModel(task.modelPath);
+                parentPort?.postMessage({
+                    type: 'result',
+                    taskId: task.taskId,
+                    success: true,
+                    buffer,
+                } as IRenderResult);
+            } catch (error: unknown) {
+                parentPort?.postMessage({
+                    type: 'result',
+                    taskId: task.taskId,
+                    success: false,
+                    error: error instanceof Error ? error.message : String(error),
+                } as IRenderResult);
+            }
+        })();
     }
 });

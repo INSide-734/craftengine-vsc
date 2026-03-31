@@ -5,7 +5,7 @@
  */
 
 export { generateEventId, generateRandomId } from './IdGenerator';
-export { AsyncInitializer, createAsyncInitializer } from './AsyncInitializer';
+export { IAsyncInitializer, createAsyncInitializer } from './AsyncInitializer';
 export { deepFreeze } from './deepFreeze';
 
 // 字符串相似度工具
@@ -23,7 +23,7 @@ export {
     safeRegExp,
 } from './StringSimilarityUtils';
 
-export type { FindSimilarOptions, SimilarityResult } from './StringSimilarityUtils';
+export type { IFindSimilarOptions, ISimilarityResult } from './StringSimilarityUtils';
 
 // LRU 缓存
 export { LRUCache } from './LRUCache';

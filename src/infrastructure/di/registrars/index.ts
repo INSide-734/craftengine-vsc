@@ -1,4 +1,4 @@
-export { ServiceRegistration, ServiceFactory, registerServices } from './shared';
+export { IServiceRegistration, ServiceFactory, registerServices } from './shared';
 export {
     registerLoggingServices,
     registerConfigurationServices,

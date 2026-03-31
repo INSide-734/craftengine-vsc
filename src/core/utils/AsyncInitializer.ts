@@ -7,7 +7,7 @@
 /**
  * 异步初始化器接口
  */
-export interface AsyncInitializer {
+export interface IAsyncInitializer {
     /** 确保初始化完成（幂等，支持失败重试） */
     ensure: () => Promise<void>;
     /** 重置初始化状态 */
@@ -27,7 +27,7 @@ export interface AsyncInitializer {
  * @param loadFn - 异步加载函数
  * @returns 异步初始化器
  */
-export function createAsyncInitializer(loadFn: () => Promise<void>): AsyncInitializer {
+export function createAsyncInitializer(loadFn: () => Promise<void>): IAsyncInitializer {
     let loaded = false;
     let loadPromise: Promise<void> | null = null;
 

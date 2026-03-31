@@ -1,7 +1,7 @@
 import { type ILogger } from '../../../core/interfaces/ILogger';
 import { type IDataStoreService } from '../../../core/interfaces/IDataStoreService';
 import { type ITemplate } from '../../../core/interfaces/ITemplate';
-import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
 
 /**
  * Schema 动态生成器
@@ -176,7 +176,7 @@ export class SchemaDynamicGenerator {
     /**
      * 生成模板定义的 Schema
      */
-    private generateTemplatesSchema(templates: ITemplate[]): JsonSchemaNode {
+    private generateTemplatesSchema(templates: ITemplate[]): IJsonSchemaNode {
         const templateNames = templates.map((t) => t.name);
 
         return {
@@ -219,7 +219,7 @@ export class SchemaDynamicGenerator {
     /**
      * 生成项目定义的 Schema
      */
-    private generateItemsSchema(templates: ITemplate[]): JsonSchemaNode {
+    private generateItemsSchema(templates: ITemplate[]): IJsonSchemaNode {
         const templateNames = templates.map((t) => t.name);
 
         return {

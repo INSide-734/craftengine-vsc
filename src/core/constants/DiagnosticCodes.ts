@@ -112,6 +112,7 @@ export function initializeDiagnosticCodes(config: IDiagnosticCodesConfig): void 
  */
 function getByAlias(alias: string): IDiagnosticCodeInfo {
     ensureInitialized();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const info = codeAliasMapping![alias];
     if (!info) {
         throw new Error(`Unknown diagnostic code alias: ${alias}`);
@@ -290,6 +291,7 @@ export const AJV_KEYWORD_TO_CODE: Record<string, IDiagnosticCodeInfo> = new Prox
     {
         get: (_, prop: string) => {
             ensureInitialized();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             return ajvKeywordMapping![prop];
         },
     },
@@ -303,6 +305,7 @@ export const INTERNAL_CODE_TO_DIAGNOSTIC: Record<string, IDiagnosticCodeInfo> = 
     {
         get: (_, prop: string) => {
             ensureInitialized();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             return internalCodeMapping![prop];
         },
     },
@@ -320,6 +323,7 @@ export const INTERNAL_CODE_TO_DIAGNOSTIC: Record<string, IDiagnosticCodeInfo> = 
  */
 export function getDiagnosticCodeInfo(internalCode: string): IDiagnosticCodeInfo | undefined {
     ensureInitialized();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return internalCodeMapping![internalCode];
 }
 
@@ -331,6 +335,7 @@ export function getDiagnosticCodeInfo(internalCode: string): IDiagnosticCodeInfo
  */
 export function mapAjvKeywordToCode(keyword: string): string {
     ensureInitialized();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const codeInfo = ajvKeywordMapping![keyword];
     return codeInfo?.code || keyword;
 }
@@ -343,5 +348,6 @@ export function mapAjvKeywordToCode(keyword: string): string {
  */
 export function getCodeInfoByCode(code: string): IDiagnosticCodeInfo | undefined {
     ensureInitialized();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return codeInfoRegistry![code];
 }

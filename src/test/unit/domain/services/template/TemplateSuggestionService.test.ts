@@ -3,7 +3,7 @@ import { TemplateSuggestionService } from '../../../../../domain/services/templa
 import { type IDataStoreService } from '../../../../../core/interfaces/IDataStoreService';
 import { type ILogger } from '../../../../../core/interfaces/ILogger';
 import { type ITemplate } from '../../../../../core/interfaces/ITemplate';
-import { type ITemplateUsageContext, ITemplateMatch } from '../../../../../core/interfaces/ITemplateService';
+import { type ITemplateUsageContext } from '../../../../../core/interfaces/ITemplateService';
 import { type TemplateSearchService } from '../../../../../domain/services/template/TemplateSearchService';
 
 function createMockLogger(): ILogger {

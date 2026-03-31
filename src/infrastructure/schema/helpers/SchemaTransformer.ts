@@ -1,5 +1,5 @@
 import { type JSONSchema7 } from 'json-schema';
-import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
 
 /**
  * 版本条件键的正则模式
@@ -22,12 +22,12 @@ export class SchemaTransformer {
         const prepared = JSON.parse(JSON.stringify(schema)) as JSONSchema7;
 
         // 处理 x-supports-version-condition 标记
-        this.expandVersionConditionSupport(prepared as unknown as JsonSchemaNode);
+        this.expandVersionConditionSupport(prepared as unknown as IJsonSchemaNode);
 
         if (level === 'loose') {
-            this.setAdditionalPropertiesRecursive(prepared as unknown as JsonSchemaNode, true);
+            this.setAdditionalPropertiesRecursive(prepared as unknown as IJsonSchemaNode, true);
         } else if (level === 'strict') {
-            this.setAdditionalPropertiesRecursive(prepared as unknown as JsonSchemaNode, false);
+            this.setAdditionalPropertiesRecursive(prepared as unknown as IJsonSchemaNode, false);
         }
 
         return prepared;
@@ -39,7 +39,7 @@ export class SchemaTransformer {
      * 遍历 Schema，当对象有 x-supports-version-condition: true 时，
      * 将其属性的类型定义扩展为支持版本条件对象
      */
-    expandVersionConditionSupport(schema: JsonSchemaNode): void {
+    expandVersionConditionSupport(schema: IJsonSchemaNode): void {
         if (!schema || typeof schema !== 'object') {
             return;
         }
@@ -49,7 +49,7 @@ export class SchemaTransformer {
             const props = schema.properties as Record<string, unknown>;
             for (const [key, propSchema] of Object.entries(props)) {
                 if (propSchema && typeof propSchema === 'object') {
-                    props[key] = this.expandPropertyForVersionCondition(propSchema as JsonSchemaNode);
+                    props[key] = this.expandPropertyForVersionCondition(propSchema as IJsonSchemaNode);
                 }
             }
         }
@@ -58,7 +58,7 @@ export class SchemaTransformer {
         if (schema.properties) {
             for (const prop of Object.values(schema.properties as Record<string, unknown>)) {
                 if (prop && typeof prop === 'object') {
-                    this.expandVersionConditionSupport(prop as JsonSchemaNode);
+                    this.expandVersionConditionSupport(prop as IJsonSchemaNode);
                 }
             }
         }
@@ -66,7 +66,7 @@ export class SchemaTransformer {
         if (schema.patternProperties) {
             for (const prop of Object.values(schema.patternProperties as Record<string, unknown>)) {
                 if (prop && typeof prop === 'object') {
-                    this.expandVersionConditionSupport(prop as JsonSchemaNode);
+                    this.expandVersionConditionSupport(prop as IJsonSchemaNode);
                 }
             }
         }
@@ -74,7 +74,7 @@ export class SchemaTransformer {
         if (schema.$defs) {
             for (const def of Object.values(schema.$defs as Record<string, unknown>)) {
                 if (def && typeof def === 'object') {
-                    this.expandVersionConditionSupport(def as JsonSchemaNode);
+                    this.expandVersionConditionSupport(def as IJsonSchemaNode);
                 }
             }
         }
@@ -82,7 +82,7 @@ export class SchemaTransformer {
         if (schema.definitions) {
             for (const def of Object.values(schema.definitions as Record<string, unknown>)) {
                 if (def && typeof def === 'object') {
-                    this.expandVersionConditionSupport(def as JsonSchemaNode);
+                    this.expandVersionConditionSupport(def as IJsonSchemaNode);
                 }
             }
         }
@@ -90,7 +90,7 @@ export class SchemaTransformer {
         // 处理 allOf, anyOf, oneOf
         for (const key of ['allOf', 'anyOf', 'oneOf']) {
             if (Array.isArray(schema[key])) {
-                for (const item of schema[key] as JsonSchemaNode[]) {
+                for (const item of schema[key] as IJsonSchemaNode[]) {
                     this.expandVersionConditionSupport(item);
                 }
             }
@@ -99,17 +99,17 @@ export class SchemaTransformer {
         // 处理 items（数组项）
         if (schema.items) {
             if (Array.isArray(schema.items)) {
-                for (const item of schema.items as JsonSchemaNode[]) {
+                for (const item of schema.items as IJsonSchemaNode[]) {
                     this.expandVersionConditionSupport(item);
                 }
             } else if (typeof schema.items === 'object') {
-                this.expandVersionConditionSupport(schema.items as JsonSchemaNode);
+                this.expandVersionConditionSupport(schema.items as IJsonSchemaNode);
             }
         }
 
         // 处理 additionalProperties（如果是 schema）
         if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-            this.expandVersionConditionSupport(schema.additionalProperties as JsonSchemaNode);
+            this.expandVersionConditionSupport(schema.additionalProperties as IJsonSchemaNode);
         }
     }
 
@@ -119,7 +119,7 @@ export class SchemaTransformer {
      * 将 { type: "string" } 转换为 oneOf: [{ type: "string" }, { 版本条件对象 }]
      * 返回新对象，不变异传入的 propSchema。
      */
-    private expandPropertyForVersionCondition(propSchema: JsonSchemaNode): JsonSchemaNode {
+    private expandPropertyForVersionCondition(propSchema: IJsonSchemaNode): IJsonSchemaNode {
         // 如果已经是 oneOf/anyOf，假设已经正确配置
         if (propSchema.oneOf || propSchema.anyOf) {
             return propSchema;
@@ -133,7 +133,7 @@ export class SchemaTransformer {
         const { description, title, ...typeRelatedProps } = propSchema;
 
         // 构建版本条件对象 Schema
-        const versionConditionSchema: JsonSchemaNode = {
+        const versionConditionSchema: IJsonSchemaNode = {
             type: 'object',
             patternProperties: {
                 [VERSION_CONDITION_PATTERN]: {},
@@ -153,7 +153,7 @@ export class SchemaTransformer {
     /**
      * 递归设置 additionalProperties
      */
-    private setAdditionalPropertiesRecursive(schema: JsonSchemaNode, value: boolean): void {
+    private setAdditionalPropertiesRecursive(schema: IJsonSchemaNode, value: boolean): void {
         if (!schema || typeof schema !== 'object') {
             return;
         }
@@ -165,11 +165,11 @@ export class SchemaTransformer {
         ['properties', 'patternProperties', 'definitions', '$defs', 'allOf', 'anyOf', 'oneOf'].forEach((key) => {
             if (schema[key]) {
                 if (Array.isArray(schema[key])) {
-                    (schema[key] as JsonSchemaNode[]).forEach((s: JsonSchemaNode) =>
+                    (schema[key] as IJsonSchemaNode[]).forEach((s: IJsonSchemaNode) =>
                         this.setAdditionalPropertiesRecursive(s, value),
                     );
                 } else if (typeof schema[key] === 'object') {
-                    Object.values(schema[key] as Record<string, JsonSchemaNode>).forEach((s: JsonSchemaNode) =>
+                    Object.values(schema[key] as Record<string, IJsonSchemaNode>).forEach((s: IJsonSchemaNode) =>
                         this.setAdditionalPropertiesRecursive(s, value),
                     );
                 }

@@ -452,14 +452,16 @@ export class DocumentProcessor {
             const column = match.index;
             const endColumn = column + match[0].length;
 
-            this.translationReferenceStore!.addReference({
-                key,
-                type,
-                sourceFile,
-                lineNumber,
-                column,
-                endColumn,
-            });
+            if (this.translationReferenceStore) {
+                this.translationReferenceStore.addReference({
+                    key,
+                    type,
+                    sourceFile,
+                    lineNumber,
+                    column,
+                    endColumn,
+                });
+            }
         }
     }
 }

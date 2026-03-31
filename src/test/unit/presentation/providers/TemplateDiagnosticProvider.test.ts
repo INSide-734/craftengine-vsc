@@ -398,6 +398,129 @@ items:
     });
 
     // ========================================
+    // Bug 修复测试：findTemplateUsages 方法调用
+    // ========================================
+    describe('Bug: findTemplateUsages method call', () => {
+        it('should call findTemplateUsages method correctly', async () => {
+            const document = createDocument(`
+items:
+  table_lamp:
+    template: default:lamp
+    arguments:
+      brightness: 10
+            `);
+
+            // 模拟 schema 返回 template 字段
+            vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
+                type: 'string',
+                'x-completion-provider': 'craftengine.templateName',
+            });
+            vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.templateName');
+            vi.mocked(mockSchemaService.hasSchemaForPath).mockReturnValue(true);
+
+            // 模拟存在的模板
+            vi.mocked(mockTemplateService.searchTemplates).mockResolvedValue([
+                {
+                    template: {
+                        id: 'tpl-lamp',
+                        name: 'default:lamp',
+                        parameters: [{ name: 'brightness', required: true }],
+                        content: {},
+                        sourceFile: Uri.file('/test/templates.yaml'),
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        usageCount: 0,
+                        getRequiredParameters: () => [{ name: 'brightness', required: true }],
+                        getOptionalParameters: () => [],
+                        hasParameter: (name: string) => name === 'brightness',
+                        getParameter: () => undefined,
+                        validateParameters: () => ({ isValid: true, errors: [], warnings: [] }),
+                        recordUsage: function () {
+                            return this;
+                        },
+                    },
+                    score: 1.0,
+                    reason: 'exact match',
+                },
+            ]);
+
+            // 这个调用不应该抛出错误
+            // 方法名已从 findITemplateUsages 重构为 findTemplateUsages
+            await expect(provider.updateDiagnostics(document)).resolves.not.toThrow();
+
+            expect(mockPerformanceMonitor.startTimer).toHaveBeenCalled();
+        });
+
+        it('should successfully find template usages without calling undefined method', async () => {
+            const document = createDocument(`
+items:
+  table_lamp:
+    template: default:lamp
+    arguments:
+      brightness: 10
+            `);
+
+            // 模拟 schema 返回 template 字段
+            vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
+                type: 'string',
+                'x-completion-provider': 'craftengine.templateName',
+            });
+            vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.templateName');
+
+            // 模拟存在的模板
+            vi.mocked(mockTemplateService.searchTemplates).mockResolvedValue([
+                {
+                    template: {
+                        id: 'tpl-lamp',
+                        name: 'default:lamp',
+                        parameters: [{ name: 'brightness', required: true }],
+                        content: {},
+                        sourceFile: Uri.file('/test/templates.yaml'),
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        usageCount: 0,
+                        getRequiredParameters: () => [{ name: 'brightness', required: true }],
+                        getOptionalParameters: () => [],
+                        hasParameter: (name: string) => name === 'brightness',
+                        getParameter: () => undefined,
+                        validateParameters: () => ({ isValid: true, errors: [], warnings: [] }),
+                        recordUsage: function () {
+                            return this;
+                        },
+                    },
+                    score: 1.0,
+                    reason: 'exact match',
+                },
+            ]);
+
+            // 这个调用不应该抛出错误
+            await expect(provider.updateDiagnostics(document)).resolves.not.toThrow();
+
+            expect(mockPerformanceMonitor.startTimer).toHaveBeenCalled();
+        });
+
+        it('should handle multiple template references in one document', async () => {
+            const document = createDocument(`
+items:
+  table_lamp:
+    template: default:lamp
+  chair:
+    template: default:furniture
+            `);
+
+            // 模拟 schema
+            vi.mocked(mockSchemaService.getSchemaForPath).mockResolvedValue({
+                type: 'string',
+                'x-completion-provider': 'craftengine.templateName',
+            });
+            vi.mocked(mockSchemaService.getCustomProperty).mockReturnValue('craftengine.templateName');
+
+            // 不应该抛出错误
+            await expect(provider.updateDiagnostics(document)).resolves.not.toThrow();
+        });
+    });
+
+    // ========================================
     // 边缘情况测试
     // ========================================
 

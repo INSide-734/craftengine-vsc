@@ -54,35 +54,35 @@ export function buildTemplateMarkdown(template: ITemplate): MarkdownString {
     const optionalParams = template.getOptionalParameters();
 
     // 标题
-    md.appendMarkdown(`## 🎯 ${template.name}\n\n`);
+    md.appendMarkdown(`##  ${template.name}\n\n`);
 
     // 参数概览
-    md.appendMarkdown('## 📊 Overview\n\n');
-    md.appendMarkdown('| 📈 Metric | 🔢 Count |\n|:----------|:--------:|\n');
+    md.appendMarkdown('##  Overview\n\n');
+    md.appendMarkdown('|  Metric |  Count |\n|:----------|:--------:|\n');
     md.appendMarkdown(`| **Total Parameters** | \`${template.parameters.length}\` |\n`);
     if (requiredParams.length > 0) {
-        md.appendMarkdown(`| **🔴 Required** | \`${requiredParams.length}\` |\n`);
+        md.appendMarkdown(`| ** Required** | \`${requiredParams.length}\` |\n`);
     }
     if (optionalParams.length > 0) {
-        md.appendMarkdown(`| **🟡 Optional** | \`${optionalParams.length}\` |\n`);
+        md.appendMarkdown(`| ** Optional** | \`${optionalParams.length}\` |\n`);
     }
     md.appendMarkdown('\n');
 
     // 使用示例
-    md.appendMarkdown('## 💡 Usage Example\n\n');
+    md.appendMarkdown('##  Usage Example\n\n');
     md.appendMarkdown('```yaml\n');
-    md.appendMarkdown(`# 🎯 Template: ${template.name}\ntemplate: ${template.name}\n`);
+    md.appendMarkdown(`#  Template: ${template.name}\ntemplate: ${template.name}\n`);
 
     if (template.parameters.length > 0) {
         md.appendMarkdown('arguments:\n');
 
         if (requiredParams.length > 0) {
-            md.appendMarkdown('  # 🔴 Required parameters\n');
+            md.appendMarkdown('  #  Required parameters\n');
             requiredParams.forEach((p) => md.appendMarkdown(`  ${p.name}: ${getExampleValue(p)}\n`));
         }
 
         if (optionalParams.length > 0) {
-            md.appendMarkdown('  # 🟡 Optional parameters (uncomment to use)\n');
+            md.appendMarkdown('  #  Optional parameters (uncomment to use)\n');
             optionalParams.forEach((p) => md.appendMarkdown(`  # ${p.name}: ${getExampleValue(p)}\n`));
         }
     }
@@ -91,29 +91,29 @@ export function buildTemplateMarkdown(template: ITemplate): MarkdownString {
 
     // 元信息
     md.appendMarkdown('---\n\n');
-    md.appendMarkdown('### 📋 Template Information\n\n');
+    md.appendMarkdown('###  Template Information\n\n');
 
     const infoTable = [];
-    infoTable.push('| 🏷️ Property | 📄 Value |');
+    infoTable.push('|  Property |  Value |');
     infoTable.push('|:------------|:---------|');
 
     const relativePath = getRelativePath(template.sourceFile.fsPath);
-    infoTable.push(`| **📁 Source File** | \`${relativePath}\` |`);
+    infoTable.push(`| ** Source File** | \`${relativePath}\` |`);
 
     if (template.definitionPosition) {
-        infoTable.push(`| **📍 Line Number** | \`${template.definitionPosition.line + 1}\` |`);
+        infoTable.push(`| ** Line Number** | \`${template.definitionPosition.line + 1}\` |`);
     }
 
     if (template.updatedAt) {
-        infoTable.push(`| **🕒 Last Updated** | \`${template.updatedAt.toLocaleString()}\` |`);
+        infoTable.push(`| ** Last Updated** | \`${template.updatedAt.toLocaleString()}\` |`);
     }
 
     md.appendMarkdown(infoTable.join('\n') + '\n\n');
 
     // 操作提示
-    md.appendMarkdown('> **💡 Quick Actions:**\n');
-    md.appendMarkdown('> - 🖱️ `Ctrl+Click` to jump to definition\n');
-    md.appendMarkdown('> - 🔍 Hover over parameters for more details\n\n');
+    md.appendMarkdown('> ** Quick Actions:**\n');
+    md.appendMarkdown('> -  `Ctrl+Click` to jump to definition\n');
+    md.appendMarkdown('> -  Hover over parameters for more details\n\n');
 
     return md;
 }

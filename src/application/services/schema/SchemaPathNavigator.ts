@@ -1,5 +1,5 @@
 import { type ILogger } from '../../../core/interfaces/ILogger';
-import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
 import { type SchemaReferenceResolver } from './SchemaReferenceResolver';
 import { SCHEMA_METADATA, SCHEMA_RESOLUTION, VERSION_CONDITION } from './SchemaConstants';
 import { safeCompileRegex } from '../../../core/utils';
@@ -135,15 +135,15 @@ export class SchemaPathNavigator {
      * // 返回: { type: 'string', enum: ['user-profile', 'admin-profile'] }
      * ```
      */
-    async getSchemaForPath(rootSchema: JsonSchemaNode, path: string[]): Promise<JsonSchemaNode | undefined> {
+    async getSchemaForPath(rootSchema: IJsonSchemaNode, path: string[]): Promise<IJsonSchemaNode | undefined> {
         if (!rootSchema) {
             return undefined;
         }
 
-        let currentSchema: JsonSchemaNode = rootSchema;
+        let currentSchema: IJsonSchemaNode = rootSchema;
         // 当前有效的上下文 Schema，用于解析内部引用
         // 当进入外部 Schema 时，上下文会更新为该外部 Schema
-        let currentContextSchema: JsonSchemaNode = rootSchema;
+        let currentContextSchema: IJsonSchemaNode = rootSchema;
 
         for (let i = 0; i < path.length; i++) {
             const segment = path[i];
@@ -165,7 +165,7 @@ export class SchemaPathNavigator {
             if (resolvedSchema && typeof resolvedSchema === 'object') {
                 // 如果解析后的 Schema 携带了新的上下文（来自外部引用），使用它
                 if (resolvedSchema[SCHEMA_METADATA.CONTEXT_SCHEMA]) {
-                    currentContextSchema = resolvedSchema[SCHEMA_METADATA.CONTEXT_SCHEMA] as JsonSchemaNode;
+                    currentContextSchema = resolvedSchema[SCHEMA_METADATA.CONTEXT_SCHEMA] as IJsonSchemaNode;
                 } else if (resolvedSchema.$id || resolvedSchema.$schema || resolvedSchema.$defs) {
                     // 如果解析后的 Schema 看起来像一个独立的 Schema 文件，将其作为新的上下文
                     currentContextSchema = resolvedSchema;
@@ -175,7 +175,7 @@ export class SchemaPathNavigator {
             currentSchema = resolvedSchema;
 
             // 尝试各种匹配方式
-            let nextSchema: JsonSchemaNode | undefined =
+            let nextSchema: IJsonSchemaNode | undefined =
                 this.matchProperty(currentSchema, segment) ||
                 this.matchPatternProperty(currentSchema, segment) ||
                 this.matchAdditionalProperties(currentSchema) ||
@@ -222,16 +222,16 @@ export class SchemaPathNavigator {
     /**
      * 匹配 properties
      */
-    private matchProperty(schema: JsonSchemaNode, segment: string): JsonSchemaNode | undefined {
-        const properties = schema.properties as Record<string, JsonSchemaNode> | undefined;
+    private matchProperty(schema: IJsonSchemaNode, segment: string): IJsonSchemaNode | undefined {
+        const properties = schema.properties as Record<string, IJsonSchemaNode> | undefined;
         return properties?.[segment];
     }
 
     /**
      * 匹配 patternProperties
      */
-    private matchPatternProperty(schema: JsonSchemaNode, segment: string): JsonSchemaNode | undefined {
-        const patternProperties = schema.patternProperties as Record<string, JsonSchemaNode> | undefined;
+    private matchPatternProperty(schema: IJsonSchemaNode, segment: string): IJsonSchemaNode | undefined {
+        const patternProperties = schema.patternProperties as Record<string, IJsonSchemaNode> | undefined;
         if (!patternProperties) {
             return undefined;
         }
@@ -249,9 +249,9 @@ export class SchemaPathNavigator {
     /**
      * 匹配 additionalProperties
      */
-    private matchAdditionalProperties(schema: JsonSchemaNode): JsonSchemaNode | undefined {
+    private matchAdditionalProperties(schema: IJsonSchemaNode): IJsonSchemaNode | undefined {
         if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-            return schema.additionalProperties as JsonSchemaNode;
+            return schema.additionalProperties as IJsonSchemaNode;
         }
         return undefined;
     }
@@ -259,7 +259,7 @@ export class SchemaPathNavigator {
     /**
      * 匹配 items
      */
-    private matchItems(schema: JsonSchemaNode): JsonSchemaNode | undefined {
-        return schema.items as JsonSchemaNode | undefined;
+    private matchItems(schema: IJsonSchemaNode): IJsonSchemaNode | undefined {
+        return schema.items as IJsonSchemaNode | undefined;
     }
 }

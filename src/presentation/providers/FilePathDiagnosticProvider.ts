@@ -651,7 +651,7 @@ export class FilePathDiagnosticProvider implements Disposable {
                             suggestions.push(suggestionPath);
                         }
                     }
-                } catch (error) {
+                } catch {
                     // 忽略读取错误
                 }
             }

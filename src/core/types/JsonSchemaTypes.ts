@@ -14,7 +14,7 @@
  * 可以通过 `as JsonSchemaNode` 安全转换。
  */
 
-export interface JsonSchemaNode {
+export interface IJsonSchemaNode {
     [key: string]: unknown;
 }
 
@@ -23,4 +23,4 @@ export interface JsonSchemaNode {
  *
  * 表示 JSON Schema 中 `properties` 字段的类型。
  */
-export type JsonSchemaProperties = Record<string, JsonSchemaNode>;
+export type JsonSchemaProperties = Record<string, IJsonSchemaNode>;

@@ -3,15 +3,15 @@ export { MinecraftModelRenderer, default } from './MinecraftModelRenderer';
 
 // 类型导出
 export type {
-    RenderOptions,
-    ImageData,
-    Element,
-    ElementRotation,
-    Ray,
-    Intersection,
-    ModelJson,
-    ElementJson,
-    FaceJson,
+    IRenderOptions,
+    IImageData,
+    IElement,
+    IElementRotation,
+    IRay,
+    IIntersection,
+    IModelJson,
+    IElementJson,
+    IFaceJson,
 } from '../types/index';
 
 export { Axis, Direction } from '../types/index';
@@ -26,9 +26,9 @@ export { Vector3d } from '../vector/Vector3d';
 // 资源加载导出
 export { ResourceLoader } from '../model/resource/ResourceLoader';
 export { ResourceId } from '../model/resource/ResourceId';
-export type { ResourcePack } from '../model/resource/ResourcePack';
+export type { IResourcePack } from '../model/resource/ResourcePack';
 export { DirectoryResourcePack, ZipResourcePack, InternalResourcePack } from '../model/resource/ResourcePack';
 
 // Worker 导出
 export { WorkerPool } from '../worker/WorkerPool';
-export type { BatchRenderResult } from '../worker/WorkerPool';
+export type { IBatchRenderResult } from '../worker/WorkerPool';

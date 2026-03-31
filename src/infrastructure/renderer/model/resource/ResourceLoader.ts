@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { type ResourceId } from './ResourceId';
-import { type ResourcePack, DirectoryResourcePack, InternalResourcePack, ZipResourcePack } from './ResourcePack';
+import { type IResourcePack, DirectoryResourcePack, InternalResourcePack, ZipResourcePack } from './ResourcePack';
 import type { ModelCache } from '../cache/ModelCache';
 import type { TextureCache } from '../cache/TextureCache';
 
@@ -9,7 +9,7 @@ import type { TextureCache } from '../cache/TextureCache';
  * 管理多个资源包，按优先级搜索资源
  */
 export class ResourceLoader {
-    private readonly resourcePacks: ResourcePack[] = [];
+    private readonly resourcePacks: IResourcePack[] = [];
 
     // 缓存实例（延迟初始化，避免循环依赖）
     private _modelCache: ModelCache | null = null;

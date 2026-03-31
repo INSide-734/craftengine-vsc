@@ -60,8 +60,8 @@ export class RequiredFieldFix implements IQuickFixProvider {
             return match[1];
         }
 
-        // 匹配旧格式: ❌ Missing required field "fieldName"
-        const oldMatch = diagnostic.message.match(/❌\s*Missing required field "([^"]+)"/);
+        // 匹配旧格式:  Missing required field "fieldName"
+        const oldMatch = diagnostic.message.match(/\s*Missing required field "([^"]+)"/);
         if (oldMatch) {
             return oldMatch[1];
         }

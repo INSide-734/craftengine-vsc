@@ -16,7 +16,7 @@ import { deepFreeze } from '../../core/utils';
 /**
  * 模板 JSON 序列化格式
  */
-export interface TemplateJSON {
+export interface ITemplateJSON {
     id: string;
     name: string;
     parameters: readonly ITemplateParameter[];
@@ -339,7 +339,7 @@ export class Template implements ITemplate {
     /**
      * 转换为JSON表示
      */
-    toJSON(): TemplateJSON {
+    toJSON(): ITemplateJSON {
         return {
             id: this.id,
             name: this.name,
@@ -357,7 +357,7 @@ export class Template implements ITemplate {
     /**
      * 从JSON数据创建模板
      */
-    static fromJSON(data: TemplateJSON): Template {
+    static fromJSON(data: ITemplateJSON): Template {
         return new Template({
             id: data.id,
             name: data.name,

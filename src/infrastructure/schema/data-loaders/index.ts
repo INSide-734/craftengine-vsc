@@ -7,8 +7,8 @@
 
 export {
     MiniMessageDataLoader,
-    MiniMessageSchemaData,
-    MiniMessageTagDefinition,
-    MiniMessageTagArgument,
-    HexColorDefinition,
+    IMiniMessageSchemaData,
+    IMiniMessageTagDefinition,
+    IMiniMessageTagArgument,
+    IHexColorDefinition,
 } from './MiniMessageDataLoader';

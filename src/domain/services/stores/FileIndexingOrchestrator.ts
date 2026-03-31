@@ -12,12 +12,43 @@ import { ItemStore } from './ItemStore';
 import { CategoryStore } from './CategoryStore';
 import { DocumentProcessor } from './DocumentProcessor';
 import { TemplateParserService } from '../template/TemplateParserService';
+import { FileLockManager, WorkspaceInitializer, FileChangeHandler } from './indexing';
 
 /**
  * 文件索引编排器
  *
  * 负责工作区扫描、初始化、文件变更和删除处理。
- * 从 DataStoreService 中提取的生命周期管理职责。
+ * 协调 FileLockManager、WorkspaceInitializer 和 FileChangeHandler 等子组件。
+ *
+ * @remarks
+ * **核心职责**：
+ * - 生命周期管理（初始化、重载、清理）
+ * - 文件操作协调（变更、删除）
+ * - 子组件管理（Store、Processor、子组件）
+ *
+ * **子组件**：
+ * - FileLockManager：文件锁管理，防止并发冲突
+ * - WorkspaceInitializer：工作区初始化，批量处理文档
+ * - FileChangeHandler：文件变更处理，保持数据同步
+ *
+ * @example
+ * ```typescript
+ * const orchestrator = new FileIndexingOrchestrator(
+ *     logger,
+ *     yamlScanner,
+ *     yamlParser,
+ *     fileReader
+ * );
+ *
+ * // 初始化
+ * await orchestrator.initialize();
+ *
+ * // 处理文件变更
+ * await orchestrator.handleFileChange(fileUri);
+ *
+ * // 清理资源
+ * orchestrator.dispose();
+ * ```
  */
 export class FileIndexingOrchestrator {
     readonly templateStore: TemplateStore;
@@ -27,34 +58,10 @@ export class FileIndexingOrchestrator {
     readonly categoryStore: CategoryStore;
     private readonly documentProcessor: DocumentProcessor;
 
-    /** 按文件 URI 的操作锁，防止同一文件的并发变更互相干扰 */
-    private readonly fileLocks = new Map<string, Promise<void>>();
-    /** 文件锁创建时间，用于定期清理 */
-    private readonly fileLockTimes = new Map<string, number>();
-    /** 文件锁清理定时器 */
-    private fileLockCleanupInterval: ReturnType<typeof setInterval> | null = null;
-
-    /** 默认最大重试次数 */
-    private static readonly DEFAULT_MAX_RETRIES = 2;
-    /** 默认重试退避基数（毫秒） */
-    private static readonly DEFAULT_RETRY_BASE_DELAY_MS = 1000;
-    /** 默认文档处理批次大小 */
-    private static readonly DEFAULT_BATCH_SIZE = 10;
-    /** 默认文件锁清理间隔（毫秒） */
-    private static readonly DEFAULT_LOCK_CLEANUP_INTERVAL_MS = 300000; // 5 分钟
-    /** 默认文件锁过期时间（毫秒） */
-    private static readonly DEFAULT_LOCK_EXPIRY_MS = 60000; // 1 分钟
-
-    /** 最大重试次数 */
-    private readonly maxRetries: number;
-    /** 重试退避基数（毫秒） */
-    private readonly retryBaseDelayMs: number;
-    /** 文档处理批次大小 */
-    private readonly batchSize: number;
-    /** 文件锁清理间隔（毫秒） */
-    private readonly lockCleanupIntervalMs: number;
-    /** 文件锁过期时间（毫秒） */
-    private readonly lockExpiryMs: number;
+    // 子组件
+    private readonly fileLockManager: FileLockManager;
+    private readonly workspaceInitializer: WorkspaceInitializer;
+    private readonly fileChangeHandler: FileChangeHandler;
 
     private initialized = false;
     private initPromise: Promise<void> | null = null;
@@ -75,18 +82,14 @@ export class FileIndexingOrchestrator {
             lockExpiryMs?: number;
         },
     ) {
-        this.maxRetries = fileIndexingConfig?.maxRetries ?? FileIndexingOrchestrator.DEFAULT_MAX_RETRIES;
-        this.retryBaseDelayMs =
-            fileIndexingConfig?.retryBaseDelayMs ?? FileIndexingOrchestrator.DEFAULT_RETRY_BASE_DELAY_MS;
-        this.batchSize = fileIndexingConfig?.batchSize ?? FileIndexingOrchestrator.DEFAULT_BATCH_SIZE;
-        this.lockCleanupIntervalMs =
-            fileIndexingConfig?.lockCleanupIntervalMs ?? FileIndexingOrchestrator.DEFAULT_LOCK_CLEANUP_INTERVAL_MS;
-        this.lockExpiryMs = fileIndexingConfig?.lockExpiryMs ?? FileIndexingOrchestrator.DEFAULT_LOCK_EXPIRY_MS;
+        // 初始化 Store
         this.templateStore = new TemplateStore(logger, eventBus);
         this.translationStore = new TranslationStore(logger, eventBus);
         this.translationReferenceStore = new TranslationReferenceStore();
         this.itemStore = new ItemStore(logger, builtinItemLoader, eventBus);
         this.categoryStore = new CategoryStore(logger, eventBus);
+
+        // 初始化文档处理器
         this.documentProcessor = new DocumentProcessor(
             logger,
             this.templateStore,
@@ -97,44 +100,36 @@ export class FileIndexingOrchestrator {
             this.translationReferenceStore,
         );
 
-        // 启动文件锁定期清理
-        this.startFileLockCleanup();
-    }
+        // 初始化子组件
+        this.fileLockManager = new FileLockManager(logger, {
+            lockCleanupIntervalMs: fileIndexingConfig?.lockCleanupIntervalMs,
+            lockExpiryMs: fileIndexingConfig?.lockExpiryMs,
+        });
 
-    /**
-     * 启动文件锁定期清理
-     */
-    private startFileLockCleanup(): void {
-        if (this.fileLockCleanupInterval) {
-            return;
-        }
+        this.workspaceInitializer = new WorkspaceInitializer(
+            logger,
+            this.documentProcessor,
+            this.itemStore,
+            yamlScanner,
+            scanResultProvider,
+            {
+                maxRetries: fileIndexingConfig?.maxRetries,
+                retryBaseDelayMs: fileIndexingConfig?.retryBaseDelayMs,
+                batchSize: fileIndexingConfig?.batchSize,
+            },
+        );
 
-        this.fileLockCleanupInterval = setInterval(() => {
-            this.cleanupExpiredFileLocks();
-        }, this.lockCleanupIntervalMs);
-    }
-
-    /**
-     * 清理过期的文件锁
-     */
-    private cleanupExpiredFileLocks(): void {
-        const now = Date.now();
-        const expiredKeys: string[] = [];
-
-        for (const [key, createTime] of this.fileLockTimes) {
-            if (now - createTime > this.lockExpiryMs) {
-                expiredKeys.push(key);
-            }
-        }
-
-        for (const key of expiredKeys) {
-            this.fileLocks.delete(key);
-            this.fileLockTimes.delete(key);
-        }
-
-        if (expiredKeys.length > 0) {
-            this.logger.debug('Cleaned up expired file locks', { count: expiredKeys.length });
-        }
+        this.fileChangeHandler = new FileChangeHandler(
+            logger,
+            fileReader,
+            yamlParser,
+            this.documentProcessor,
+            this.templateStore,
+            this.translationStore,
+            this.translationReferenceStore,
+            this.itemStore,
+            this.categoryStore,
+        );
     }
 
     // ========================================
@@ -178,17 +173,10 @@ export class FileIndexingOrchestrator {
     }
 
     dispose(): void {
-        // 停止文件锁清理定时器
-        if (this.fileLockCleanupInterval) {
-            clearInterval(this.fileLockCleanupInterval);
-            this.fileLockCleanupInterval = null;
-        }
+        // 清理子组件
+        this.fileLockManager.dispose();
 
-        // 清理文件锁
-        this.fileLocks.clear();
-        this.fileLockTimes.clear();
-
-        this.clear();
+        void this.clear();
         this.initialized = false;
         this.initPromise = null;
     }
@@ -199,12 +187,12 @@ export class FileIndexingOrchestrator {
 
     async handleFileChange(fileUri: EditorUri): Promise<void> {
         await this.ensureInitialized();
-        return this.withFileLock(fileUri, () => this.doHandleFileChange(fileUri));
+        return this.fileLockManager.withFileLock(fileUri, () => this.fileChangeHandler.handleFileChange(fileUri));
     }
 
     async handleFileDelete(fileUri: EditorUri): Promise<void> {
         await this.ensureInitialized();
-        return this.withFileLock(fileUri, () => this.doHandleFileDelete(fileUri));
+        return this.fileLockManager.withFileLock(fileUri, () => this.fileChangeHandler.handleFileDelete(fileUri));
     }
 
     async ensureInitialized(): Promise<void> {
@@ -218,155 +206,11 @@ export class FileIndexingOrchestrator {
     // ========================================
 
     private async performInitialization(): Promise<void> {
-        let lastError: Error | undefined;
-
-        for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
-            if (attempt > 0) {
-                const delay = this.retryBaseDelayMs * (attempt * 2 - 1);
-                this.logger.warn('Retrying data store initialization', { attempt, delayMs: delay });
-
-                // 清理上次失败的残留数据
-                this.templateStore.clear();
-                this.translationStore.clear();
-                this.translationReferenceStore.clear();
-                this.itemStore.clear();
-                await this.categoryStore.clearCategories();
-
-                await new Promise((resolve) => setTimeout(resolve, delay));
-            }
-
-            try {
-                await this.doPerformInitialization();
-                return;
-            } catch (error) {
-                lastError = error as Error;
-                this.logger.warn('Data store initialization attempt failed', {
-                    attempt: attempt + 1,
-                    maxAttempts: this.maxRetries + 1,
-                    error: lastError.message,
-                });
-            }
-        }
-
-        this.logger.error('Data store initialization failed after all retries', lastError!);
-        throw lastError;
-    }
-
-    /**
-     * 执行实际的初始化逻辑
-     *
-     * 优化：并行执行工作区扫描和 Minecraft 物品加载，
-     * 批量并行处理文档以提高初始化速度。
-     */
-    private async doPerformInitialization(): Promise<void> {
-        const startTime = performance.now();
-
-        this.logger.info('Initializing data store service...');
-
-        // 并行执行：工作区扫描和 Minecraft 物品加载
-        const [scanResult] = await Promise.all([
-            this.getScanResult(),
-            // 提前开始加载 Minecraft 内置物品（不等待扫描完成）
-            this.itemStore.loadMinecraftBuiltinItems().catch((error) => {
-                this.logger.warn('Failed to load Minecraft builtin items', {
-                    error: error instanceof Error ? error.message : String(error),
-                });
-            }),
-        ]);
-
-        // 批量并行处理文档
-        const documents = scanResult.documents;
-        for (let i = 0; i < documents.length; i += this.batchSize) {
-            const batch = documents.slice(i, i + this.batchSize);
-
-            // 并行处理当前批次
-            await Promise.all(
-                batch.map(async (document) => {
-                    try {
-                        await this.documentProcessor.processDocument(document.sourceFile, document.content);
-                    } catch (error) {
-                        this.logger.warn('Failed to process document', {
-                            file: document.sourceFile.fsPath,
-                            error: error instanceof Error ? error.message : String(error),
-                        });
-                    }
-                }),
-            );
-        }
-
+        await this.workspaceInitializer.performInitialization(
+            this.templateStore,
+            this.translationStore,
+            this.categoryStore,
+        );
         this.initialized = true;
-
-        this.logger.info('Data store initialized', {
-            templateCount: await this.templateStore.count(),
-            translationKeyCount: this.translationStore.getCount(),
-            translationReferenceCount: this.translationReferenceStore.getCount(),
-            itemCount: await this.itemStore.getItemCount(),
-            categoryCount: await this.categoryStore.getCategoryCount(),
-            languageCount: this.translationStore.getLanguageCount(),
-            namespaceCount: this.itemStore.getNamespaceCount(),
-            builtinItemsLoaded: this.itemStore.isBuiltinItemsLoaded(),
-            duration: `${(performance.now() - startTime).toFixed(2)}ms`,
-        });
-    }
-
-    private async getScanResult(): Promise<IYamlScanResult> {
-        if (this.scanResultProvider) {
-            return this.scanResultProvider.getScanResult({ exclude: '**/node_modules/**', skipInvalid: true });
-        }
-        return this.yamlScanner.scanWorkspace({ exclude: '**/node_modules/**', skipInvalid: true });
-    }
-
-    /**
-     * 按文件 URI 串行化操作，不同文件可并行
-     */
-    private async withFileLock(fileUri: EditorUri, fn: () => Promise<void>): Promise<void> {
-        const key = fileUri.toString();
-        const prev = this.fileLocks.get(key) ?? Promise.resolve();
-
-        // 记录锁创建时间
-        this.fileLockTimes.set(key, Date.now());
-
-        const next = prev.then(fn, fn).finally(() => {
-            // 操作完成后，如果当前 Promise 仍是最新的，则清理
-            if (this.fileLocks.get(key) === next) {
-                this.fileLocks.delete(key);
-                this.fileLockTimes.delete(key);
-            }
-        });
-
-        this.fileLocks.set(key, next);
-
-        return next;
-    }
-
-    private async doHandleFileChange(fileUri: EditorUri): Promise<void> {
-        await this.templateStore.removeByFile(fileUri);
-        await this.translationStore.removeByFile(fileUri);
-        this.translationReferenceStore.removeByFile(fileUri.fsPath);
-        await this.itemStore.removeItemsByFile(fileUri);
-        await this.categoryStore.removeCategoriesByFile(fileUri);
-
-        try {
-            const fileContent = await this.fileReader.readFile(fileUri);
-            const content = new TextDecoder('utf-8').decode(fileContent);
-
-            const parseResult = await this.yamlParser.parseText(content, fileUri);
-            if (parseResult.errors.length === 0) {
-                await this.documentProcessor.processDocument(fileUri, content);
-            }
-        } catch (error) {
-            this.logger.warn('Failed to process file change', {
-                file: fileUri.fsPath,
-                error: error instanceof Error ? error.message : String(error),
-            });
-        }
-    }
-
-    private async doHandleFileDelete(fileUri: EditorUri): Promise<void> {
-        await this.templateStore.removeByFile(fileUri);
-        await this.translationStore.removeByFile(fileUri);
-        this.translationReferenceStore.removeByFile(fileUri.fsPath);
-        await this.itemStore.removeItemsByFile(fileUri);
-        await this.categoryStore.removeCategoriesByFile(fileUri);
     }
 }

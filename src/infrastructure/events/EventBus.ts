@@ -11,11 +11,11 @@ import { type ILogger } from '../../core/interfaces/ILogger';
  * 用于高效匹配事件模式订阅，将 O(n) 的线性搜索优化为 O(m) 的树遍历
  * 其中 n 是模式数量，m 是事件类型的段数
  */
-interface PatternTrieNode {
+interface IPatternTrieNode {
     /** 子节点：segment -> node */
-    children: Map<string, PatternTrieNode>;
+    children: Map<string, IPatternTrieNode>;
     /** 通配符子节点（*） */
-    wildcardChild: PatternTrieNode | null;
+    wildcardChild: IPatternTrieNode | null;
     /** 此节点的订阅集合 */
     subscriptions: Set<EventSubscription>;
 }
@@ -175,7 +175,7 @@ export class EventBus implements IEventBus {
     private readonly patternSubscriptions = new Map<string, Set<EventSubscription>>();
 
     /** 模式 Trie 树根节点（用于高效匹配） */
-    private readonly patternTrie: PatternTrieNode = {
+    private readonly patternTrie: IPatternTrieNode = {
         children: new Map(),
         wildcardChild: null,
         subscriptions: new Set(),
@@ -289,7 +289,10 @@ export class EventBus implements IEventBus {
             if (!this.patternSubscriptions.has(eventType)) {
                 this.patternSubscriptions.set(eventType, new Set());
             }
-            this.patternSubscriptions.get(eventType)!.add(subscription);
+            const patternSet = this.patternSubscriptions.get(eventType);
+            if (patternSet) {
+                patternSet.add(subscription);
+            }
 
             // 同时添加到 Trie 树
             this.addPatternToTrie(eventType, subscription);
@@ -298,7 +301,10 @@ export class EventBus implements IEventBus {
             if (!this.subscriptions.has(eventType)) {
                 this.subscriptions.set(eventType, new Set());
             }
-            this.subscriptions.get(eventType)!.add(subscription);
+            const subSet = this.subscriptions.get(eventType);
+            if (subSet) {
+                subSet.add(subscription);
+            }
         }
 
         this.logger?.debug('Event subscription added', {
@@ -479,7 +485,11 @@ export class EventBus implements IEventBus {
                         subscriptions: new Set(),
                     });
                 }
-                node = node.children.get(segment)!;
+                const nextNode = node.children.get(segment);
+                if (!nextNode) {
+                    return;
+                }
+                node = nextNode;
             }
         }
 
@@ -500,10 +510,11 @@ export class EventBus implements IEventBus {
                 }
                 node = node.wildcardChild;
             } else {
-                if (!node.children.has(segment)) {
+                const nextNode = node.children.get(segment);
+                if (!nextNode) {
                     return; // 路径不存在
                 }
-                node = node.children.get(segment)!;
+                node = nextNode;
             }
         }
 
@@ -528,7 +539,7 @@ export class EventBus implements IEventBus {
     /**
      * 遍历 Trie 树查找匹配的订阅
      */
-    private traverseTrie(node: PatternTrieNode, segments: string[], index: number, results: EventSubscription[]): void {
+    private traverseTrie(node: IPatternTrieNode, segments: string[], index: number, results: EventSubscription[]): void {
         if (index === segments.length) {
             // 收集此节点的活跃订阅
             for (const sub of node.subscriptions) {

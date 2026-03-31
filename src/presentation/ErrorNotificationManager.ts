@@ -156,7 +156,7 @@ export class ErrorNotificationManager {
      * 显示成功通知
      */
     async showSuccessNotification(message: string): Promise<void> {
-        window.showInformationMessage(`✅ ${message}`);
+        window.showInformationMessage(` ${message}`);
     }
 
     /**
@@ -164,9 +164,9 @@ export class ErrorNotificationManager {
      */
     async showHintNotification(message: string, actions?: string[]): Promise<string | undefined> {
         if (actions) {
-            return window.showInformationMessage(`💡 ${message}`, ...actions);
+            return window.showInformationMessage(` ${message}`, ...actions);
         } else {
-            window.showInformationMessage(`💡 ${message}`);
+            window.showInformationMessage(` ${message}`);
             return undefined;
         }
     }

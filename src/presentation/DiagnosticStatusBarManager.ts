@@ -101,11 +101,11 @@ export class DiagnosticStatusBarManager {
         const parts: string[] = ['CraftEngine Template Diagnostics'];
 
         if (this.errorCount > 0) {
-            parts.push(`\n❌ ${this.errorCount} error${this.errorCount > 1 ? 's' : ''}`);
+            parts.push(`\n ${this.errorCount} error${this.errorCount > 1 ? 's' : ''}`);
         }
 
         if (this.warningCount > 0) {
-            parts.push(`\n⚠️  ${this.warningCount} warning${this.warningCount > 1 ? 's' : ''}`);
+            parts.push(`\n  ${this.warningCount} warning${this.warningCount > 1 ? 's' : ''}`);
         }
 
         parts.push('\n\nClick to view problems panel');

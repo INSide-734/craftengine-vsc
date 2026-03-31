@@ -1,8 +1,7 @@
 import { Rectangle } from './Rectangle';
 import { type Vector3d } from '../../../vector/Vector3d';
-import type { Ray } from '../../camera/Ray';
-import { Intersection } from '../../camera/Ray';
-import type { ElementRotation, ImageData } from '../../../types/index';
+import { Intersection, type IRay, type IIntersection } from '../../camera/Ray';
+import type { IElementRotation, IImageData } from '../../../types/index';
 import type { Scene } from '../../Scene';
 
 /**
@@ -16,10 +15,10 @@ export class TexturedRectangle extends Rectangle {
         uVec: Vector3d,
         vVec: Vector3d,
         normal: Vector3d,
-        public readonly textureFront: ImageData,
-        public readonly textureBack: ImageData,
+        public readonly textureFront: IImageData,
+        public readonly textureBack: IImageData,
         ambientOcclusion: boolean,
-        rot: ElementRotation | null,
+        rot: IElementRotation | null,
     ) {
         super(scene, origin, uVec, vVec, normal, rot, ambientOcclusion);
     }
@@ -27,7 +26,7 @@ export class TexturedRectangle extends Rectangle {
     /**
      * 追踪光线与纹理矩形的交点
      */
-    trace(ray: Ray): Intersection | null {
+    trace(ray: IRay): IIntersection | null {
         const intersection = this.traceToVector(ray);
         if (!intersection) {
             return null;

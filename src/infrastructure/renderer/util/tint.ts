@@ -1,5 +1,5 @@
-import type { ImageData } from '../types/index';
-import type { TintSource, RenderContext } from '../types/item-definition';
+import type { IImageData } from '../types/index';
+import type { TintSource, IRenderContext } from '../types/item-definition';
 
 /**
  * 解析 Minecraft 的 ARGB 整数颜色值
@@ -19,7 +19,7 @@ export function parseArgbColor(value: number): { r: number; g: number; b: number
 /**
  * 解析 tint source 获取颜色值
  */
-export function resolveTintColor(tint: TintSource, context: RenderContext = {}): number | null {
+export function resolveTintColor(tint: TintSource, context: IRenderContext = {}): number | null {
     const type = tint.type.replace(/^minecraft:/, '');
 
     switch (type) {
@@ -65,7 +65,7 @@ export function resolveTintColor(tint: TintSource, context: RenderContext = {}):
  * 对 ImageData 应用着色
  * 使用乘法混合：结果 = 原色 * tint / 255
  */
-export function applyTintToImageData(imageData: ImageData, tintColor: number): ImageData {
+export function applyTintToImageData(imageData: IImageData, tintColor: number): IImageData {
     const { r: tintR, g: tintG, b: tintB } = parseArgbColor(tintColor);
 
     // 创建新的 buffer 避免修改原数据

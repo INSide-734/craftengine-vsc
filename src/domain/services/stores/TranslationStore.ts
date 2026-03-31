@@ -133,17 +133,26 @@ export class TranslationStore implements ITranslationRepository {
         if (!this.keyIndex.has(key.key)) {
             this.keyIndex.set(key.key, new Set());
         }
-        this.keyIndex.get(key.key)!.add(key.fullPath);
+        const keySet = this.keyIndex.get(key.key);
+        if (keySet) {
+            keySet.add(key.fullPath);
+        }
 
         if (!this.languageIndex.has(key.languageCode)) {
             this.languageIndex.set(key.languageCode, new Set());
         }
-        this.languageIndex.get(key.languageCode)!.add(key.fullPath);
+        const langSet = this.languageIndex.get(key.languageCode);
+        if (langSet) {
+            langSet.add(key.fullPath);
+        }
 
         if (!this.fileIndex.has(key.sourceFile)) {
             this.fileIndex.set(key.sourceFile, new Set());
         }
-        this.fileIndex.get(key.sourceFile)!.add(key.fullPath);
+        const fileSet = this.fileIndex.get(key.sourceFile);
+        if (fileSet) {
+            fileSet.add(key.fullPath);
+        }
 
         this.lastUpdated = new Date();
 

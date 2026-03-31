@@ -23,7 +23,7 @@ import { type IMinecraftModelJson } from '../../core/interfaces/IModelGenerator'
 /**
  * 渲染选项
  */
-export interface RenderOptions {
+export interface IRenderOptions {
     /** 渲染图像尺寸（像素） */
     renderSize?: number;
     /** 资源包路径数组 */
@@ -35,7 +35,7 @@ export interface RenderOptions {
 /**
  * 默认渲染选项
  */
-const DEFAULT_RENDER_OPTIONS: Required<RenderOptions> = {
+const DEFAULT_RENDER_OPTIONS: Required<IRenderOptions> = {
     renderSize: 256,
     resourcePacks: [],
     useInternalResources: true,
@@ -53,7 +53,7 @@ const DEFAULT_RENDER_OPTIONS: Required<RenderOptions> = {
 export class MinecraftRendererAdapter implements IRendererAdapter {
     private readonly logger: ILogger;
     private renderer: MinecraftModelRenderer | null = null;
-    private currentOptions: RenderOptions | null = null;
+    private currentOptions: IRenderOptions | null = null;
     private initialized = false;
 
     constructor(logger: ILogger) {
@@ -66,7 +66,7 @@ export class MinecraftRendererAdapter implements IRendererAdapter {
      * @param options - 渲染选项
      * @param forceReinit - 强制重新初始化（默认 false，仅在选项变化时重新初始化）
      */
-    async initialize(options: RenderOptions = {}, forceReinit = false): Promise<void> {
+    async initialize(options: IRenderOptions = {}, forceReinit = false): Promise<void> {
         const mergedOptions = { ...DEFAULT_RENDER_OPTIONS, ...options };
 
         // 检查选项是否变化，避免重复初始化
@@ -201,7 +201,7 @@ export class MinecraftRendererAdapter implements IRendererAdapter {
     /**
      * 获取当前渲染选项
      */
-    getCurrentOptions(): RenderOptions | null {
+    getCurrentOptions(): IRenderOptions | null {
         return this.currentOptions ? { ...this.currentOptions } : null;
     }
 
@@ -232,7 +232,7 @@ export class MinecraftRendererAdapter implements IRendererAdapter {
     /**
      * 比较两个选项是否相等
      */
-    private optionsEqual(newOptions: RenderOptions): boolean {
+    private optionsEqual(newOptions: IRenderOptions): boolean {
         if (!this.currentOptions) {
             return false;
         }

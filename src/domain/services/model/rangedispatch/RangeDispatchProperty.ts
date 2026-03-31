@@ -8,9 +8,9 @@
 
 import { Key } from '../utils/Key';
 import {
-    type Property,
-    type PropertyFactory,
-    type PropertyReader,
+    type IProperty,
+    type IPropertyFactory,
+    type IPropertyReader,
     SimpleProperty,
     SimplePropertyFactory,
     SimplePropertyReader,
@@ -22,9 +22,9 @@ import { type IModelPropertyDefinition } from '../../../../core/types/ConfigType
 // 范围分发属性接口（保持向后兼容）
 // ============================================
 
-export type RangeDispatchProperty = Property;
-export type RangeDispatchPropertyFactory = PropertyFactory<RangeDispatchProperty>;
-export type RangeDispatchPropertyReader = PropertyReader<RangeDispatchProperty>;
+export type RangeDispatchProperty = IProperty;
+export type RangeDispatchPropertyFactory = IPropertyFactory<RangeDispatchProperty>;
+export type RangeDispatchPropertyReader = IPropertyReader<RangeDispatchProperty>;
 
 // ============================================
 // 简单范围分发属性

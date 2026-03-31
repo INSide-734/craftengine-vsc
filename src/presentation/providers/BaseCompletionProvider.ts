@@ -16,7 +16,7 @@ import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
 import { type PerformanceMonitor } from '../../infrastructure/performance/PerformanceMonitor';
 import { type CompletionManager } from '../../infrastructure/completion/CompletionManager';
 import { YamlHelper } from '../../infrastructure/yaml/YamlHelper';
-import { type CompletionItemWithStrategy } from '../types/CompletionTypes';
+import { type ICompletionItemWithStrategy } from '../types/CompletionTypes';
 import { generateEventId } from '../../infrastructure/utils/IdGenerator';
 
 /**
@@ -160,7 +160,7 @@ export class BaseCompletionProvider implements CompletionItemProvider {
             }
 
             // 检查补全项是否包含策略信息
-            const strategyName = (item as CompletionItemWithStrategy)._strategy;
+            const strategyName = (item as ICompletionItemWithStrategy)._strategy;
 
             if (!strategyName) {
                 return item;

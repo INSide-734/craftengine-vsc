@@ -16,12 +16,12 @@
  * @example
  * ```typescript
  * // 同步处理器
- * const syncHandler: EventHandler<TemplateCreated> = (event) => {
+ * const syncHandler: EventHandler<ITemplateCreated> = (event) => {
  *     console.log('Template created:', event.template.name);
  * };
  *
  * // 异步处理器
- * const asyncHandler: EventHandler<TemplateCreated> = async (event) => {
+ * const asyncHandler: EventHandler<ITemplateCreated> = async (event) => {
  *     await updateCache(event.template);
  *     await notifyUsers(event.template);
  * };
@@ -137,7 +137,7 @@ export interface IEventSubscription {
  * @example
  * ```typescript
  * // 订阅特定事件
- * eventBus.subscribe('template.created', (event: TemplateCreated) => {
+ * eventBus.subscribe('template.created', (event: ITemplateCreated) => {
  *     console.log('Template created:', event.template.name);
  * });
  *

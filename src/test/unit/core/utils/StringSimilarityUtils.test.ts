@@ -91,11 +91,11 @@ describe('StringSimilarityUtils', () => {
     });
 
     describe('findSimilarItems', () => {
-        interface Item {
+        interface IItem {
             id: string;
             name: string;
         }
-        const items: Item[] = [
+        const items: IItem[] = [
             { id: '1', name: 'apple' },
             { id: '2', name: 'banana' },
             { id: '3', name: 'apricot' },

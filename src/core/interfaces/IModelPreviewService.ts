@@ -16,7 +16,7 @@ import { type IMinecraftModelJson } from './IModelGenerator';
 /**
  * 预览选项
  */
-export interface PreviewOptions {
+export interface IIPreviewOptions {
     /** 渲染图像尺寸（像素） */
     renderSize?: number;
     /** 资源包路径数组 */
@@ -32,7 +32,7 @@ export interface PreviewOptions {
 /**
  * 预览结果
  */
-export interface PreviewResult {
+export interface IIPreviewResult {
     /** 是否成功 */
     success: boolean;
     /** 渲染的图像 Buffer（PNG 格式） */
@@ -65,7 +65,7 @@ export interface IModelPreviewService {
      * @param options - 预览选项
      * @returns 预览结果
      */
-    previewItem(itemId: string, options?: PreviewOptions): Promise<PreviewResult>;
+    previewItem(itemId: string, options?: IPreviewOptions): Promise<IPreviewResult>;
 
     /**
      * 预览原始模型路径
@@ -76,7 +76,7 @@ export interface IModelPreviewService {
      * @param options - 预览选项
      * @returns 预览结果
      */
-    previewModel(modelPath: string, options?: PreviewOptions): Promise<PreviewResult>;
+    previewModel(modelPath: string, options?: IPreviewOptions): Promise<IPreviewResult>;
 
     /**
      * 预览自定义模型 JSON
@@ -87,7 +87,7 @@ export interface IModelPreviewService {
      * @param options - 预览选项
      * @returns 预览结果
      */
-    previewCustomModel(modelJson: IMinecraftModelJson, options?: PreviewOptions): Promise<PreviewResult>;
+    previewCustomModel(modelJson: IMinecraftModelJson, options?: IPreviewOptions): Promise<IPreviewResult>;
 
     /**
      * 检查预览服务是否可用

@@ -379,16 +379,16 @@ describe('EventBus', () => {
     });
 
     describe('type safety', () => {
-        interface TestEvent {
+        interface ITestEvent {
             id: string;
             data: { value: number };
         }
 
         it('should preserve event data type', async () => {
             const handler = vi.fn();
-            eventBus.subscribe<TestEvent>('typed.event', handler);
+            eventBus.subscribe<ITestEvent>('typed.event', handler);
 
-            const event: TestEvent = { id: '123', data: { value: 42 } };
+            const event: ITestEvent = { id: '123', data: { value: 42 } };
             await eventBus.publish('typed.event', event);
 
             expect(handler).toHaveBeenCalledWith(event);

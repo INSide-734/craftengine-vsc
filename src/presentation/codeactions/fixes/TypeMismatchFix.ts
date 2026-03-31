@@ -64,8 +64,8 @@ export class TypeMismatchFix implements IQuickFixProvider {
      */
     private extractExpectedType(diagnostic: Diagnostic): string | undefined {
         // 匹配消息格式: Expected text, got number
-        // 或: Expected 📝 text
-        const match = diagnostic.message.match(/Expected\s+(?:📝\s*)?(\w+)/i);
+        // 或: Expected  text
+        const match = diagnostic.message.match(/Expected\s+(?:\s*)?(\w+)/i);
         if (match) {
             return this.normalizeTypeName(match[1]);
         }

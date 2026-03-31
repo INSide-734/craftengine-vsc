@@ -6,7 +6,7 @@ import { type CompletionItem } from 'vscode';
  * 用于在 resolveCompletionItem 时找回对应的处理策略。
  * 统一所有补全策略中对 CompletionItem 的扩展属性定义。
  */
-export interface CompletionItemWithStrategy extends CompletionItem {
+export interface ICompletionItemWithStrategy extends CompletionItem {
     /** 补全策略名称 */
     _strategy?: string;
     /** Schema 提供者 ID */
@@ -20,7 +20,7 @@ export interface CompletionItemWithStrategy extends CompletionItem {
  *
  * 用于 FilePathCompletionStrategy 在 resolveCompletionItem 时传递文件路径数据
  */
-export interface FilePathCompletionItem extends CompletionItemWithStrategy {
+export interface IFilePathCompletionItem extends ICompletionItemWithStrategy {
     /** 文件路径补全数据 */
     _filePathData?: {
         relativePath: string;

@@ -1,5 +1,5 @@
 import { type ILogger } from '../../../core/interfaces/ILogger';
-import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
 import { type SchemaReferenceResolver, type SchemaProperty, type SchemaPropertyDetails, isCircularRef } from './index';
 import { safeCompileRegex } from '../../../core/utils';
 
@@ -23,7 +23,7 @@ export class SchemaPropertyExtractor {
      * @param schema 当前 Schema
      * @param contextSchema 上下文 Schema（用于解析内部引用，如 #/$defs/xxx）
      */
-    async extractProperties(schema: JsonSchemaNode, contextSchema?: JsonSchemaNode): Promise<SchemaProperty[]> {
+    async extractProperties(schema: IJsonSchemaNode, contextSchema?: IJsonSchemaNode): Promise<SchemaProperty[]> {
         const properties: SchemaProperty[] = [];
         const context = contextSchema || schema;
 
@@ -52,22 +52,22 @@ export class SchemaPropertyExtractor {
      * @param contextSchema 上下文 Schema（用于解析内部引用，如 #/$defs/xxx）
      */
     async findPropertySchema(
-        parentSchema: JsonSchemaNode,
+        parentSchema: IJsonSchemaNode,
         propertyName: string,
-        contextSchema?: JsonSchemaNode,
-    ): Promise<JsonSchemaNode | undefined> {
+        contextSchema?: IJsonSchemaNode,
+    ): Promise<IJsonSchemaNode | undefined> {
         const context = contextSchema || parentSchema;
 
-        let result: JsonSchemaNode | undefined = undefined;
+        let result: IJsonSchemaNode | undefined = undefined;
 
         // 从 properties 查找
-        const properties = parentSchema.properties as Record<string, JsonSchemaNode> | undefined;
+        const properties = parentSchema.properties as Record<string, IJsonSchemaNode> | undefined;
         if (properties?.[propertyName]) {
             result = properties[propertyName];
         }
 
         // 从 patternProperties 查找
-        const patternProperties = parentSchema.patternProperties as Record<string, JsonSchemaNode> | undefined;
+        const patternProperties = parentSchema.patternProperties as Record<string, IJsonSchemaNode> | undefined;
         if (!result && patternProperties) {
             for (const [pattern, schema] of Object.entries(patternProperties)) {
                 const regex = safeCompileRegex(pattern);
@@ -80,13 +80,13 @@ export class SchemaPropertyExtractor {
 
         // 从 allOf 查找
         if (!result && parentSchema.allOf && Array.isArray(parentSchema.allOf)) {
-            for (const subSchema of parentSchema.allOf as JsonSchemaNode[]) {
+            for (const subSchema of parentSchema.allOf as IJsonSchemaNode[]) {
                 let resolvedSubSchema = subSchema;
                 if (subSchema?.$ref) {
                     resolvedSubSchema = (await this.resolver.resolveReferences(subSchema, 5, context)) || subSchema;
                 }
 
-                const subProperties = resolvedSubSchema.properties as Record<string, JsonSchemaNode> | undefined;
+                const subProperties = resolvedSubSchema.properties as Record<string, IJsonSchemaNode> | undefined;
                 if (subProperties?.[propertyName]) {
                     result = subProperties[propertyName];
                     break;
@@ -110,8 +110,8 @@ export class SchemaPropertyExtractor {
      * 提取属性详细信息
      */
     extractPropertyDetails(
-        propertySchema: JsonSchemaNode,
-        parentSchema: JsonSchemaNode,
+        propertySchema: IJsonSchemaNode,
+        parentSchema: IJsonSchemaNode,
         propertyName: string,
     ): SchemaPropertyDetails {
         const details: SchemaPropertyDetails = {};
@@ -159,14 +159,14 @@ export class SchemaPropertyExtractor {
     /**
      * 从 properties 提取
      */
-    private extractFromProperties(schema: JsonSchemaNode, properties: SchemaProperty[]): void {
+    private extractFromProperties(schema: IJsonSchemaNode, properties: SchemaProperty[]): void {
         if (!schema.properties) {
             return;
         }
 
         for (const [key, propSchema] of Object.entries(schema.properties as Record<string, unknown>)) {
             if (typeof propSchema === 'object' && propSchema !== null) {
-                properties.push({ key, schema: propSchema as JsonSchemaNode });
+                properties.push({ key, schema: propSchema as IJsonSchemaNode });
             }
         }
     }
@@ -174,14 +174,14 @@ export class SchemaPropertyExtractor {
     /**
      * 从 patternProperties 提取
      */
-    private extractFromPatternProperties(schema: JsonSchemaNode, properties: SchemaProperty[]): void {
+    private extractFromPatternProperties(schema: IJsonSchemaNode, properties: SchemaProperty[]): void {
         if (!schema.patternProperties) {
             return;
         }
 
         for (const [pattern, propSchema] of Object.entries(schema.patternProperties as Record<string, unknown>)) {
             if (typeof propSchema === 'object' && propSchema !== null) {
-                const schemaObj = propSchema as JsonSchemaNode;
+                const schemaObj = propSchema as IJsonSchemaNode;
                 const description = (schemaObj.description as string) || pattern;
                 properties.push({
                     key: `[${pattern}]`,
@@ -199,9 +199,9 @@ export class SchemaPropertyExtractor {
      * 这样可以避免父级的 patternProperties 错误地出现在子级的补全列表中
      */
     private async extractFromAllOf(
-        schema: JsonSchemaNode,
+        schema: IJsonSchemaNode,
         properties: SchemaProperty[],
-        contextSchema?: JsonSchemaNode,
+        contextSchema?: IJsonSchemaNode,
     ): Promise<void> {
         if (!schema.allOf || !Array.isArray(schema.allOf)) {
             return;
@@ -209,12 +209,12 @@ export class SchemaPropertyExtractor {
 
         const context = contextSchema || schema;
 
-        for (const subSchema of schema.allOf as JsonSchemaNode[]) {
+        for (const subSchema of schema.allOf as IJsonSchemaNode[]) {
             if (typeof subSchema !== 'object') {
                 continue;
             }
 
-            let resolvedSubSchema: JsonSchemaNode = subSchema;
+            let resolvedSubSchema: IJsonSchemaNode = subSchema;
             if (subSchema?.$ref) {
                 const resolved = await this.resolver.resolveReferences(subSchema, 5, context);
                 // 检查循环引用
@@ -231,7 +231,7 @@ export class SchemaPropertyExtractor {
                         propSchema !== null &&
                         !properties.find((p) => p.key === key)
                     ) {
-                        properties.push({ key, schema: propSchema as JsonSchemaNode });
+                        properties.push({ key, schema: propSchema as IJsonSchemaNode });
                     }
                 }
             }
@@ -247,9 +247,9 @@ export class SchemaPropertyExtractor {
      * 注意：只提取 properties，不提取 patternProperties
      */
     private async extractFromOneOf(
-        schema: JsonSchemaNode,
+        schema: IJsonSchemaNode,
         properties: SchemaProperty[],
-        contextSchema?: JsonSchemaNode,
+        contextSchema?: IJsonSchemaNode,
     ): Promise<void> {
         if (!schema.oneOf || !Array.isArray(schema.oneOf)) {
             return;
@@ -257,12 +257,12 @@ export class SchemaPropertyExtractor {
 
         const context = contextSchema || schema;
 
-        for (const subSchema of schema.oneOf as JsonSchemaNode[]) {
+        for (const subSchema of schema.oneOf as IJsonSchemaNode[]) {
             if (typeof subSchema !== 'object') {
                 continue;
             }
 
-            let resolvedSubSchema: JsonSchemaNode = subSchema;
+            let resolvedSubSchema: IJsonSchemaNode = subSchema;
             if (subSchema?.$ref) {
                 const resolved = await this.resolver.resolveReferences(subSchema, 5, context);
                 // 检查循环引用
@@ -278,8 +278,8 @@ export class SchemaPropertyExtractor {
                         propSchema !== null &&
                         !properties.find((p) => p.key === key)
                     ) {
-                        const conditionalSchema: JsonSchemaNode = {
-                            ...(propSchema as JsonSchemaNode),
+                        const conditionalSchema: IJsonSchemaNode = {
+                            ...(propSchema as IJsonSchemaNode),
                             _conditional: true,
                             _conditionType: 'oneOf',
                         };
@@ -298,9 +298,9 @@ export class SchemaPropertyExtractor {
      * 注意：只提取 properties，不提取 patternProperties
      */
     private async extractFromAnyOf(
-        schema: JsonSchemaNode,
+        schema: IJsonSchemaNode,
         properties: SchemaProperty[],
-        contextSchema?: JsonSchemaNode,
+        contextSchema?: IJsonSchemaNode,
     ): Promise<void> {
         if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
             return;
@@ -308,12 +308,12 @@ export class SchemaPropertyExtractor {
 
         const context = contextSchema || schema;
 
-        for (const subSchema of schema.anyOf as JsonSchemaNode[]) {
+        for (const subSchema of schema.anyOf as IJsonSchemaNode[]) {
             if (typeof subSchema !== 'object') {
                 continue;
             }
 
-            let resolvedSubSchema: JsonSchemaNode = subSchema;
+            let resolvedSubSchema: IJsonSchemaNode = subSchema;
             if (subSchema?.$ref) {
                 const resolved = await this.resolver.resolveReferences(subSchema, 5, context);
                 // 检查循环引用
@@ -329,8 +329,8 @@ export class SchemaPropertyExtractor {
                         propSchema !== null &&
                         !properties.find((p) => p.key === key)
                     ) {
-                        const conditionalSchema: JsonSchemaNode = {
-                            ...(propSchema as JsonSchemaNode),
+                        const conditionalSchema: IJsonSchemaNode = {
+                            ...(propSchema as IJsonSchemaNode),
                             _conditional: true,
                             _conditionType: 'anyOf',
                         };

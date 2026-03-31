@@ -194,7 +194,7 @@ export class PerformanceMonitor implements IPerformanceMonitor {
         });
 
         // 发布事件
-        this.eventBus?.publish(EVENT_TYPES.PerformanceMetric, metric);
+        void this.eventBus?.publish(EVENT_TYPES.PerformanceMetric, metric);
 
         // 检查性能阈值
         this.checkPerformanceThresholds(metric);
@@ -318,7 +318,10 @@ export class PerformanceMonitor implements IPerformanceMonitor {
             });
         }
 
-        const stats = this.operationStats.get(metric.name)!;
+        const stats = this.operationStats.get(metric.name);
+        if (!stats) {
+            return;
+        }
         stats.count++;
         stats.totalTime += metric.value;
         stats.minTime = Math.min(stats.minTime, metric.value);

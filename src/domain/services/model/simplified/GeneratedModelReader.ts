@@ -5,7 +5,7 @@
  */
 
 import { type Key } from '../utils/Key';
-import { type SimplifiedModelReader } from './SimplifiedModelReader';
+import { type ISimplifiedModelReader } from './SimplifiedModelReader';
 
 /**
  * 简化模型配置错误
@@ -25,7 +25,7 @@ export class SimplifiedModelConfigError extends Error {
  * 生成模型读取器
  * 用于处理 generated 和 handheld 类型的简化模型
  */
-export class GeneratedModelReader implements SimplifiedModelReader {
+export class GeneratedModelReader implements ISimplifiedModelReader {
     private readonly model: string;
 
     constructor(model: string) {

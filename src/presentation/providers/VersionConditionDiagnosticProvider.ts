@@ -16,7 +16,7 @@ import { BaseDiagnosticProvider } from './BaseDiagnosticProvider';
 /**
  * 版本条件引用信息
  */
-interface VersionConditionReference {
+interface IVersionConditionReference {
     /** 完整的版本条件字符串 */
     condition: string;
     /** 操作符 (>=, <, <=, =, 或空表示范围) */
@@ -78,7 +78,7 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
         const diagnostics: Diagnostic[] = [];
 
         // 查找所有版本条件引用
-        const references = this.findVersionConditionReferences(document);
+        const references = this.findIVersionConditionReferences(document);
 
         // 验证每个引用
         for (const ref of references) {
@@ -92,8 +92,8 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
     /**
      * 查找文档中的版本条件引用
      */
-    private findVersionConditionReferences(document: TextDocument): VersionConditionReference[] {
-        const references: VersionConditionReference[] = [];
+    private findIVersionConditionReferences(document: TextDocument): IVersionConditionReference[] {
+        const references: IVersionConditionReference[] = [];
         const text = document.getText();
         const lines = text.split('\n');
 
@@ -136,7 +136,7 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
     /**
      * 验证版本条件
      */
-    private async validateVersionCondition(ref: VersionConditionReference): Promise<Diagnostic[]> {
+    private async validateVersionCondition(ref: IVersionConditionReference): Promise<Diagnostic[]> {
         const diagnostics: Diagnostic[] = [];
 
         try {
@@ -203,7 +203,7 @@ export class VersionConditionDiagnosticProvider extends BaseDiagnosticProvider {
     /**
      * 验证版本范围有效性
      */
-    private validateVersionRange(ref: VersionConditionReference): Diagnostic | null {
+    private validateVersionRange(ref: IVersionConditionReference): Diagnostic | null {
         if (!ref.endVersion) {
             return null;
         }

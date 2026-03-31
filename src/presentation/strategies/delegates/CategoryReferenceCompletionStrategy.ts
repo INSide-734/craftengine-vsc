@@ -163,9 +163,9 @@ export class CategoryReferenceCompletionStrategy implements ICompletionStrategy 
 
         // 设置简短描述
         if (category.displayName) {
-            completionItem.detail = `📁 ${category.displayName}`;
+            completionItem.detail = ` ${category.displayName}`;
         } else {
-            completionItem.detail = `📁 Category`;
+            completionItem.detail = ` Category`;
         }
 
         // 设置插入文本
@@ -186,10 +186,10 @@ export class CategoryReferenceCompletionStrategy implements ICompletionStrategy 
         md.supportHtml = true;
 
         // 标题
-        md.appendMarkdown(`## 📁 ${category.id}\n\n`);
+        md.appendMarkdown(`##  ${category.id}\n\n`);
 
         // 基本信息表格
-        md.appendMarkdown('| 🏷️ Property | 📄 Value |\n');
+        md.appendMarkdown('|  Property |  Value |\n');
         md.appendMarkdown('|:------------|:---------|');
         md.appendMarkdown(`\n| **Namespace** | \`${category.namespace}\` |`);
         md.appendMarkdown(`\n| **Name** | \`${category.name}\` |`);
@@ -214,7 +214,7 @@ export class CategoryReferenceCompletionStrategy implements ICompletionStrategy 
 
         // 描述/lore
         if (category.description && category.description.length > 0) {
-            md.appendMarkdown('### 📝 Description\n\n');
+            md.appendMarkdown('###  Description\n\n');
             for (const line of category.description) {
                 md.appendMarkdown(`- ${line}\n`);
             }
@@ -223,20 +223,20 @@ export class CategoryReferenceCompletionStrategy implements ICompletionStrategy 
 
         // 源文件信息
         md.appendMarkdown('---\n\n');
-        md.appendMarkdown('### 📋 Source Information\n\n');
+        md.appendMarkdown('###  Source Information\n\n');
 
         const relativePath = getRelativePath(category.sourceFile);
-        md.appendMarkdown(`| 📁 Source File | \`${relativePath}\` |\n`);
+        md.appendMarkdown(`|  Source File | \`${relativePath}\` |\n`);
         md.appendMarkdown('|:--------------|:---------|\n');
 
         if (category.lineNumber !== undefined) {
-            md.appendMarkdown(`| 📍 Line Number | \`${category.lineNumber + 1}\` |\n`);
+            md.appendMarkdown(`|  Line Number | \`${category.lineNumber + 1}\` |\n`);
         }
 
         md.appendMarkdown('\n');
 
         // 使用提示
-        md.appendMarkdown('> **💡 Tip:** Use this category reference in item configurations.\n');
+        md.appendMarkdown('> ** Tip:** Use this category reference in item configurations.\n');
 
         return md;
     }

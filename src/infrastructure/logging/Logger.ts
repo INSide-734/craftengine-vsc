@@ -1,9 +1,9 @@
 import { type ILogger, type ILogEntry, type ILogTarget, LogLevel } from '../../core/interfaces/ILogger';
-import { FileLogTarget, type FileLogTargetOptions } from './FileLogTarget';
+import { FileLogTarget, type IFileLogTargetOptions } from './FileLogTarget';
 import { ConsoleLogTarget } from './ConsoleLogTarget';
 
 // 重新导出日志目标类，保持向后兼容
-export { FileLogTarget, FileLogTargetOptions } from './FileLogTarget';
+export { FileLogTarget, IFileLogTargetOptions } from './FileLogTarget';
 export { ConsoleLogTarget } from './ConsoleLogTarget';
 export { OutputChannelLogTarget } from './OutputChannelLogTarget';
 
@@ -87,9 +87,11 @@ export class Logger implements ILogger {
         for (let i = 0; i < targets.length; i++) {
             try {
                 targets[i].write(entry).catch((err) => {
+                    // eslint-disable-next-line no-console
                     console.error('Logger write error:', err);
                 });
             } catch (err) {
+                // eslint-disable-next-line no-console
                 console.error('Logger write error:', err);
             }
         }
@@ -141,6 +143,7 @@ export class LoggerManager {
         // 调试模式优先级最高，强制使用 DEBUG 级别
         if (debugMode) {
             this.globalLevel = LogLevel.DEBUG;
+            // eslint-disable-next-line no-console
             console.log('[LoggerManager] Debug mode enabled via environment variable');
         } else if (envLogLevel && envLogLevel in LogLevel) {
             this.globalLevel = LogLevel[envLogLevel as keyof typeof LogLevel] as LogLevel;
@@ -179,6 +182,7 @@ export class LoggerManager {
                     this.enableFileLogging(envLogFilePath);
                 } else {
                     // 如果没有指定文件路径，回退到控制台
+                    // eslint-disable-next-line no-console
                     console.warn(
                         '[LoggerManager] CRAFTENGINE_DEBUG_OUTPUT=file but no log file path specified, falling back to console',
                     );
@@ -211,17 +215,18 @@ export class LoggerManager {
      * @param logFilePath 日志文件路径
      * @param options 文件日志选项
      */
-    enableFileLogging(logFilePath: string, options?: FileLogTargetOptions): void {
+    enableFileLogging(logFilePath: string, options?: IFileLogTargetOptions): void {
         // 如果已经有文件日志目标，先移除
         if (this.fileLogTarget) {
             this.removeGlobalTarget(this.fileLogTarget);
-            this.fileLogTarget.dispose();
+            void this.fileLogTarget.dispose();
         }
 
         this.fileLogTarget = new FileLogTarget(logFilePath, options);
         this.fileLogPath = logFilePath;
         this.addGlobalTarget(this.fileLogTarget);
 
+        // eslint-disable-next-line no-console
         console.log(`[LoggerManager] File logging enabled: ${logFilePath}`);
     }
 
@@ -229,7 +234,7 @@ export class LoggerManager {
      * 通过 VSCode 配置启用文件日志（标记为配置管理）
      * 仅由 InfrastructureRegistrar 和热重载调用
      */
-    enableFileLoggingFromConfig(logFilePath: string, options?: FileLogTargetOptions): void {
+    enableFileLoggingFromConfig(logFilePath: string, options?: IFileLogTargetOptions): void {
         this.enableFileLogging(logFilePath, options);
         this.fileLoggingManagedByConfig = true;
     }
@@ -240,7 +245,7 @@ export class LoggerManager {
     disableFileLogging(): void {
         if (this.fileLogTarget) {
             this.removeGlobalTarget(this.fileLogTarget);
-            this.fileLogTarget.dispose();
+            void this.fileLogTarget.dispose();
             this.fileLogTarget = null;
             this.fileLogPath = null;
             this.fileLoggingManagedByConfig = false;
@@ -289,8 +294,9 @@ export class LoggerManager {
 
             // 初始加载配置
             this.reloadConfiguration();
-        } catch (error) {
+        } catch {
             // 非 VSCode 环境，忽略
+            // eslint-disable-next-line no-console
             console.warn('Failed to setup config watcher (not in VSCode environment?)');
         }
     }
@@ -340,6 +346,7 @@ export class LoggerManager {
             // 热重载文件日志配置
             this.reloadFileLoggingConfig(config);
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Failed to reload configuration:', error);
         }
     }
@@ -387,7 +394,11 @@ export class LoggerManager {
             this.loggers.set(key, logger);
         }
 
-        return this.loggers.get(key)!;
+        const logger = this.loggers.get(key);
+        if (!logger) {
+            throw new Error(`Logger not found for key: ${key}`);
+        }
+        return logger;
     }
 
     /**

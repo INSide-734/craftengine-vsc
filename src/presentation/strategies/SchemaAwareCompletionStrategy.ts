@@ -12,7 +12,7 @@ import { type ILogger } from '../../core/interfaces/ILogger';
 import { type IConfiguration } from '../../core/interfaces/IConfiguration';
 import { type IDataConfigLoader } from '../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../core/constants/ServiceTokens';
-import { type CompletionItemWithStrategy } from '../types/CompletionTypes';
+import { type ICompletionItemWithStrategy } from '../types/CompletionTypes';
 
 // ============================================================================
 // 常量定义
@@ -46,7 +46,7 @@ const FALLBACK_TOP_LEVEL_FIELDS = [
 type CompletionContextType = 'template' | 'arguments' | 'schema' | 'none';
 
 /** 补全上下文解析结果 */
-interface CompletionContextResult {
+interface ICompletionContextResult {
     /** 上下文类型 */
     type: CompletionContextType;
     /** 委托策略提供者 ID */
@@ -308,7 +308,7 @@ export class SchemaAwareCompletionStrategy implements ICompletionStrategy {
             }
 
             // 从补全项获取原始提供者 ID
-            const providerId = (item as CompletionItemWithStrategy)._schemaProviderId;
+            const providerId = (item as ICompletionItemWithStrategy)._schemaProviderId;
 
             if (!providerId) {
                 this.logger.debug('No provider ID found on completion item, returning as-is');
@@ -332,7 +332,7 @@ export class SchemaAwareCompletionStrategy implements ICompletionStrategy {
             return resolvedItem || item;
         } catch (error) {
             this.logger.error('Error resolving schema-aware completion item', error as Error, {
-                providerId: (item as CompletionItemWithStrategy)._schemaProviderId,
+                providerId: (item as ICompletionItemWithStrategy)._schemaProviderId,
                 itemLabel: this.getItemLabel(item),
             });
             return item;
@@ -449,7 +449,7 @@ export class SchemaAwareCompletionStrategy implements ICompletionStrategy {
      *
      * 确定当前位置的补全类型、对应的委托策略和 Schema 信息
      */
-    private async resolveCompletionContext(context: ICompletionContextInfo): Promise<CompletionContextResult> {
+    private async resolveCompletionContext(context: ICompletionContextInfo): Promise<ICompletionContextResult> {
         const linePrefix = context.linePrefix.trim();
         const path = this.pathParser.parsePath(context.document, context.position);
 
@@ -474,7 +474,7 @@ export class SchemaAwareCompletionStrategy implements ICompletionStrategy {
         type: CompletionContextType,
         providerId: string,
         path: string[],
-    ): Promise<CompletionContextResult> {
+    ): Promise<ICompletionContextResult> {
         let schema: IJsonSchema | undefined;
 
         if (path.length > 0) {
@@ -514,7 +514,7 @@ export class SchemaAwareCompletionStrategy implements ICompletionStrategy {
     /**
      * 从 Schema 解析补全上下文
      */
-    private async resolveSchemaBasedContext(path: string[]): Promise<CompletionContextResult> {
+    private async resolveSchemaBasedContext(path: string[]): Promise<ICompletionContextResult> {
         if (path.length === 0) {
             this.logger.debug('No YAML path found, skipping completion');
             return { type: 'none' };
@@ -587,8 +587,8 @@ export class SchemaAwareCompletionStrategy implements ICompletionStrategy {
      */
     private markCompletionItems(items: CompletionItem[], providerId: string): void {
         items.forEach((item) => {
-            (item as CompletionItemWithStrategy)._schemaProviderId = providerId;
-            (item as CompletionItemWithStrategy)._strategy = this.name;
+            (item as ICompletionItemWithStrategy)._schemaProviderId = providerId;
+            (item as ICompletionItemWithStrategy)._strategy = this.name;
         });
     }
 

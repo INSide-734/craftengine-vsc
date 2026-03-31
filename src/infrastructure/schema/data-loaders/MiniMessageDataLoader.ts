@@ -5,7 +5,7 @@ import { DataConfigLoader } from '../../data/DataConfigLoader';
 import {
     type IMiniMessageConstantsConfig,
     type IMiniMessageFullTagDefinition,
-    type IMiniMessageTagArgument,
+    type IMiniMessageTagArgument as ICoreIMiniMessageTagArgument,
 } from '../../../core/interfaces/IDataConfigLoader';
 
 // ============================================================================
@@ -15,7 +15,7 @@ import {
 /**
  * MiniMessage 标签参数定义
  */
-export interface MiniMessageTagArgument {
+export interface IMiniMessageTagArgument {
     /** 参数名称 */
     name: string;
     /** 参数类型（string, number, boolean, enum, color） */
@@ -34,7 +34,7 @@ export interface MiniMessageTagArgument {
  * @remarks
  * 从 data/schema/minimessage-constants.json 的 tags 字段加载。
  */
-export interface MiniMessageTagDefinition {
+export interface IMiniMessageTagDefinition {
     /** 标签名称（主名称） */
     name: string;
     /** 别名列表（可选） */
@@ -44,7 +44,7 @@ export interface MiniMessageTagDefinition {
     /** 标签功能描述 */
     description: string;
     /** 参数定义列表 */
-    arguments?: MiniMessageTagArgument[];
+    arguments?: IMiniMessageTagArgument[];
     /** 是否为自闭合标签（如 <reset>, <newline>） */
     selfClosing?: boolean;
     /** 使用示例 */
@@ -61,7 +61,7 @@ export interface MiniMessageTagDefinition {
  * @remarks
  * 从 data/schema/minimessage-constants.json 的 commonHexColors 字段加载。
  */
-export interface HexColorDefinition {
+export interface IHexColorDefinition {
     /** 十六进制颜色值（不含 #） */
     hex: string;
     /** 颜色名称 */
@@ -76,7 +76,7 @@ export interface HexColorDefinition {
  * @remarks
  * 对应 data/schema/minimessage-constants.json 文件的结构。
  */
-export interface MiniMessageSchemaData {
+export interface IMiniMessageSchemaData {
     /** 命名颜色列表 */
     colors: string[];
     /** 点击事件动作类型 */
@@ -90,9 +90,9 @@ export interface MiniMessageSchemaData {
     /** NBT 数据源类型 */
     nbtSourceTypes: string[];
     /** 常用十六进制颜色 */
-    commonHexColors: HexColorDefinition[];
+    commonHexColors: IHexColorDefinition[];
     /** 标签定义列表 */
-    tags: MiniMessageTagDefinition[];
+    tags: IMiniMessageTagDefinition[];
 }
 
 // ============================================================================
@@ -126,10 +126,10 @@ export class MiniMessageDataLoader {
     private static instance: MiniMessageDataLoader;
 
     /** Schema 数据缓存 */
-    private data: MiniMessageSchemaData | null = null;
+    private data: IMiniMessageSchemaData | null = null;
 
     /** 完整标签列表（包括动态生成的颜色标签） */
-    private allTags: MiniMessageTagDefinition[] = [];
+    private allTags: IMiniMessageTagDefinition[] = [];
 
     /** 所有有效标签名称集合（包括别名） */
     private validTagNames: Set<string> = new Set();
@@ -225,7 +225,7 @@ export class MiniMessageDataLoader {
     /**
      * 将配置数据转换为内部数据结构
      */
-    private convertConfigToSchemaData(config: IMiniMessageConstantsConfig): MiniMessageSchemaData {
+    private convertConfigToSchemaData(config: IMiniMessageConstantsConfig): IMiniMessageSchemaData {
         return {
             colors: config.colors,
             clickActions: config.clickActions.map((a) => a.name),
@@ -245,7 +245,7 @@ export class MiniMessageDataLoader {
     /**
      * 转换标签定义
      */
-    private convertTagDefinition(tag: IMiniMessageFullTagDefinition): MiniMessageTagDefinition {
+    private convertTagDefinition(tag: IMiniMessageFullTagDefinition): IMiniMessageTagDefinition {
         return {
             name: tag.name,
             aliases: tag.aliases,
@@ -262,7 +262,7 @@ export class MiniMessageDataLoader {
     /**
      * 转换标签参数定义
      */
-    private convertTagArgument(arg: IMiniMessageTagArgument): MiniMessageTagArgument {
+    private convertTagArgument(arg: ICoreIMiniMessageTagArgument): IMiniMessageTagArgument {
         return {
             name: arg.name,
             type: arg.type,
@@ -308,7 +308,7 @@ export class MiniMessageDataLoader {
         }
 
         // 将命名颜色转换为标签定义
-        const colorTags: MiniMessageTagDefinition[] = this.data.colors.map((color) => ({
+        const colorTags: IMiniMessageTagDefinition[] = this.data.colors.map((color) => ({
             name: color,
             syntax: `<${color}>`,
             description: `Apply ${color} color to text`,
@@ -416,7 +416,7 @@ export class MiniMessageDataLoader {
      * 获取常用十六进制颜色
      * @returns 十六进制颜色定义数组
      */
-    getCommonHexColors(): HexColorDefinition[] {
+    getCommonHexColors(): IHexColorDefinition[] {
         return this.data?.commonHexColors || [];
     }
 
@@ -424,7 +424,7 @@ export class MiniMessageDataLoader {
      * 获取所有标签定义（包括颜色标签）
      * @returns 完整的标签定义数组
      */
-    getAllTags(): MiniMessageTagDefinition[] {
+    getAllTags(): IMiniMessageTagDefinition[] {
         return this.allTags;
     }
 

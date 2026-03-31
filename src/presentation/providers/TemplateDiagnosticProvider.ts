@@ -211,14 +211,14 @@ export class TemplateDiagnosticProvider extends BaseDiagnosticProvider {
 
             // 添加更友好的消息
             if (diagnostic.code === 'syntax-error') {
-                message = `${message}\n💡 Hint: Check YAML syntax and ensure correct indentation`;
+                message = `${message}\n Hint: Check YAML syntax and ensure correct indentation`;
             }
 
             // 为错误级别的诊断添加严重性指示（避免重复添加 emoji 前缀）
-            if (diagnostic.severity === DiagnosticSeverity.Error && !message.startsWith('❌')) {
-                message = `❌ ${message}`;
-            } else if (diagnostic.severity === DiagnosticSeverity.Warning && !message.startsWith('⚠️')) {
-                message = `⚠️  ${message}`;
+            if (diagnostic.severity === DiagnosticSeverity.Error && !message.startsWith('')) {
+                message = ` ${message}`;
+            } else if (diagnostic.severity === DiagnosticSeverity.Warning && !message.startsWith('')) {
+                message = `  ${message}`;
             }
 
             // 未修改则返回原对象

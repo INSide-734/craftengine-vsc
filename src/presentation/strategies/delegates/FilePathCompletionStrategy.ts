@@ -14,7 +14,7 @@ import {
 } from '../../../core/interfaces/IDataConfigLoader';
 import { SERVICE_TOKENS } from '../../../core/constants/ServiceTokens';
 import { type INamespaceDiscoveryService } from '../../../core/interfaces/INamespaceDiscoveryService';
-import { type CompletionItemWithStrategy, type FilePathCompletionItem } from '../../types/CompletionTypes';
+import { type ICompletionItemWithStrategy, type IFilePathCompletionItem } from '../../types/CompletionTypes';
 import { FileScanner } from './helpers/FileScanner';
 
 /**
@@ -299,7 +299,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
                 return item;
             }
 
-            const data = (item as FilePathCompletionItem)._filePathData;
+            const data = (item as IFilePathCompletionItem)._filePathData;
             if (!data) {
                 return item;
             }
@@ -308,7 +308,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
             md.isTrusted = true;
 
             // 标题
-            md.appendMarkdown(`## 📁 ${data.resourceType || 'File'}: \`${data.relativePath}\`\n\n`);
+            md.appendMarkdown(`##  ${data.resourceType || 'File'}: \`${data.relativePath}\`\n\n`);
 
             // 文件信息
             if (data.absolutePath) {
@@ -326,7 +326,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
 
             // 使用示例
             md.appendMarkdown('---\n\n');
-            md.appendMarkdown('### 📋 Usage\n\n');
+            md.appendMarkdown('###  Usage\n\n');
             md.appendMarkdown('```yaml\n');
             md.appendMarkdown(`path: ${data.fullPath}\n`);
             md.appendMarkdown('```\n');
@@ -462,7 +462,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
 
         // 设置详情
         const resourceTypeName = this.getResourceTypeName(options.resourceType);
-        item.detail = `📁 ${resourceTypeName}`;
+        item.detail = ` ${resourceTypeName}`;
 
         // 设置排序和过滤
         item.sortText = relativePath;
@@ -474,7 +474,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
             .appendMarkdown(`_Path:_ \`${relativePath}\``);
 
         // 存储数据用于延迟解析
-        (item as FilePathCompletionItem)._filePathData = {
+        (item as IFilePathCompletionItem)._filePathData = {
             relativePath,
             fullPath,
             namespace,
@@ -482,7 +482,7 @@ export class FilePathCompletionStrategy implements ICompletionStrategy {
         };
 
         // 设置策略标识
-        (item as CompletionItemWithStrategy)._strategy = this.name;
+        (item as ICompletionItemWithStrategy)._strategy = this.name;
 
         return item;
     }

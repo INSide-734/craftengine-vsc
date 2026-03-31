@@ -376,7 +376,7 @@ export class YamlScanner implements IYamlScanner {
             }
 
             // 使用共享的解析方法
-            return this.parseFileContent(file, content);
+            return await this.parseFileContent(file, content);
         } catch (error) {
             this.logger?.debug('Failed to scan file', {
                 file: file.fsPath,

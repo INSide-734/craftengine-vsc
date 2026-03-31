@@ -11,7 +11,7 @@ vi.mock('fs', () => ({
 }));
 
 import * as fs from 'fs';
-const mockedExistsSync = vi.mocked(fs.existsSync);
+const _mockedExistsSync = vi.mocked(fs.existsSync);
 
 function createMockLogger(): ILogger {
     return {

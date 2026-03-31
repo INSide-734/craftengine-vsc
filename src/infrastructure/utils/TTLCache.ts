@@ -8,7 +8,7 @@
 /**
  * TTL 缓存项
  */
-interface TTLCacheEntry<V> {
+interface ITTLCacheEntry<V> {
     value: V;
     timestamp: number;
     /** 自定义 TTL（毫秒），未设置时使用 defaultTTL */
@@ -42,7 +42,7 @@ interface TTLCacheEntry<V> {
  */
 export class TTLCache<K, V> {
     /** 缓存存储 */
-    private cache = new Map<K, TTLCacheEntry<V>>();
+    private cache = new Map<K, ITTLCacheEntry<V>>();
     /** 默认 TTL（毫秒） */
     private readonly defaultTTL: number;
     /** 清理定时器 */

@@ -5,6 +5,7 @@ import {
     type IConfigurationProvider,
     type ConfigurationValue,
 } from '../../core/interfaces/IConfiguration';
+import { type ILogger } from '../../core/interfaces/ILogger';
 import { ConfigurationError } from '../../core/errors/ExtensionErrors';
 
 /**
@@ -158,7 +159,8 @@ export class VSCodeConfigurationProvider implements IConfigurationProvider {
  * ```typescript
  * // 创建配置管理器
  * const provider = new VSCodeConfigurationProvider();
- * const config = new ConfigurationManager(provider);
+ * const logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger);
+ * const config = new ConfigurationManager(provider, logger);
  * await config.initialize();
  *
  * // 获取配置
@@ -200,11 +202,15 @@ export class ConfigurationManager implements IConfiguration {
      * 构造配置管理器实例
      *
      * @param provider - 配置提供者，负责实际的配置加载和保存
+     * @param logger - 日志记录器，用于记录配置管理相关的日志
      *
      * @remarks
      * 构造函数会自动设置配置监视器，监听配置提供者的变更。
      */
-    constructor(private readonly provider: IConfigurationProvider) {
+    constructor(
+        private readonly provider: IConfigurationProvider,
+        private readonly logger: ILogger,
+    ) {
         this.setupWatcher();
     }
 
@@ -220,7 +226,9 @@ export class ConfigurationManager implements IConfiguration {
      *
      * @example
      * ```typescript
-     * const config = new ConfigurationManager(provider);
+     * const provider = new VSCodeConfigurationProvider();
+     * const logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger);
+     * const config = new ConfigurationManager(provider, logger);
      * await config.initialize();
      * ```
      */
@@ -417,8 +425,10 @@ export class ConfigurationManager implements IConfiguration {
     private setupWatcher(): void {
         const unwatch = this.provider.watch(() => {
             this.reload().catch((error) => {
-                // ConfigurationManager 无 Logger 依赖，使用 console
-                console.error('Failed to reload configuration after file change:', error);
+                // 使用 Logger 记录配置重载失败
+                this.logger.error('Failed to reload configuration after file change', error, {
+                    errorMessage: error instanceof Error ? error.message : String(error),
+                });
             });
         });
 
@@ -447,7 +457,10 @@ export class ConfigurationManager implements IConfiguration {
      */
     private setNestedValue(obj: Record<string, ConfigurationValue>, path: string, value: ConfigurationValue): void {
         const keys = path.split('.');
-        const lastKey = keys.pop()!;
+        const lastKey = keys.pop();
+        if (!lastKey) {
+            return;
+        }
         let current: Record<string, ConfigurationValue> = obj;
 
         for (const key of keys) {
@@ -470,7 +483,10 @@ export class ConfigurationManager implements IConfiguration {
      */
     private deleteNestedValue(obj: Record<string, ConfigurationValue>, path: string): void {
         const keys = path.split('.');
-        const lastKey = keys.pop()!;
+        const lastKey = keys.pop();
+        if (!lastKey) {
+            return;
+        }
         let current: Record<string, ConfigurationValue> = obj;
 
         for (const key of keys) {
@@ -522,8 +538,11 @@ export class ConfigurationManager implements IConfiguration {
             try {
                 listener(event);
             } catch (error) {
-                // ConfigurationManager 无 Logger 依赖，使用 console
-                console.error('Error in configuration change listener:', error);
+                // 使用 Logger 记录监听器错误
+                this.logger.error('Error in configuration change listener', error as Error, {
+                    key,
+                    errorMessage: error instanceof Error ? error.message : String(error),
+                });
             }
         }
     }

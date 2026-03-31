@@ -13,7 +13,7 @@ import {
 import { type IDataConfigLoader, type IExtendedTypesConfig } from '../../core/interfaces/IDataConfigLoader';
 import { type ILogger } from '../../core/interfaces/ILogger';
 import { ServiceNotInitializedError } from '../../core/errors/ExtensionErrors';
-import { createAsyncInitializer, type AsyncInitializer } from '../../core/utils';
+import { createAsyncInitializer, type IAsyncInitializer } from '../../core/utils';
 
 /**
  * 扩展参数类型服务实现
@@ -28,7 +28,7 @@ export class ExtendedTypeService implements IExtendedTypeService {
     private configCache: IExtendedTypesConfig | null = null;
 
     // 异步初始化器
-    private readonly initializer: AsyncInitializer;
+    private readonly initializer: IAsyncInitializer;
 
     constructor(logger: ILogger, configLoader: IDataConfigLoader) {
         this.logger = logger.createChild('ExtendedTypeService');

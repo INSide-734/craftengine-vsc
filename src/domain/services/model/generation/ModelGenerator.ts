@@ -9,7 +9,7 @@ import { type ModelGeneration } from './ModelGeneration';
 /**
  * 模型生成器接口
  */
-export interface ModelGenerator {
+export interface IModelGenerator {
     /**
      * 获取待生成的模型集合
      */

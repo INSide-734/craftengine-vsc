@@ -10,7 +10,7 @@ import { LRUCache } from '../../core/utils/LRUCache';
 /**
  * 缓存条目
  */
-interface CacheEntry<T> {
+interface ICacheEntry<T> {
     /** 缓存的值 */
     value: T;
     /** 创建时间戳 */
@@ -22,7 +22,7 @@ interface CacheEntry<T> {
 /**
  * 缓存配置选项
  */
-export interface DiagnosticCacheOptions {
+export interface IDiagnosticCacheOptions {
     /** 最大缓存容量 */
     capacity?: number;
     /** TTL 过期时间（毫秒），0 表示不过期 */
@@ -34,7 +34,7 @@ export interface DiagnosticCacheOptions {
 /**
  * 缓存统计信息
  */
-export interface CacheStats {
+export interface ICacheStats {
     /** 当前缓存大小 */
     size: number;
     /** 最大容量 */
@@ -69,14 +69,14 @@ export class DiagnosticCache<T> {
     /**
      * 从性能配置创建诊断缓存选项
      */
-    static optionsFromConfig(cacheConfig?: { capacity: number; ttl: number }): DiagnosticCacheOptions {
+    static optionsFromConfig(cacheConfig?: { capacity: number; ttl: number }): IDiagnosticCacheOptions {
         return {
             capacity: cacheConfig?.capacity ?? DiagnosticCache.DEFAULT_CAPACITY,
             ttl: cacheConfig?.ttl ?? DiagnosticCache.DEFAULT_TTL,
         };
     }
 
-    private readonly cache: LRUCache<string, CacheEntry<T>>;
+    private readonly cache: LRUCache<string, ICacheEntry<T>>;
     private readonly capacity: number;
     private readonly ttl: number;
     private readonly name: string;
@@ -87,12 +87,12 @@ export class DiagnosticCache<T> {
     private expirations = 0;
     private evictions = 0;
 
-    constructor(options: DiagnosticCacheOptions = {}, logger?: ILogger) {
+    constructor(options: IDiagnosticCacheOptions = {}, logger?: ILogger) {
         this.capacity = options.capacity ?? DiagnosticCache.DEFAULT_CAPACITY;
         this.ttl = options.ttl ?? DiagnosticCache.DEFAULT_TTL;
         this.name = options.name ?? 'DiagnosticCache';
         this.logger = logger;
-        this.cache = new LRUCache<string, CacheEntry<T>>(this.capacity);
+        this.cache = new LRUCache<string, ICacheEntry<T>>(this.capacity);
 
         this.logger?.debug(`${this.name} initialized`, {
             capacity: this.capacity,
@@ -217,7 +217,7 @@ export class DiagnosticCache<T> {
     /**
      * 获取缓存统计信息
      */
-    getStats(): CacheStats {
+    getStats(): ICacheStats {
         const total = this.hits + this.misses;
         return {
             size: this.cache.size(),

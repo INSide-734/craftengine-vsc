@@ -1,10 +1,9 @@
 import { Vector3d } from '../../vector/Vector3d';
-import { Direction, Axis, type ElementRotation, type ImageData } from '../../types/index';
+import { Direction, Axis, type IElementRotation, type IImageData } from '../../types/index';
 import { DirectionNormals } from '../../model/Direction';
 import { type Rectangle } from './rectangle/Rectangle';
 import { TexturedRectangle } from './rectangle/TexturedRectangle';
-import type { Ray } from '../camera/Ray';
-import { type Intersection } from '../camera/Ray';
+import { type IIntersection, type IRay } from '../camera/Ray';
 import type { Scene } from '../Scene';
 
 // 旋转补偿缩放因子
@@ -22,8 +21,8 @@ export class Cuboid {
         public readonly scene: Scene,
         private origin: Vector3d,
         private size: Vector3d,
-        textures: Map<Direction, ImageData>,
-        rotation: ElementRotation | null,
+        textures: Map<Direction, IImageData>,
+        rotation: IElementRotation | null,
         ambientOcclusion: boolean,
     ) {
         // 处理 rescale（旋转补偿缩放）
@@ -46,7 +45,7 @@ export class Cuboid {
         }
 
         // 获取纹理（带默认值）
-        const getTexture = (dir: Direction): ImageData => {
+        const getTexture = (dir: Direction): IImageData => {
             return textures.get(dir) ?? { width: 1, height: 1, data: Buffer.from([0, 0, 0, 0]) };
         };
 
@@ -193,7 +192,7 @@ export class Cuboid {
     /**
      * 应用旋转到所有矩形面
      */
-    applyRotation(rotation: ElementRotation): void {
+    applyRotation(rotation: IElementRotation): void {
         for (const rect of this.rectangles) {
             rect.applyRotation(rotation);
         }
@@ -203,8 +202,8 @@ export class Cuboid {
      * 追踪光线与立方体的交点
      * @returns 最近的交点，或 null
      */
-    trace(ray: Ray): Intersection | null {
-        let nearest: Intersection | null = null;
+    trace(ray: IRay): IIntersection | null {
+        let nearest: IIntersection | null = null;
 
         for (const rect of this.rectangles) {
             const hit = rect.trace(ray);

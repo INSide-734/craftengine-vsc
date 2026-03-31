@@ -214,6 +214,7 @@ describe('MinecraftBuiltinItemLoader', () => {
     function mockFetchJsonFallback(responses: Array<{ success: boolean; data?: any; error?: Error }>) {
         let callCount = 0;
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         mockFetchJson.mockImplementation(() => {
             const currentResponse = responses[callCount] || responses[responses.length - 1];
             callCount++;

@@ -20,7 +20,7 @@ import { calculateSimilarity } from '../../infrastructure/utils';
 /**
  * 诊断代码信息
  */
-interface DiagnosticCodeInfo {
+interface IDiagnosticCodeInfo {
     /** 诊断代码 */
     code: string;
 }
@@ -165,7 +165,7 @@ export abstract class BaseDiagnosticProvider implements Disposable {
     protected createDiagnostic(
         range: Range,
         message: string,
-        codeInfo: DiagnosticCodeInfo,
+        codeInfo: IDiagnosticCodeInfo,
         relatedInfo?: DiagnosticRelatedInformation[],
     ): Diagnostic | null {
         const severity = this.severityConfig.getSeverity(codeInfo.code);

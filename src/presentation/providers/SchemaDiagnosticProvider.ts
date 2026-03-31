@@ -189,9 +189,12 @@ export class SchemaDiagnosticProvider extends BaseDiagnosticProvider {
         }
 
         // 2. Schema 验证
+        if (!parseResult.data) {
+            return diagnostics;
+        }
         const validationDiagnostics = await this.validateAgainstSchema(
             document,
-            parseResult.data!,
+            parseResult.data,
             parseResult.positionMap,
         );
         diagnostics.push(...validationDiagnostics);

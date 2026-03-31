@@ -371,7 +371,8 @@ export interface IConfiguration {
  *
  * // 使用配置提供者
  * const provider = new VSCodeConfigurationProvider();
- * const config = new ConfigurationManager(provider);
+ * const logger = ServiceContainer.getService<ILogger>(SERVICE_TOKENS.Logger);
+ * const config = new ConfigurationManager(provider, logger);
  * await config.initialize();
  * ```
  */

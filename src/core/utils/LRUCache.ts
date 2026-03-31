@@ -80,6 +80,7 @@ export class LRUCache<K, V> {
      */
     get(key: K): V | undefined {
         if (this.cache.has(key)) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const value = this.cache.get(key)!;
             // 移到最前面（LRU 策略）
             this.cache.delete(key);

@@ -20,9 +20,5 @@ vitest.config.*
 esbuild.mjs
 pnpm-lock.yaml
 
-# 依赖已打包进 bundle，排除 node_modules
+# 排除所有 node_modules（运行时依赖已复制到 out/node_modules）
 node_modules/**
-
-# 保留 sharp 原生模块（external 依赖）
-!node_modules/sharp/**
-!node_modules/@img/**

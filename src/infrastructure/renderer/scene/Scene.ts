@@ -4,8 +4,7 @@ import { Camera } from './camera/Camera';
 import { type GeometricalModel } from '../model/Model';
 import { type Cuboid } from './geometry/Cuboid';
 import { Axis } from '../types/index';
-import type { Ray } from './camera/Ray';
-import { type Intersection } from './camera/Ray';
+import { type IIntersection, type IRay } from './camera/Ray';
 
 /**
  * 场景类
@@ -56,7 +55,7 @@ export class Scene {
         const pixels = Buffer.alloc(this.width * this.height * 4);
 
         // 单线程光线追踪渲染
-        // TODO: 可以使用 worker_threads 优化为多线程
+        // TODO(#PERF-001): 可以使用 worker_threads 优化为多线程
         for (let x = 0; x < this.width; x++) {
             for (let y = 0; y < this.height; y++) {
                 const ray = this.camera.getRay(x, y);
@@ -163,9 +162,9 @@ export class Scene {
      * @param ray 光线
      * @returns ARGB 格式颜色
      */
-    private trace(ray: Ray): number {
+    private trace(ray: IRay): number {
         // 收集所有交点
-        const intersections: Intersection[] = [];
+        const intersections: IIntersection[] = [];
         for (const obj of this.objects) {
             const hit = obj.trace(ray);
             if (hit) {
@@ -178,7 +177,7 @@ export class Scene {
         }
 
         // 按距离排序（从近到远）
-        intersections.sort((a, b) => a.compareTo(b));
+        intersections.sort((a, b) => a.t - b.t);
 
         // Alpha 混合
         let alpha = 0;

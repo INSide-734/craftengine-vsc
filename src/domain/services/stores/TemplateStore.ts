@@ -143,8 +143,8 @@ export class TemplateStore implements ITemplateRepository {
     private async addInternal(template: ITemplate, publishEvent: boolean): Promise<void> {
         // 检查名称冲突
         if (this.nameIndex.has(template.name)) {
-            const existing = this.nameIndex.get(template.name)!;
-            if (existing.id !== template.id) {
+            const existing = this.nameIndex.get(template.name);
+            if (existing && existing.id !== template.id) {
                 throw new TemplateValidationError(`Template with name '${template.name}' already exists`);
             }
         }
@@ -327,14 +327,20 @@ export class TemplateStore implements ITemplateRepository {
         if (!this.fileIndex.has(filePath)) {
             this.fileIndex.set(filePath, new Set());
         }
-        this.fileIndex.get(filePath)!.add(template.id);
+        const fileSet = this.fileIndex.get(filePath);
+        if (fileSet) {
+            fileSet.add(template.id);
+        }
 
         // 参数索引
         for (const param of template.parameters) {
             if (!this.parameterIndex.has(param.name)) {
                 this.parameterIndex.set(param.name, new Set());
             }
-            this.parameterIndex.get(param.name)!.add(template.id);
+            const paramSet = this.parameterIndex.get(param.name);
+            if (paramSet) {
+                paramSet.add(template.id);
+            }
         }
     }
 

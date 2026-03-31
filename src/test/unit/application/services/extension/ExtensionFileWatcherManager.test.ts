@@ -110,7 +110,7 @@ describe('ExtensionFileWatcherManager', () => {
             const uri = Uri.file('/test/new-file.yaml');
             expect(capturedOnFileChangeCallback).not.toBeNull();
 
-            await capturedOnFileChangeCallback!({ uri, type: 'created' });
+            capturedOnFileChangeCallback!({ uri, type: 'created' });
 
             expect(mockFileHandler.handleFileModified).toHaveBeenCalledWith(uri);
         });
@@ -118,7 +118,7 @@ describe('ExtensionFileWatcherManager', () => {
         it('should call handleFileModified for modified files', async () => {
             const uri = Uri.file('/test/modified.yaml');
 
-            await capturedOnFileChangeCallback!({ uri, type: 'modified' });
+            capturedOnFileChangeCallback!({ uri, type: 'modified' });
 
             expect(mockFileHandler.handleFileModified).toHaveBeenCalledWith(uri);
         });
@@ -126,7 +126,7 @@ describe('ExtensionFileWatcherManager', () => {
         it('should call handleFileDeleted for deleted files', async () => {
             const uri = Uri.file('/test/deleted.yaml');
 
-            await capturedOnFileChangeCallback!({ uri, type: 'deleted' });
+            capturedOnFileChangeCallback!({ uri, type: 'deleted' });
 
             expect(mockFileHandler.handleFileDeleted).toHaveBeenCalledWith(uri);
         });
@@ -134,7 +134,7 @@ describe('ExtensionFileWatcherManager', () => {
         it('should log debug for file change events', async () => {
             const uri = Uri.file('/test/file.yaml');
 
-            await capturedOnFileChangeCallback!({ uri, type: 'modified' });
+            capturedOnFileChangeCallback!({ uri, type: 'modified' });
 
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'File change detected',
@@ -150,7 +150,7 @@ describe('ExtensionFileWatcherManager', () => {
             const error = new Error('Handler error');
             vi.mocked(mockFileHandler.handleFileModified).mockRejectedValue(error);
 
-            await capturedOnFileChangeCallback!({ uri, type: 'modified' });
+            capturedOnFileChangeCallback!({ uri, type: 'modified' });
 
             expect(mockLogger.error).toHaveBeenCalledWith(
                 'Error handling file change',

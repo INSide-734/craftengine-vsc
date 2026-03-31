@@ -9,7 +9,7 @@ import { HttpUtils } from '../utils/HttpUtils';
 /**
  * Minecraft 物品列表 API 响应结构
  */
-interface MinecraftItemListResponse {
+interface IMinecraftItemListResponse {
     directories: string[];
     files: string[];
 }
@@ -101,7 +101,7 @@ export class MinecraftBuiltinItemLoader implements IBuiltinItemLoader {
             });
 
             // 3. 尝试从多个源获取数据
-            const response = await HttpUtils.fetchFromMultipleSources<MinecraftItemListResponse>(
+            const response = await HttpUtils.fetchFromMultipleSources<IMinecraftItemListResponse>(
                 urls,
                 this.requestTimeout,
                 this.logger,

@@ -1,6 +1,6 @@
 import { type ILogger } from '../../../core/interfaces/ILogger';
 import { type IPerformanceMonitor } from '../../../core/interfaces/IPerformanceMonitor';
-import { type JsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../../core/types/JsonSchemaTypes';
 import { LRUCache, safeCompileRegex } from '../../../core/utils';
 import {
     type SchemaPathNavigator,
@@ -31,10 +31,10 @@ export class SchemaQueryService {
     private readonly schemaAvailabilityCache: LRUCache<string, boolean>;
 
     // Schema 路径查询缓存
-    private readonly pathCache: LRUCache<string, JsonSchemaNode | undefined>;
+    private readonly pathCache: LRUCache<string, IJsonSchemaNode | undefined>;
 
     // 进行中的路径查询（用于 Promise 去重，防止并发缓存穿透）
-    private readonly pendingPathQueries = new Map<string, Promise<JsonSchemaNode | undefined>>();
+    private readonly pendingPathQueries = new Map<string, Promise<IJsonSchemaNode | undefined>>();
 
     // 顶级字段缓存
     private topLevelFieldsCache: string[] | null = null;
@@ -57,13 +57,13 @@ export class SchemaQueryService {
         // 初始化缓存
         this.propertiesCache = new LRUCache<string, SchemaProperty[]>(SCHEMA_CACHE.PROPERTIES_CACHE_SIZE);
         this.schemaAvailabilityCache = new LRUCache<string, boolean>(SCHEMA_CACHE.AVAILABILITY_CACHE_SIZE);
-        this.pathCache = new LRUCache<string, JsonSchemaNode | undefined>(SCHEMA_CACHE.PATH_CACHE_SIZE);
+        this.pathCache = new LRUCache<string, IJsonSchemaNode | undefined>(SCHEMA_CACHE.PATH_CACHE_SIZE);
     }
 
     /**
      * 根据路径获取 Schema（带缓存、并发去重和超时）
      */
-    async getSchemaForPath(rootSchema: JsonSchemaNode, path: string[]): Promise<JsonSchemaNode | undefined> {
+    async getSchemaForPath(rootSchema: IJsonSchemaNode, path: string[]): Promise<IJsonSchemaNode | undefined> {
         if (!rootSchema) {
             return undefined;
         }
@@ -111,15 +111,15 @@ export class SchemaQueryService {
      * 执行带超时的查询
      */
     private async executeQueryWithTimeout(
-        rootSchema: JsonSchemaNode,
+        rootSchema: IJsonSchemaNode,
         path: string[],
         cacheKey: string,
-    ): Promise<JsonSchemaNode | undefined> {
+    ): Promise<IJsonSchemaNode | undefined> {
         // 保存 timer 引用，确保查询完成后清理
         let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
         // 创建超时 Promise
-        const timeoutPromise = new Promise<JsonSchemaNode | undefined>((_, reject) => {
+        const timeoutPromise = new Promise<IJsonSchemaNode | undefined>((_, reject) => {
             timeoutId = setTimeout(() => {
                 reject(new Error(`Schema query timeout after ${SchemaQueryService.QUERY_TIMEOUT}ms`));
             }, SchemaQueryService.QUERY_TIMEOUT);
@@ -153,7 +153,7 @@ export class SchemaQueryService {
      *
      * 用于生成缓存键，确保不同 Schema 的缓存不会混淆。
      */
-    private getSchemaId(schema: JsonSchemaNode): string {
+    private getSchemaId(schema: IJsonSchemaNode): string {
         if (!schema) {
             return 'undefined';
         }
@@ -164,7 +164,7 @@ export class SchemaQueryService {
     /**
      * 快速检查路径是否有可用 Schema
      */
-    hasSchemaForPath(rootSchema: JsonSchemaNode, path: string[]): boolean {
+    hasSchemaForPath(rootSchema: IJsonSchemaNode, path: string[]): boolean {
         // 缓存键包含 Schema 标识符和路径
         const schemaId = this.getSchemaId(rootSchema);
         const cacheKey = `${schemaId}::${path.join('.')}`;
@@ -199,7 +199,7 @@ export class SchemaQueryService {
     /**
      * 获取可用属性（带缓存）
      */
-    async getAvailableProperties(rootSchema: JsonSchemaNode, path: string[]): Promise<SchemaProperty[]> {
+    async getAvailableProperties(rootSchema: IJsonSchemaNode, path: string[]): Promise<SchemaProperty[]> {
         const timer = this.performanceMonitor?.startTimer('schema.getAvailableProperties');
         // 缓存键包含 Schema 标识符和路径
         const schemaId = this.getSchemaId(rootSchema);
@@ -223,7 +223,7 @@ export class SchemaQueryService {
 
             // 提取属性，优先使用 schema 的上下文（来自外部引用解析），否则使用 rootSchema
             // 这确保嵌套的相对路径引用（如 ./base.schema.json）能相对于正确的目录解析
-            const contextSchema = (schema[SCHEMA_METADATA.CONTEXT_SCHEMA] as JsonSchemaNode | undefined) || rootSchema;
+            const contextSchema = (schema[SCHEMA_METADATA.CONTEXT_SCHEMA] as IJsonSchemaNode | undefined) || rootSchema;
             const properties = await this.extractor.extractProperties(schema, contextSchema);
 
             // 缓存结果
@@ -249,7 +249,7 @@ export class SchemaQueryService {
     /**
      * 获取属性详情
      */
-    async getPropertyDetails(rootSchema: JsonSchemaNode, path: string[]): Promise<SchemaPropertyDetails | undefined> {
+    async getPropertyDetails(rootSchema: IJsonSchemaNode, path: string[]): Promise<SchemaPropertyDetails | undefined> {
         const timer = this.performanceMonitor?.startTimer('schema.getPropertyDetails');
 
         try {
@@ -273,7 +273,7 @@ export class SchemaQueryService {
             // 查找属性 Schema，优先使用 parentSchema 的上下文（来自外部引用解析），否则使用 rootSchema
             // 这确保嵌套的相对路径引用（如 ./base.schema.json）能相对于正确的目录解析
             const contextSchema =
-                (parentSchema[SCHEMA_METADATA.CONTEXT_SCHEMA] as JsonSchemaNode | undefined) || rootSchema;
+                (parentSchema[SCHEMA_METADATA.CONTEXT_SCHEMA] as IJsonSchemaNode | undefined) || rootSchema;
             const propertySchema = await this.extractor.findPropertySchema(parentSchema, propertyName, contextSchema);
 
             if (!propertySchema) {
@@ -305,7 +305,7 @@ export class SchemaQueryService {
     /**
      * 获取顶级字段
      */
-    async getTopLevelFields(rootSchema: JsonSchemaNode): Promise<string[]> {
+    async getTopLevelFields(rootSchema: IJsonSchemaNode): Promise<string[]> {
         // 使用缓存
         if (this.topLevelFieldsCache) {
             return this.topLevelFieldsCache;
@@ -383,12 +383,12 @@ export class SchemaQueryService {
      * 此方法用于 shouldActivate 的快速检查，允许一定程度的"乐观"判断。
      * 实际的 Schema 验证会在 getSchemaForPath 中进行完整的引用解析。
      */
-    private quickSchemaCheck(schema: JsonSchemaNode, path: string[]): boolean {
+    private quickSchemaCheck(schema: IJsonSchemaNode, path: string[]): boolean {
         if (!schema || path.length === 0) {
             return true;
         }
 
-        let current: JsonSchemaNode = schema;
+        let current: IJsonSchemaNode = schema;
 
         for (const segment of path) {
             // 跳过版本条件键（作为透传层级，不推进 Schema 导航）
@@ -403,14 +403,14 @@ export class SchemaQueryService {
             }
 
             // 检查 properties
-            const props = current.properties as Record<string, JsonSchemaNode> | undefined;
+            const props = current.properties as Record<string, IJsonSchemaNode> | undefined;
             if (props && props[segment]) {
                 current = props[segment];
                 continue;
             }
 
             // 检查 patternProperties - 尝试匹配具体的模式
-            const patternProps = current.patternProperties as Record<string, JsonSchemaNode> | undefined;
+            const patternProps = current.patternProperties as Record<string, IJsonSchemaNode> | undefined;
             if (patternProps) {
                 let matched = false;
                 for (const pattern of Object.keys(patternProps)) {
@@ -433,7 +433,7 @@ export class SchemaQueryService {
                 (typeof current.additionalProperties === 'object' && current.additionalProperties !== null)
             ) {
                 if (typeof current.additionalProperties === 'object') {
-                    current = current.additionalProperties as JsonSchemaNode;
+                    current = current.additionalProperties as IJsonSchemaNode;
                     continue;
                 }
                 return true;
@@ -441,7 +441,7 @@ export class SchemaQueryService {
 
             // 检查数组项
             if (current.type === 'array' && current.items) {
-                current = current.items as JsonSchemaNode;
+                current = current.items as IJsonSchemaNode;
                 continue;
             }
 

@@ -11,7 +11,7 @@ import { BaseDiagnosticProvider } from './BaseDiagnosticProvider';
 import { SchemaFieldIdentifier } from './helpers/SchemaFieldIdentifier';
 
 /** 物品 ID 引用信息 */
-interface ItemIdReference {
+interface IItemIdReference {
     id: string;
     range: Range;
     line: number;
@@ -44,7 +44,7 @@ export class ItemIdDiagnosticProvider extends BaseDiagnosticProvider {
      * 执行物品 ID 诊断
      */
     protected async doUpdateDiagnostics(document: TextDocument): Promise<Diagnostic[]> {
-        const references = await this.findItemIdReferences(document);
+        const references = await this.findIItemIdReferences(document);
         if (references.length === 0) {
             return [];
         }
@@ -54,8 +54,8 @@ export class ItemIdDiagnosticProvider extends BaseDiagnosticProvider {
         return results.filter((d): d is Diagnostic => d !== null);
     }
 
-    private async findItemIdReferences(document: TextDocument): Promise<ItemIdReference[]> {
-        const references: ItemIdReference[] = [];
+    private async findIItemIdReferences(document: TextDocument): Promise<IItemIdReference[]> {
+        const references: IItemIdReference[] = [];
         const lines = document.getText().split('\n');
 
         for (let lineNum = 0; lineNum < lines.length; lineNum++) {
@@ -93,7 +93,7 @@ export class ItemIdDiagnosticProvider extends BaseDiagnosticProvider {
         return references;
     }
 
-    private async validateReference(ref: ItemIdReference, document: TextDocument): Promise<Diagnostic | null> {
+    private async validateReference(ref: IItemIdReference, document: TextDocument): Promise<Diagnostic | null> {
         try {
             const item = await this.dataStoreService.getItemById(ref.id);
             if (item) {

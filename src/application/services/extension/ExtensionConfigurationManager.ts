@@ -69,7 +69,7 @@ export class ExtensionConfigurationManager {
             });
 
             // 发布配置变更事件
-            this.eventBus.publish(EVENT_TYPES.ConfigurationChanged, {
+            void this.eventBus.publish(EVENT_TYPES.ConfigurationChanged, {
                 id: this.generateEventId(),
                 type: EVENT_TYPES.ConfigurationChanged,
                 timestamp: event.timestamp,

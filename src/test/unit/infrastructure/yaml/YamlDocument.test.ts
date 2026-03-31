@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { YamlDocument, buildNodeTree } from '../../../../infrastructure/yaml/YamlDocument';
-import { Uri, Position, Range } from 'vscode';
+import { Uri } from 'vscode';
 import { type IYamlParseResult } from '../../../../core/interfaces/IYamlDocument';
 
 describe('YamlDocument', () => {

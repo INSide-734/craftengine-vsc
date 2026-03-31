@@ -265,11 +265,13 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
             }
 
             // 确定显示标签
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const label = isPattern ? this.docBuilder.getPatternLabel(analysis!) : prop.key;
             const item = new CompletionItem(label, this.getCompletionItemKind(prop.schema));
 
             // 设置插入文本（代码片段）
             item.insertText = isPattern
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 ? this.docBuilder.generatePatternSnippet(analysis!)
                 : this.createInsertText(prop.key, prop.schema);
 
@@ -284,7 +286,7 @@ export class SchemaKeyCompletionStrategy implements ICompletionStrategy {
 
             // 标记必需属性
             if (prop.schema.required || prop.schema['x-isRequired']) {
-                item.label = `${label} ✨`;
+                item.label = `${label} `;
             }
             // 标记弃用属性
             if (prop.schema.deprecated) {

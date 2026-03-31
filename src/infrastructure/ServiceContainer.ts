@@ -99,6 +99,7 @@ export class ServiceContainer {
             return ServiceContainer.instance;
         } catch (error) {
             // Logger 可能尚未注册，使用 console
+            // eslint-disable-next-line no-console
             console.error('Failed to initialize service container:', error);
             throw error;
         }
@@ -182,7 +183,10 @@ export class ServiceContainer {
      * 注册顺序至关重要，必须确保依赖项在使用前已注册。
      */
     private static async registerAllServices(): Promise<void> {
-        const container = ServiceContainer.instance!;
+        if (!ServiceContainer.instance) {
+            throw new Error('ServiceContainer instance not initialized');
+        }
+        const container = ServiceContainer.instance;
 
         // 第一阶段：核心基础设施（无依赖或仅依赖外部资源）
         registerLoggingServices(container, ServiceContainer.context);

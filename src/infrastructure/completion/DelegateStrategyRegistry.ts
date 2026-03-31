@@ -52,7 +52,10 @@ export class DelegateStrategyRegistry implements IDelegateStrategyRegistry {
         // 检查工厂函数
         if (this.strategyFactories.has(providerId)) {
             try {
-                const factory = this.strategyFactories.get(providerId)!;
+                const factory = this.strategyFactories.get(providerId);
+                if (!factory) {
+                    return undefined;
+                }
                 const strategy = factory();
 
                 // 缓存实例

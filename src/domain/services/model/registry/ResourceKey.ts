@@ -33,8 +33,8 @@ export class ResourceKey<_T> {
      * 创建注册表键
      * @param location 注册表位置
      */
-    static createRegistryKey<T>(location: Key): ResourceKey<Registry<T>> {
-        return ResourceKey.create<Registry<T>>(Key.of('minecraft:root'), location);
+    static createRegistryKey<T>(location: Key): ResourceKey<IRegistry<T>> {
+        return ResourceKey.create<IRegistry<T>>(Key.of('minecraft:root'), location);
     }
 
     /**
@@ -75,4 +75,4 @@ export class ResourceKey<_T> {
 
 // 前向声明，避免循环依赖
 
-interface Registry<_T> {}
+interface IRegistry<_T> {}
