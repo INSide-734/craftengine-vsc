@@ -39,20 +39,8 @@ const validations = [
     requiredFiles: ['package.json', 'lib/detect-libc.js'],
   },
   {
-    name: 'color',
-    requiredFiles: ['package.json', 'index.js'],
-  },
-  {
-    name: 'color-name',
-    requiredFiles: ['package.json', 'index.js'],
-  },
-  {
-    name: 'color-string',
-    requiredFiles: ['package.json', 'index.js'],
-  },
-  {
-    name: 'color-convert',
-    requiredFiles: ['package.json', 'index.js'],
+    name: '@img/colour',
+    requiredFiles: ['package.json'],
   },
 ];
 
