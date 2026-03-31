@@ -1,227 +1,244 @@
-# CraftEngine VS Code 扩展
+<div align="center">
 
-一个功能强大的 VS Code 扩展，为 CraftEngine 提供完整的 YAML 模板开发支持。通过智能补全、实时诊断、代码导航等功能，大幅提升 CraftEngine 模板的开发效率。
+# CraftEngine for VS Code
 
-## ✨ 核心功能
+**Intelligent YAML template development support for [CraftEngine](https://xiao-momi.github.io/craft-engine-wiki/)**
 
-### 🎯 智能代码补全
-- **模板自动补全**：在 YAML 文件中输入 `template:` 时提供可用的模板建议
-- **参数智能提示**：显示每个模板所需的参数和类型信息
-- **代码片段生成**：自动生成带有占位符的模板代码片段，支持 Tab 键快速跳转
+[![VS Code](https://img.shields.io/badge/VS%20Code-%3E%3D1.103.0-blue?style=for-the-badge&logo=visualstudiocode)](https://code.visualstudio.com/)
+[![License](https://img.shields.io/github/license/INSide-734/craftengine-vsc?style=for-the-badge)](LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/INSide-734/craftengine-vsc/build-and-release.yml?branch=master&style=for-the-badge)](https://github.com/INSide-734/craftengine-vsc/actions)
+[![Release](https://img.shields.io/github/v/release/INSide-734/craftengine-vsc?style=for-the-badge)](https://github.com/INSide-734/craftengine-vsc/releases)
 
-### 🔍 代码导航与提示
-- **悬停提示**：将光标指向模板名称时显示详细的参数信息和文档
-- **定义跳转**：按住 Ctrl+左键点击模板名称可跳转到模板定义位置
-- **智能识别**：精确识别模板名称边界，避免误触发
+Schema-driven completion · Real-time diagnostics · Go-to-definition · Item model preview
 
-### 📊 实时诊断与验证
-- **参数缺失诊断**：当使用模板但缺少必需参数时，显示错误提示
-- **可选参数警告**：提醒用户未覆盖的默认值参数
-- **Schema 验证**：为 YAML 文件提供动态生成的 JSON Schema（需要 Red Hat YAML 扩展）
-- **实时错误检查**：文档保存时自动检查模板使用错误
+<!-- TODO: Add screenshot or GIF demo here -->
+<!-- ![Demo](media/demo.gif) -->
 
-### 🔄 文件监控与缓存
-- **实时文件监控**：自动扫描工作区中的 YAML 文件并更新模板缓存
-- **增量更新**：文件变化时智能更新缓存，提升性能
-- **缓存管理**：提供手动重建缓存和调试缓存的命令
-
-## 📦 安装要求
-
-- **VS Code** 1.103.0 或更高版本
-- **推荐依赖**：Red Hat YAML 扩展（用于 Schema 验证功能）
-
-### Red Hat YAML 扩展安装
-
-为了获得完整的 YAML 验证功能，建议安装 Red Hat YAML 扩展：
-
-1. **自动安装**：扩展会在检测到缺少依赖时提示安装
-2. **手动安装**：
-   - 打开 VS Code 扩展面板（Ctrl+Shift+X）
-   - 搜索 "Red Hat YAML"
-   - 安装 "YAML" 扩展（由 Red Hat 发布）
-3. **命令安装**：运行命令 `CraftEngine: Check Red Hat YAML Extension Status` 检查状态
-
-> **注意**：即使未安装 Red Hat YAML 扩展，CraftEngine 扩展的其他功能（补全、诊断、悬停提示等）仍可正常使用。
-
-## ⚙️ 扩展配置
-
-扩展提供以下可配置选项：
-
-| 配置项 | 类型 | 默认值 | 描述 |
-|--------|------|--------|------|
-| `craftengine.files.exclude` | string | `**/node_modules/**` | 排除文件扫描的 glob 模式 |
-| `craftengine.parser.templateKey` | string | `templates` | YAML 文件中定义模板的顶级键 |
-
-### 配置示例
-
-```json
-{
-  "craftengine.files.exclude": "**/node_modules/**,**/build/**,**/dist/**",
-  "craftengine.parser.templateKey": "templates"
-}
-```
-
-## 🚀 可用命令
-
-扩展提供以下命令，可通过命令面板（Ctrl+Shift+P）访问：
-
-- **CraftEngine: Insert Template Snippet** - 插入模板代码片段
-- **CraftEngine: Rebuild Template Cache** - 手动重建模板缓存
-- **CraftEngine: Debug Template Cache** - 调试模板缓存状态
-- **CraftEngine: Check Red Hat YAML Extension Status** - 检查 Red Hat YAML 扩展状态
-
-## 📖 使用指南
-
-### 基本使用流程
-
-1. **输入模板**：在 YAML 文件中输入 `template:` 
-2. **选择模板**：扩展会自动提供可用的模板建议
-3. **生成代码片段**：选择一个模板后，会自动生成带有参数占位符的代码片段
-4. **填写参数**：使用 Tab 键在参数之间跳转并填写值
-
-### 高级功能使用
-
-- **悬停提示**：将光标悬停在模板名称上可查看详细的参数信息
-- **定义跳转**：按住 Ctrl+左键点击模板名称可跳转到模板定义位置
-- **实时诊断**：保存文件时自动检查参数缺失和错误
-
-### 诊断功能示例
-
-扩展会自动检测以下问题：
-
-```yaml
-# ❌ 错误：缺少必需参数
-items:
-  broken_item:
-    template: namespace:template/name
-    arguments:
-      parameter1: value1
-      # 缺少 parameter2，会显示错误
-
-# ⚠️ 警告：未覆盖默认值
-items:
-  warning_item:
-    template: namespace:template/name
-    arguments:
-      parameter1: value1
-      # parameter2 使用默认值，会显示警告
-```
-
-## ⚠️ 故障排除
-
-### Schema 验证功能问题
-
-如果遇到 "Schema 验证功能将被禁用" 的提示，请按以下步骤解决：
-
-1. **检查 Red Hat YAML 扩展状态**：
-   - 运行命令 `CraftEngine: Check Red Hat YAML Extension Status`
-   - 或手动检查扩展面板中是否安装了 "YAML" 扩展（Red Hat 发布）
-
-2. **安装 Red Hat YAML 扩展**：
-   - 如果未安装，扩展会自动提示安装选项
-   - 或手动在扩展面板搜索 "Red Hat YAML" 并安装
-
-3. **重启 VS Code**：
-   - 安装完成后重启 VS Code 以确保扩展正确激活
-
-4. **验证功能**：
-   - 重新打开 YAML 文件
-   - 检查是否出现 "Schema 验证功能已启用！" 的提示
-
-### 其他常见问题
-
-- **扩展兼容性**：扩展会自动处理 YAML 扩展 API 的兼容性问题
-- **功能降级**：即使 Schema 验证不可用，其他功能（补全、诊断、悬停提示等）仍可正常使用
-
-#### 🔧 技术改进
-- 修复了 YAML 扩展 API 兼容性问题
-- 添加了优雅的错误处理机制
-- 实现了高效的模板缓存系统
-
-## 🛠️ 开发指南
-
-### 本地开发
-
-1. **克隆项目**
-   ```bash
-   git clone <repository-url>
-   cd craftengine-vsc
-   ```
-
-2. **安装依赖**
-   ```bash
-   npm install
-   ```
-
-3. **编译项目**
-   ```bash
-   npm run compile
-   ```
-
-4. **运行测试**
-   ```bash
-   npm test
-   ```
-
-5. **打包扩展**
-   ```bash
-   npm run package
-   ```
-
-### 🚀 自动构建和发布
-
-本项目使用 GitHub Actions 进行自动构建、测试和发布，并提供美化的 Release 发布说明。
-
-**快速发布流程：**
-1. 更新版本号：`npm version patch`
-2. 推送标签：`git push origin master --tags`
-3. 创建 GitHub Release
-4. 自动构建并上传 `.vsix` 文件到 GitHub Release
-5. 自动生成美化的发布说明
-
-**美化发布说明特性：**
-- 🎨 使用 emoji 图标增强视觉效果
-- 📋 完整的功能分类和描述
-- 🔗 自动生成相关链接
-- 📦 详细的安装和升级说明
-- 📚 完整的使用指南
-
-详细说明请查看：
-- [GitHub Actions 文档](docs/github-actions.md)
-- [发布说明美化指南](docs/release-notes-guide.md)
-
-### 开发环境要求
-
-- Node.js 18+ 
-- TypeScript 5.9+
-- VS Code 1.103.0+
-
-### 项目结构
-
-```
-src/
-├── core/           # 核心功能模块
-├── features/       # 功能提供者
-├── vscode/         # VS Code 集成
-├── utils/          # 工具函数
-└── types/          # 类型定义
-```
-
-## 📚 相关资源
-
-- [VS Code 扩展开发指南](https://code.visualstudio.com/api/references/extension-guidelines)
-- [VS Code 扩展 API](https://code.visualstudio.com/api)
-- [YAML 语言支持](https://code.visualstudio.com/docs/languages/yaml)
-- [CraftEngine 官方文档](https://xiao-momi.github.io/craft-engine-wiki/)
-
-## 📄 许可证
-
-本项目采用 Apache-2.0 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request 来改进这个扩展！
+</div>
 
 ---
 
-**CraftEngine VS Code 扩展** - 让 CraftEngine 模板开发更加高效！ 🚀
+## Features
+
+### 🎯 Smart Completion
+
+- **Template auto-completion** — suggests available templates when typing `template:`
+- **Parameter IntelliSense** — displays required parameters and type information for each template
+- **Snippet generation** — generates template snippets with tab-stop placeholders
+- **Schema-driven delegates** — context-aware completion for template names, parameters, translation keys, file paths, item IDs, category references, and version conditions
+- **MiniMessage rich text** — completion for 40+ MiniMessage tags including colors, formatting, click/hover actions, and keybinds
+
+### 🔍 Code Navigation & Hover
+
+- **Hover documentation** — hover over a template name to see its parameters and docs
+- **Go-to-definition** — `Ctrl+Click` on a template name to jump to its definition
+- **Reference finding** — find all usages of templates and translation keys across the workspace
+- **Smart boundary detection** — accurately identifies template name boundaries to avoid false triggers
+
+### 📊 Real-time Diagnostics
+
+- **Missing parameter detection** — errors when required template parameters are missing
+- **Optional parameter warnings** — reminders for parameters using default values
+- **Schema validation** — JSON Schema-based YAML validation (with Red Hat YAML extension)
+- **Category & item ID validation** — validates Minecraft item references against built-in database
+- **Translation key validation** — cross-workspace translation key reference checking
+- **MiniMessage format validation** — validates rich text color, click/hover action, and formatting tags
+
+### 🔄 Workspace Intelligence
+
+- **Real-time file watching** — automatically scans and indexes YAML files in the workspace
+- **Incremental cache updates** — smart cache invalidation on file changes
+- **Schema hot reload** — live reload when workspace schema files are modified
+- **Template expansion** — expands templates before validation to prevent false positives
+
+### 🖼️ Item Model Preview
+
+- **3D model preview** — preview Minecraft item models directly in the editor
+- **Resource pack support** — load custom resource packs for accurate model rendering
+- **Context menu integration** — right-click on item IDs to preview models
+
+## Installation
+
+### From Marketplace
+
+Search for **CraftEngine** in the VS Code Extensions panel, or run:
+
+```
+ext install craftengine.craftengine-vsc
+```
+
+### Manual Install
+
+1. Download the latest `.vsix` file from [GitHub Releases](https://github.com/INSide-734/craftengine-vsc/releases)
+2. In VS Code, open the Command Palette (`Ctrl+Shift+P`) and run **Extensions: Install from VSIX...**
+3. Select the downloaded `.vsix` file
+
+### Recommended Extension
+
+For full schema validation support, install the [Red Hat YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) extension. CraftEngine will prompt you to install it automatically if missing.
+
+> All other features (completion, diagnostics, hover, navigation) work without it.
+
+## Quick Start
+
+1. Open a workspace containing CraftEngine YAML files
+2. Start typing `template:` in any `.yml` / `.yaml` file — completions appear automatically
+3. Select a template to generate a snippet with parameter placeholders, then `Tab` through them
+
+```yaml
+items:
+  my_item:
+    template: namespace:template/name
+    arguments:
+      parameter1: value1
+      parameter2: value2
+```
+
+Hover over template names for documentation. `Ctrl+Click` to jump to definitions.
+
+## Configuration
+
+All settings are under the `craftengine.*` namespace. Open **Settings** (`Ctrl+,`) and search for `craftengine`.
+
+### General
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `files.exclude` | string | `**/node_modules/**` | Glob pattern to exclude from template scanning |
+| `templates.autoCompletion` | boolean | `true` | Enable automatic template completion |
+| `templates.paths` | string[] | `["templates/**/*.yml", "templates/**/*.yaml"]` | Glob patterns for template files |
+
+### Schema
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `validation.level` | string | `"loose"` | Validation level: `strict`, `loose`, or `off` |
+| `validation.templateExpansion` | boolean | `true` | Expand templates before validation to prevent false positives |
+| `schema.deployToWorkspace` | boolean | `true` | Deploy schemas to `.craftengine/schemas/` for customization |
+| `schema.autoUpdateOnVersionChange` | boolean | `true` | Auto-update workspace schemas on extension update |
+| `schema.hotReload` | boolean | `true` | Live reload on workspace schema file changes |
+
+### Completion
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `schema.customCompletion.enabled` | boolean | `true` | Enable schema-driven custom completion |
+| `schema.customCompletion.debug` | boolean | `false` | Show debug logs for schema-driven completion |
+| `schema.customCompletion.fallback` | string | `"default"` | Fallback when schema unavailable: `default`, `none`, `schema` |
+| `completion.schemaKeys.maxEnumDisplay` | number | `20` | Max enum values shown in completion docs |
+
+### Diagnostics
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `diagnostics.enabled` | boolean | `true` | Enable template validation diagnostics |
+| `diagnostics.schemaValidation` | boolean | `true` | Enable schema-based YAML validation |
+
+### Preview
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `preview.resourcePacks` | string[] | `[]` | Paths to Minecraft resource packs for model preview |
+| `preview.useInternalResources` | boolean | `true` | Use built-in Minecraft resources as fallback |
+| `preview.renderSize` | number | `256` | Preview image size in pixels (64–1024) |
+
+### Logging
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `logging.level` | string | `"INFO"` | Log level: `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL` |
+| `logging.debugMode` | boolean | `false` | Enhanced logging in debug console |
+| `logging.fileEnabled` | boolean | `false` | Enable file logging for troubleshooting |
+| `performance.monitoring` | boolean | `false` | Enable performance monitoring (dev only) |
+
+## Commands
+
+Open the Command Palette (`Ctrl+Shift+P`) and type `CraftEngine`:
+
+| Command | Description |
+|---------|-------------|
+| Insert CraftEngine Template Snippet | Insert a template code snippet at cursor |
+| Rebuild Template Cache | Manually rebuild the template cache |
+| Debug Template Cache | Inspect current template cache state |
+| Check Red Hat YAML Extension Status | Verify YAML extension availability |
+| Get Extension Statistics | Retrieve extension performance stats |
+| Show Extension Statistics | Display stats in a readable panel |
+| Reload Minecraft Builtin Items | Refresh the built-in item database |
+| Deploy Schema to Workspace | Copy schemas to `.craftengine/schemas/` |
+| Reset Workspace Schema | Restore schemas to extension defaults |
+| Reload Schema from Workspace | Reload customized workspace schemas |
+| Preview Item Model | Preview a Minecraft item model (also in context menu) |
+
+## Architecture
+
+The extension follows a 5-layer clean architecture:
+
+```
+Presentation → Application → Domain → Core ← Infrastructure
+```
+
+```
+src/
+├── core/              # Interfaces, types, constants, errors
+├── domain/            # Business logic, entities, services
+├── application/       # Use case orchestration
+├── infrastructure/    # DI, logging, events, YAML parsing, config
+├── presentation/      # VS Code providers, commands, strategies
+└── test/              # Unit, integration, E2E, benchmarks
+```
+
+## Troubleshooting
+
+### Schema validation is disabled
+
+1. Run **CraftEngine: Check Red Hat YAML Extension Status** from the Command Palette
+2. Install the [Red Hat YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) extension if missing
+3. Restart VS Code
+4. Reopen your YAML file — you should see "Schema validation enabled"
+
+### Templates not appearing in completion
+
+1. Ensure your template files match the configured `craftengine.templates.paths` patterns
+2. Run **CraftEngine: Rebuild Template Cache**
+3. Check the output panel for any scanning errors
+
+### Diagnostics not updating
+
+Diagnostics refresh on file save with a 500ms debounce. Save the file and wait briefly.
+
+## Contributing
+
+```bash
+# Clone and install
+git clone https://github.com/INSide-734/craftengine-vsc.git
+cd craftengine-vsc
+pnpm install
+
+# Build
+pnpm run compile
+
+# Run tests
+pnpm test                    # All tests
+pnpm run test:unit           # Unit tests only
+pnpm run test:integration    # Integration tests only
+pnpm run test:e2e            # E2E tests (requires VS Code)
+pnpm run test:coverage       # With coverage report
+
+# Lint
+pnpm run lint
+
+# Package
+pnpm run package
+```
+
+Debug the extension by pressing `F5` in VS Code (uses the "Launch Extension" configuration).
+
+## Resources
+
+- [CraftEngine Documentation](https://xiao-momi.github.io/craft-engine-wiki/)
+- [VS Code Extension API](https://code.visualstudio.com/api)
+- [YAML Language Support](https://code.visualstudio.com/docs/languages/yaml)
+
+## License
+
+[Apache-2.0](LICENSE)

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/common/naming.schema.json",
+  "title": "Naming Conventions",
+  "description": "Naming convention definitions for CraftEngine configurations",
+  "$defs": {
+    "namespaceFormat": {
+      "description": "Namespace format: namespace:resource_name",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$",
+      "examples": ["minecraft:stick", "default:topaz_sword"]
+    },
+    "sectionIdentifierFormat": {
+      "description": "Section identifier format with optional # suffix",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]+(#[a-z0-9_-]+)*$",
+      "examples": ["items", "items#armor", "items#weapons#swords"]
+    },
+    "categoryReferenceFormat": {
+      "description": "Category reference format with # prefix",
+      "type": "string",
+      "pattern": "^#[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$",
+      "examples": ["#default:weapons", "#default:rarity/legendary"]
+    },
+    "minecraftMaterial": {
+      "description": "Minecraft material name (case-insensitive, e.g., iron, IRON, diamond_sword)",
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+      "examples": ["DIAMOND_SWORD", "NETHERITE_PICKAXE", "iron", "diamond_sword"]
+    }
+  }
+}
+

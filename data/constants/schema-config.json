@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-20",
+  "description": "Schema resolution, cache, and version condition configuration for CraftEngine VS Code Extension",
+
+  "resolution": {
+    "defaultMaxDepth": 5,
+    "depthWarningThreshold": 10
+  },
+
+  "cache": {
+    "propertiesCacheSize": 200,
+    "pathCacheSize": 300,
+    "availabilityCacheSize": 500,
+    "fileCacheSize": 100,
+    "validateCacheSize": 500
+  },
+
+  "versionCondition": {
+    "prefix": "$$",
+    "pattern": "^\\$\\$(>=|<=|>|<|=)?\\d+\\.\\d+(\\.\\d+)?(~\\d+\\.\\d+(\\.\\d+)?)?(#[a-zA-Z0-9_-]+)?$"
+  },
+
+  "defaultTopLevelFields": ["items", "templates", "categories", "events", "recipes", "loot_tables", "furniture", "blocks", "emoji", "equipments"],
+
+  "documentSections": {
+    "templateKey": "templates",
+    "itemsKey": "items",
+    "blocksKey": "blocks",
+    "furnitureKey": "furniture",
+    "categoriesKey": "categories"
+  },
+
+  "documentPatterns": {
+    "namespacedId": "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$",
+    "i18nReference": "<i18n:([a-z][a-z0-9._-]+)>",
+    "l10nReference": "<l10n:([a-z][a-z0-9._-]+)>"
+  },
+
+  "templateParser": {
+    "specialParams": ["__NAMESPACE__", "__ID__"],
+    "excludeKeys": ["template", "arguments"],
+    "defaultTemplateKey": "templates"
+  }
+}

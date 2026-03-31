@@ -1,0 +1,39 @@
+{
+  "$schema": "../../schemas/api-endpoints.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-04",
+  "description": "External API endpoints configuration for CraftEngine",
+
+  "minecraft": {
+    "versionManifest": {
+      "description": "Minecraft version manifest API",
+      "primary": "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json",
+      "fallback": "https://bmclapi2.bangbang93.com/mc/game/version_manifest_v2.json",
+      "mirrors": []
+    }
+  },
+
+  "prismarineData": {
+    "description": "PrismarineJS minecraft-data repository",
+    "baseUrl": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc",
+    "endpoints": {
+      "enchantments": "{version}/enchantments.json",
+      "entities": "{version}/entities.json",
+      "items": "{version}/items.json",
+      "blocks": "{version}/blocks.json",
+      "effects": "{version}/effects.json",
+      "biomes": "{version}/biomes.json"
+    }
+  },
+
+  "minecraftAssets": {
+    "description": "InventivetalentDev minecraft-assets repository",
+    "baseUrl": "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads",
+    "endpoints": {
+      "builtinItems": "{version}/assets/minecraft/items/_list.json",
+      "sounds": "{version}/assets/minecraft/sounds.json",
+      "blockstates": "{version}/assets/minecraft/blockstates",
+      "models": "{version}/assets/minecraft/models"
+    }
+  }
+}

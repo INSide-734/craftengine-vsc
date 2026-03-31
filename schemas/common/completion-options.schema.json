@@ -1,0 +1,211 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://craftengine.dev/schemas/common/completion-options.schema.json",
+    "title": "Completion Options Schema",
+    "description": "Schema for defining custom completion options used by x-completion-options",
+    "$defs": {
+        "filePathCompletionOptions": {
+            "type": "object",
+            "description": "Options for file path completion (x-completion-provider: craftengine.filePath)",
+            "properties": {
+                "resourceType": {
+                    "type": "string",
+                    "description": "Type of resource being referenced",
+                    "enum": [
+                        "model",
+                        "texture",
+                        "sound",
+                        "loot_table",
+                        "recipe",
+                        "advancement",
+                        "function",
+                        "structure",
+                        "custom"
+                    ],
+                    "default": "custom"
+                },
+                "basePath": {
+                    "type": "string",
+                    "description": "Base path template for file lookup. Supports {namespace} placeholder",
+                    "examples": [
+                        "assets/{namespace}/models",
+                        "data/{namespace}/loot_tables"
+                    ]
+                },
+                "fileExtensions": {
+                    "type": "array",
+                    "description": "Allowed file extensions (including dot)",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^\\.[a-z0-9]+$"
+                    },
+                    "default": [
+                        ".json"
+                    ],
+                    "examples": [
+                        [
+                            ".json"
+                        ],
+                        [
+                            ".png",
+                            ".jpg"
+                        ],
+                        [
+                            ".ogg",
+                            ".mp3"
+                        ]
+                    ]
+                },
+                "includeNamespace": {
+                    "type": "boolean",
+                    "description": "Whether to include namespace prefix in completion (e.g., minecraft:item/sword)",
+                    "default": true
+                },
+                "defaultNamespace": {
+                    "type": "string",
+                    "description": "Default namespace when not specified",
+                    "default": "minecraft"
+                },
+                "stripExtension": {
+                    "type": "boolean",
+                    "description": "Whether to strip file extension from completion result",
+                    "default": true
+                },
+                "searchDepth": {
+                    "type": "integer",
+                    "description": "Maximum directory depth to search",
+                    "minimum": 1,
+                    "maximum": 10,
+                    "default": 5
+                },
+                "pathSeparator": {
+                    "type": "string",
+                    "description": "Path separator to use in completion result",
+                    "enum": [
+                        "/",
+                        "\\"
+                    ],
+                    "default": "/"
+                },
+                "excludePatterns": {
+                    "type": "array",
+                    "description": "Glob patterns to exclude from search",
+                    "items": {
+                        "type": "string"
+                    },
+                    "examples": [
+                        [
+                            "**/_*",
+                            "**/temp/**"
+                        ]
+                    ]
+                },
+                "includeSubdirectories": {
+                    "type": "boolean",
+                    "description": "Whether to include subdirectory structure in path",
+                    "default": true
+                },
+                "autoDetectWorkspace": {
+                    "type": "boolean",
+                    "description": "Whether to auto-detect resource pack location from workspace",
+                    "default": true
+                }
+            },
+            "additionalProperties": false
+        },
+        "resourceTypePresets": {
+            "description": "Preset configurations for common Minecraft resource types",
+            "type": "object",
+            "properties": {
+                "model": {
+                    "description": "Model files preset",
+                    "const": {
+                        "basePath": "assets/{namespace}/models",
+                        "fileExtensions": [
+                            ".json"
+                        ],
+                        "includeNamespace": true,
+                        "stripExtension": true
+                    }
+                },
+                "texture": {
+                    "description": "Texture files preset",
+                    "const": {
+                        "basePath": "assets/{namespace}/textures",
+                        "fileExtensions": [
+                            ".png"
+                        ],
+                        "includeNamespace": true,
+                        "stripExtension": true
+                    }
+                },
+                "sound": {
+                    "description": "Sound files preset",
+                    "const": {
+                        "basePath": "assets/{namespace}/sounds",
+                        "fileExtensions": [
+                            ".ogg"
+                        ],
+                        "includeNamespace": true,
+                        "stripExtension": true
+                    }
+                },
+                "loot_table": {
+                    "description": "Loot table files preset",
+                    "const": {
+                        "basePath": "data/{namespace}/loot_tables",
+                        "fileExtensions": [
+                            ".json"
+                        ],
+                        "includeNamespace": true,
+                        "stripExtension": true
+                    }
+                },
+                "recipe": {
+                    "description": "Recipe files preset",
+                    "const": {
+                        "basePath": "data/{namespace}/recipes",
+                        "fileExtensions": [
+                            ".json"
+                        ],
+                        "includeNamespace": true,
+                        "stripExtension": true
+                    }
+                },
+                "advancement": {
+                    "description": "Advancement files preset",
+                    "const": {
+                        "basePath": "data/{namespace}/advancements",
+                        "fileExtensions": [
+                            ".json"
+                        ],
+                        "includeNamespace": true,
+                        "stripExtension": true
+                    }
+                },
+                "function": {
+                    "description": "Function files preset",
+                    "const": {
+                        "basePath": "data/{namespace}/functions",
+                        "fileExtensions": [
+                            ".mcfunction"
+                        ],
+                        "includeNamespace": true,
+                        "stripExtension": true
+                    }
+                },
+                "structure": {
+                    "description": "Structure files preset",
+                    "const": {
+                        "basePath": "data/{namespace}/structures",
+                        "fileExtensions": [
+                            ".nbt"
+                        ],
+                        "includeNamespace": true,
+                        "stripExtension": true
+                    }
+                }
+            }
+        }
+    }
+}

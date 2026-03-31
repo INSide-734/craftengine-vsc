@@ -1,0 +1,247 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/common/template-arguments.schema.json",
+  "title": "Template Arguments Types",
+  "description": "Extended parameter types for template arguments",
+  "$defs": {
+    "simpleValue": {
+      "description": "Simple parameter value (string, number, boolean)",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" },
+        { "type": "boolean" }
+      ]
+    },
+    "listValue": {
+      "description": "List parameter value - array of values",
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "number" },
+          { "type": "boolean" },
+          { "type": "object" }
+        ]
+      }
+    },
+    "mapValue": {
+      "description": "Map parameter value - key-value pairs",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "conditionType": {
+      "type": "object",
+      "description": "Condition type - selects a value based on a boolean condition",
+      "required": ["type", "condition", "on-true", "on-false"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "condition",
+          "description": "Parameter type identifier"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Boolean condition expression (e.g., \"${tintable:-false}\")",
+          "examples": ["${tintable:-false}", "${enabled:-true}"]
+        },
+        "on-true": {
+          "description": "Value to use when condition evaluates to true",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "object" },
+            { "type": "array" }
+          ]
+        },
+        "on-false": {
+          "description": "Value to use when condition evaluates to false",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "object" },
+            { "type": "array" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "whenType": {
+      "type": "object",
+      "description": "When type - maps source values to specific outputs with optional fallback",
+      "required": ["type", "source", "when"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "when",
+          "description": "Parameter type identifier"
+        },
+        "source": {
+          "type": "string",
+          "description": "Source value to match against (e.g., \"${part}\")",
+          "examples": ["${part}", "${tier}", "${material}"]
+        },
+        "when": {
+          "type": "object",
+          "description": "Case mapping - keys are source values, values are outputs",
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "number" },
+              { "type": "boolean" },
+              { "type": "object" },
+              { "type": "array" }
+            ]
+          },
+          "examples": [
+            { "helmet": "head", "chestplate": "chest", "leggings": "legs", "boots": "feet" }
+          ]
+        },
+        "fallback": {
+          "description": "Default value when no case matches",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "number" },
+            { "type": "boolean" },
+            { "type": "object" },
+            { "type": "array" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "toUpperCaseType": {
+      "type": "object",
+      "description": "To upper case type - converts text to uppercase",
+      "required": ["type", "value"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "to_upper_case",
+          "description": "Parameter type identifier"
+        },
+        "value": {
+          "type": "string",
+          "description": "Value to convert to uppercase (can include parameter references)",
+          "examples": ["${tier}", "${name}"]
+        },
+        "locale": {
+          "type": "string",
+          "description": "Locale for case conversion (e.g., \"en\", \"zh\", \"ja\")",
+          "default": "en",
+          "examples": ["en", "zh", "ja", "ko", "de", "fr"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "toLowerCaseType": {
+      "type": "object",
+      "description": "To lower case type - converts text to lowercase",
+      "required": ["type", "value"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "to_lower_case",
+          "description": "Parameter type identifier"
+        },
+        "value": {
+          "type": "string",
+          "description": "Value to convert to lowercase (can include parameter references)",
+          "examples": ["${tier}", "${name}"]
+        },
+        "locale": {
+          "type": "string",
+          "description": "Locale for case conversion (e.g., \"en\", \"zh\", \"ja\")",
+          "default": "en",
+          "examples": ["en", "zh", "ja", "ko", "de", "fr"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "selfIncreaseIntType": {
+      "type": "object",
+      "description": "Self increase int type - generates incrementing/decrementing integer values",
+      "required": ["type", "from", "to"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "self_increase_int",
+          "description": "Parameter type identifier"
+        },
+        "from": {
+          "type": "integer",
+          "description": "Starting value for the counter",
+          "examples": [0, 1, 100]
+        },
+        "to": {
+          "type": "integer",
+          "description": "Ending value for the counter",
+          "examples": [10, 20, 1000]
+        },
+        "step": {
+          "type": "integer",
+          "description": "Increment/decrement step value",
+          "default": 1,
+          "examples": [1, 2, 5, -1]
+        },
+        "step-interval": {
+          "type": "integer",
+          "description": "Interval between step increments",
+          "examples": [1, 2, 5]
+        }
+      },
+      "additionalProperties": false
+    },
+    "expressionType": {
+      "type": "object",
+      "description": "Expression type - executes mathematical expressions and converts to numeric type",
+      "required": ["type", "expression"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "expression",
+          "description": "Parameter type identifier"
+        },
+        "expression": {
+          "type": "string",
+          "description": "Mathematical expression to evaluate (can include parameter references)",
+          "examples": [
+            "${base_damage:-10d} * ${multiplier:-1d}",
+            "${value:-0} + 10",
+            "${a:-1} * ${b:-2} + ${c:-3}"
+          ]
+        },
+        "value-type": {
+          "type": "string",
+          "description": "Output numeric type",
+          "enum": ["int", "double", "short", "long", "float", "boolean", "byte"],
+          "default": "double"
+        }
+      },
+      "additionalProperties": false
+    },
+    "extendedParameterValue": {
+      "description": "Extended parameter value - supports all parameter types",
+      "oneOf": [
+        { "$ref": "#/$defs/simpleValue" },
+        { "$ref": "#/$defs/listValue" },
+        { "$ref": "#/$defs/conditionType" },
+        { "$ref": "#/$defs/whenType" },
+        { "$ref": "#/$defs/toUpperCaseType" },
+        { "$ref": "#/$defs/toLowerCaseType" },
+        { "$ref": "#/$defs/selfIncreaseIntType" },
+        { "$ref": "#/$defs/expressionType" },
+        { "$ref": "#/$defs/mapValue" }
+      ]
+    },
+    "argumentsObject": {
+      "type": "object",
+      "description": "Template arguments object with extended parameter type support",
+      "additionalProperties": {
+        "$ref": "#/$defs/extendedParameterValue"
+      },
+      "x-completion-provider": "craftengine.templateParameters"
+    }
+  }
+}

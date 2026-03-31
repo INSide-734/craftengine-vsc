@@ -1,0 +1,124 @@
+name: Test Coverage
+
+on:
+  pull_request:
+    branches: [master, main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  coverage:
+    name: Test Coverage Report
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests with coverage
+        run: pnpm run test:coverage
+
+      - name: Generate coverage summary
+        id: coverage
+        run: |
+          # 从 coverage-summary.json 提取覆盖率数据
+          if [ -f "coverage/coverage-summary.json" ]; then
+            LINES=$(node -p "require('./coverage/coverage-summary.json').total.lines.pct")
+            BRANCHES=$(node -p "require('./coverage/coverage-summary.json').total.branches.pct")
+            FUNCTIONS=$(node -p "require('./coverage/coverage-summary.json').total.functions.pct")
+            STATEMENTS=$(node -p "require('./coverage/coverage-summary.json').total.statements.pct")
+          else
+            LINES=0; BRANCHES=0; FUNCTIONS=0; STATEMENTS=0
+          fi
+
+          echo "lines=${LINES}" >> $GITHUB_OUTPUT
+          echo "branches=${BRANCHES}" >> $GITHUB_OUTPUT
+          echo "functions=${FUNCTIONS}" >> $GITHUB_OUTPUT
+          echo "statements=${STATEMENTS}" >> $GITHUB_OUTPUT
+
+          # 判断是否达标（80%）
+          PASS="true"
+          if (( $(echo "$LINES < 80" | bc -l) )); then PASS="false"; fi
+          echo "pass=${PASS}" >> $GITHUB_OUTPUT
+
+      - name: Post coverage comment on PR
+        uses: actions/github-script@v7
+        env:
+          COVERAGE_LINES: ${{ steps.coverage.outputs.lines }}
+          COVERAGE_BRANCHES: ${{ steps.coverage.outputs.branches }}
+          COVERAGE_FUNCTIONS: ${{ steps.coverage.outputs.functions }}
+          COVERAGE_STATEMENTS: ${{ steps.coverage.outputs.statements }}
+          COVERAGE_PASS: ${{ steps.coverage.outputs.pass }}
+        with:
+          script: |
+            const lines = process.env.COVERAGE_LINES;
+            const branches = process.env.COVERAGE_BRANCHES;
+            const functions = process.env.COVERAGE_FUNCTIONS;
+            const statements = process.env.COVERAGE_STATEMENTS;
+            const pass = process.env.COVERAGE_PASS === 'true';
+
+            const icon = (pct) => parseFloat(pct) >= 80 ? '✅' : '⚠️';
+            const status = pass ? '✅ Coverage meets threshold (≥80%)' : '⚠️ Coverage below threshold (<80%)';
+
+            const body = `## 📊 Test Coverage Report
+
+            | Metric | Coverage | Status |
+            |--------|----------|--------|
+            | Lines | ${lines}% | ${icon(lines)} |
+            | Branches | ${branches}% | ${icon(branches)} |
+            | Functions | ${functions}% | ${icon(functions)} |
+            | Statements | ${statements}% | ${icon(statements)} |
+
+            ${status}
+            `;
+
+            // 查找已有的覆盖率评论
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Test Coverage Report')
+            );
+
+            const commentBody = body.split('\n').map(l => l.trim()).join('\n');
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: commentBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody,
+              });
+            }
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14

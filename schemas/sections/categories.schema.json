@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/sections/categories.schema.json",
+  "title": "Categories Configuration",
+  "description": "Category definition section",
+  "type": "object",
+  "patternProperties": {
+    "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$": {
+      "$ref": "#/$defs/categoryConfig"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "categoryConfig": {
+      "type": "object",
+      "description": "Category configuration",
+      "allOf": [
+        {
+          "$ref": "../common/universal-keys.schema.json#/$defs/templateSupport"
+        },
+        {
+          "$ref": "#/$defs/categoryProperties"
+        }
+      ]
+    },
+    "categoryProperties": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "$ref": "../common/base.schema.json#/$defs/miniMessageText",
+          "description": "Category display name (MiniMessage format)",
+          "x-completion-provider": "craftengine.richText"
+        },
+        "lore": {
+          "type": "array",
+          "description": "Category lore",
+          "items": {
+            "$ref": "../common/base.schema.json#/$defs/miniMessageText",
+            "x-completion-provider": "craftengine.richText"
+          }
+        },
+        "hidden": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether category is hidden"
+        },
+        "priority": {
+          "type": "integer",
+          "description": "Display priority (lower = higher priority)"
+        },
+        "icon": {
+          "type": "string",
+          "$ref": "../common/base.schema.json#/$defs/namespacedId",
+          "description": "Category icon item",
+          "x-completion-provider": "craftengine.itemId"
+        },
+        "list": {
+          "type": "array",
+          "description": "Items in this category",
+          "items": {
+            "$ref": "../common/base.schema.json#/$defs/namespacedId",
+            "x-completion-provider": "craftengine.itemId"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+

@@ -1,0 +1,23 @@
+{
+  "$schema": "../../schemas/version-requirements.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-04",
+  "description": "Version requirements and compatibility settings for CraftEngine",
+
+  "minecraft": {
+    "minSupported": "1.20",
+    "minSupportedStrict": "1.20.1",
+    "maxSupported": "1.21.11",
+    "recommended": "1.21.4"
+  },
+
+  "packFormat": {
+    "minSupported": 15,
+    "maxSupported": 75
+  },
+
+  "compatibility": {
+    "deprecatedVersions": ["1.19", "1.19.1", "1.19.2", "1.19.3", "1.19.4"],
+    "experimentalVersions": ["1.21.10", "1.21.11"]
+  }
+}

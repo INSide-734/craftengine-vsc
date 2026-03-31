@@ -1,0 +1,92 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://craftengine.dev/schemas/sections/translations.schema.json",
+    "title": "CraftEngine Translations Configuration",
+    "description": "i18n (server-side) and l10n (client-side) translations configuration for CraftEngine",
+    "type": "object",
+    "patternProperties": {
+        "^[a-z]{2}(_[a-z]{2})?$": {
+            "$ref": "#/$defs/languageTranslations",
+            "description": "Language code (ISO 639-1) - e.g., en, en_us, zh_cn, ja, ko, etc."
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "languageTranslations": {
+            "title": "Language Translations",
+            "description": "Translation key-value pairs for a specific language",
+            "type": "object",
+            "patternProperties": {
+                "^[a-z][a-z0-9._-]*$": {
+                    "type": "string",
+                    "description": "Translation text - can include placeholders like {player}, {amount}, etc."
+                }
+            },
+            "additionalProperties": false,
+            "examples": [
+                {
+                    "item.my_sword": "My Sword",
+                    "item.my_shield": "My Shield",
+                    "message.welcome": "Welcome, {player}!",
+                    "lore.rarity.legendary": "⭐ Legendary"
+                }
+            ]
+        },
+        "translationKey": {
+            "title": "Translation Key",
+            "description": "Translation key identifier - must start with lowercase letter, can contain lowercase letters, numbers, dots, underscores, and hyphens",
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9._-]*$",
+            "examples": [
+                "item.my_sword",
+                "message.welcome",
+                "lore.rarity.legendary"
+            ]
+        },
+        "i18nTag": {
+            "title": "i18n Tag",
+            "description": "Server-side translation tag - format: <i18n:translation_key>",
+            "type": "string",
+            "pattern": "^<i18n:[a-z][a-z0-9._-]*>$",
+            "examples": [
+                "<i18n:item.my_sword>",
+                "<i18n:message.welcome>",
+                "<i18n:lore.rarity.legendary>"
+            ]
+        },
+        "l10nTag": {
+            "title": "l10n Tag",
+            "description": "Client-side translation tag - format: <l10n:translation_key>",
+            "type": "string",
+            "pattern": "^<l10n:[a-z][a-z0-9._-]*>$",
+            "examples": [
+                "<l10n:item.my_sword>",
+                "<l10n:message.welcome>",
+                "<l10n:lore.rarity.legendary>"
+            ]
+        },
+        "languageCode": {
+            "title": "Language Code",
+            "description": "ISO 639-1 language code with optional region - e.g., en, en_us, zh_cn",
+            "type": "string",
+            "pattern": "^[a-z]{2}(_[a-z]{2})?$",
+            "examples": [
+                "en",
+                "zh_cn",
+                "zh_tw"
+            ]
+        }
+    },
+    "examples": [
+        {
+            "en": {
+                "item.chinese_lantern": "Chinese Lantern",
+                "item.fairy_flower": "Fairy Flower"
+            },
+            "zh_cn": {
+                "item.chinese_lantern": "灯笼",
+                "item.fairy_flower": "仙灵花"
+            }
+        }
+    ]
+}

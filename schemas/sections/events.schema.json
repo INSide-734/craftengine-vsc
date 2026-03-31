@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/sections/events.schema.json",
+  "title": "Events Configuration",
+  "description": "Event definition section",
+  "type": "object",
+  "patternProperties": {
+    "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$": {
+      "$ref": "#/$defs/eventConfig"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "eventConfig": {
+      "type": "object",
+      "description": "Event configuration",
+      "allOf": [
+        {
+          "$ref": "../common/universal-keys.schema.json#/$defs/templateSupport"
+        },
+        {
+          "$ref": "#/$defs/eventProperties"
+        }
+      ],
+      "required": ["trigger", "actions"]
+    },
+    "eventProperties": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "oneOf": [
+            { "type": "string" },
+            { "$ref": "#/$defs/triggerConfig" }
+          ],
+          "description": "Event trigger condition"
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Additional conditions",
+          "items": {
+            "$ref": "#/$defs/conditionConfig"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "description": "Actions to execute",
+          "items": {
+            "$ref": "#/$defs/actionConfig"
+          },
+          "minItems": 1
+        },
+        "targets": {
+          "type": "array",
+          "description": "Target entities"
+        },
+        "cooldown": {
+          "type": "integer",
+          "description": "Cooldown time (milliseconds)"
+        },
+        "priority": {
+          "type": "integer",
+          "description": "Event priority"
+        }
+      },
+      "additionalProperties": false
+    },
+    "triggerConfig": {
+      "type": "object",
+      "description": "Trigger configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["interact", "use", "place", "break", "step_on", "proximity", "timer", "redstone", "player_join", "server_start"]
+        },
+        "button": {
+          "type": "string",
+          "enum": ["left", "right"]
+        },
+        "consume": {
+          "type": "boolean"
+        },
+        "interval": {
+          "type": "number",
+          "description": "Timer interval (milliseconds)"
+        },
+        "distance": {
+          "type": "number",
+          "description": "Proximity distance"
+        }
+      }
+    },
+    "conditionConfig": {
+      "type": "object",
+      "description": "Condition configuration"
+    },
+    "actionConfig": {
+      "type": "object",
+      "description": "Action configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["command", "message", "sound", "particle", "teleport", "give_item", "take_item", "modify_block", "spawn_entity", "execute_event"]
+        },
+        "cmd": {
+          "type": "string",
+          "description": "Command to execute"
+        },
+        "text": {
+          "type": "string",
+          "description": "Message text"
+        },
+        "sound": {
+          "type": "string",
+          "description": "Sound name"
+        }
+      }
+    }
+  }
+}
+

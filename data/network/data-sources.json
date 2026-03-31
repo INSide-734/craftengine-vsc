@@ -1,0 +1,65 @@
+{
+  "$schema": "../schemas/data-sources.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-03",
+  "description": "Minecraft data sources configuration for CraftEngine VS Code Extension",
+
+  "network": {
+    "requestTimeout": 10000,
+    "retryAttempts": 3,
+    "retryDelayMs": 1000
+  },
+
+  "sources": {
+    "minecraftAssets": {
+      "description": "InventivetalentDev/minecraft-assets - Minecraft game assets",
+      "primary": "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads",
+      "mirrors": [
+        "https://gh.llkk.cc/https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads",
+        "https://ghfast.top/https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/refs/heads"
+      ],
+      "endpoints": {
+        "builtinItems": "{version}/assets/minecraft/items/_list.json",
+        "sounds": "{version}/assets/minecraft/sounds.json",
+        "tagList": "{version}/data/minecraft/tags/{tagType}/_list.json",
+        "tagContent": "{version}/data/minecraft/tags/{tagType}/{tagFileName}"
+      }
+    },
+
+    "minecraftAssetsBlob": {
+      "description": "InventivetalentDev/minecraft-assets blob URLs (for some mirrors)",
+      "primary": "https://github.com/InventivetalentDev/minecraft-assets/blob",
+      "mirrors": [
+        "https://hk.gh-proxy.org/https://github.com/InventivetalentDev/minecraft-assets/blob",
+        "https://gh.llkk.cc/https://github.com/InventivetalentDev/minecraft-assets/blob"
+      ],
+      "endpoints": {
+        "builtinItems": "{version}/assets/minecraft/items/_list.json"
+      }
+    },
+
+    "prismarineData": {
+      "description": "PrismarineJS/minecraft-data - Minecraft game data",
+      "primary": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc",
+      "mirrors": [
+        "https://gh.llkk.cc/https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc",
+        "https://ghfast.top/https://raw.githubusercontent.com/PrismarineJS/minecraft-data/master/data/pc"
+      ],
+      "endpoints": {
+        "enchantments": "{version}/enchantments.json",
+        "entities": "{version}/entities.json",
+        "particles": "{version}/particles.json",
+        "effects": "{version}/effects.json",
+        "biomes": "{version}/biomes.json",
+        "blocks": "{version}/blocks.json",
+        "items": "{version}/items.json",
+        "attributes": "{version}/attributes.json"
+      }
+    }
+  },
+
+  "builtinSource": {
+    "identifier": "<minecraft:builtin>",
+    "description": "Virtual source file identifier for Minecraft builtin items"
+  }
+}

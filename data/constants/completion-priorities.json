@@ -1,0 +1,89 @@
+{
+  "$schema": "../schemas/completion-priorities.schema.json",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-03",
+  "description": "Completion strategy priorities for CraftEngine VS Code Extension",
+
+  "strategies": {
+    "main": {
+      "schemaAware": {
+        "name": "Schema Aware Completion",
+        "priority": 90,
+        "description": "Main completion strategy based on JSON Schema"
+      },
+      "schemaKey": {
+        "name": "Schema Key Completion",
+        "priority": 85,
+        "description": "YAML key completion strategy"
+      }
+    },
+
+    "delegates": {
+      "filePath": {
+        "name": "File Path Completion",
+        "priority": 75,
+        "provider": "craftengine.filePath",
+        "description": "File path completion"
+      },
+      "templateName": {
+        "name": "Template Name Completion",
+        "priority": 75,
+        "provider": "craftengine.templateName",
+        "description": "Template name completion"
+      },
+      "templateParameters": {
+        "name": "Template Parameter Completion",
+        "priority": 75,
+        "provider": "craftengine.templateParameters",
+        "description": "Template parameter completion"
+      },
+      "itemId": {
+        "name": "Item ID Completion",
+        "priority": 75,
+        "provider": "craftengine.itemId",
+        "description": "Item ID completion"
+      },
+      "versionCondition": {
+        "name": "Version Condition Completion",
+        "priority": 75,
+        "provider": "craftengine.versionCondition",
+        "description": "Version condition completion"
+      },
+      "categoryReference": {
+        "name": "Category Reference Completion",
+        "priority": 75,
+        "provider": "craftengine.categoryReference",
+        "description": "Category reference completion"
+      },
+      "richText": {
+        "name": "Rich Text Completion",
+        "priority": 75,
+        "provider": "craftengine.richText",
+        "description": "Rich text (MiniMessage) completion"
+      },
+      "translationKey": {
+        "name": "Translation Key Completion",
+        "priority": 75,
+        "provider": "craftengine.translationKey",
+        "description": "Translation key completion"
+      }
+    }
+  },
+
+  "priorityCalculation": {
+    "baseValue": 100,
+    "adjustments": {
+      "nonRequiredProperty": -50,
+      "nonStandardProperty": -10,
+      "deprecatedProperty": -20,
+      "other": -5
+    }
+  },
+
+  "sortOrder": {
+    "required": 0,
+    "standard": 1,
+    "optional": 2,
+    "deprecated": 3
+  }
+}

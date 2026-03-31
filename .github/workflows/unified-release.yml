@@ -1,0 +1,306 @@
+name: Build, Test and Release
+
+on:
+  push:
+    branches: [master, main]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: false
+        default: 'none'
+        type: choice
+        options:
+          - none
+          - pre-release
+          - release
+      publish_marketplace:
+        description: 'Publish to VS Code Marketplace'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ============================================================================
+  # 阶段 1: 构建和测试（所有触发条件都执行）
+  # ============================================================================
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm run format:check
+
+      - name: Run linting
+        run: pnpm run lint:check
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build extension
+        run: pnpm run compile
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: out/
+          retention-days: 7
+
+    outputs:
+      should_release: ${{ startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.release_type != 'none') }}
+
+  # ============================================================================
+  # 阶段 2: 确定发布策略（仅在需要发布时执行）
+  # ============================================================================
+  determine-strategy:
+    name: Determine Release Strategy
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: needs.build-and-test.outputs.should_release == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine package type and strategy
+        id: strategy
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TYPE: ${{ github.event.inputs.release_type }}
+          GIT_REF: ${{ github.ref }}
+        run: |
+          # 确定是否为 pre-release
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            if [[ "${RELEASE_TYPE}" == "pre-release" ]]; then
+              echo "pre_release=true" >> $GITHUB_OUTPUT
+            else
+              echo "pre_release=false" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "${GIT_REF}" == refs/tags/v*-* ]]; then
+            echo "pre_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "pre_release=false" >> $GITHUB_OUTPUT
+          fi
+
+          # 确定是否发布到 Marketplace（仅正式版本且非 pre-release）
+          if [[ "${GIT_REF}" == refs/tags/v* && "${GIT_REF}" != refs/tags/v*-* ]]; then
+            echo "publish_marketplace=true" >> $GITHUB_OUTPUT
+          elif [[ "${EVENT_NAME}" == "workflow_dispatch" && "${{ github.event.inputs.publish_marketplace }}" == "true" ]]; then
+            echo "publish_marketplace=true" >> $GITHUB_OUTPUT
+          else
+            echo "publish_marketplace=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get package info
+        id: package_info
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "version=${PACKAGE_VERSION}" >> $GITHUB_OUTPUT
+
+    outputs:
+      pre_release: ${{ steps.strategy.outputs.pre_release }}
+      publish_marketplace: ${{ steps.strategy.outputs.publish_marketplace }}
+      package_name: ${{ steps.package_info.outputs.name }}
+      package_version: ${{ steps.package_info.outputs.version }}
+
+  # ============================================================================
+  # 阶段 3: 通用 VSIX 打包（包含所有平台依赖）
+  # ============================================================================
+  package-universal:
+    name: Package Universal VSIX
+    runs-on: ubuntu-latest
+    needs: [build-and-test, determine-strategy]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install all platform-specific sharp dependencies
+        run: |
+          pnpm add -D @img/sharp-win32-x64@0.33.5 \
+                      @img/sharp-win32-ia32@0.33.5 \
+                      @img/sharp-darwin-x64@0.33.5 \
+                      @img/sharp-darwin-arm64@0.33.5 \
+                      @img/sharp-linux-x64@0.33.5 \
+                      @img/sharp-linux-arm64@0.33.5 || true
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: out/
+
+      - name: Build universal VSIX
+        shell: bash
+        run: |
+          if [[ "${{ needs.determine-strategy.outputs.pre_release }}" == "true" ]]; then
+            node scripts/build-universal.js --pre-release
+          else
+            node scripts/build-universal.js
+          fi
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix-universal
+          path: '*.vsix'
+          retention-days: 30
+
+      - name: Upload build info
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-info-universal
+          path: '*.json'
+          retention-days: 30
+
+  # ============================================================================
+  # 阶段 4: 创建 GitHub Release
+  # ============================================================================
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [determine-strategy, package-universal]
+    if: |
+      always() &&
+      needs.determine-strategy.result == 'success' &&
+      needs.package-universal.result == 'success'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vsix-universal
+          path: vsix-packages
+
+      - name: Download build info artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-info-universal
+          path: build-info
+
+      - name: List downloaded files
+        run: |
+          echo "VSIX packages:"
+          find vsix-packages -name "*.vsix" || echo "No VSIX files found"
+          echo "Build info:"
+          find build-info -name "*.json" || echo "No build info files found"
+
+      - name: Generate release notes
+        id: release_notes
+        env:
+          PACKAGE_VERSION: ${{ needs.determine-strategy.outputs.package_version }}
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            node scripts/generate-release-notes.js "${PACKAGE_VERSION}" CHANGELOG.md > release-notes.md
+          else
+            echo "## Release v${PACKAGE_VERSION}" > release-notes.md
+            echo "" >> release-notes.md
+            echo "### Universal VSIX Package" >> release-notes.md
+            echo "" >> release-notes.md
+            echo "This release includes a single universal VSIX package that contains native dependencies for all supported platforms:" >> release-notes.md
+            echo "" >> release-notes.md
+            echo "- Windows (x64, ia32)" >> release-notes.md
+            echo "- macOS (x64, Apple Silicon arm64)" >> release-notes.md
+            echo "- Linux (x64, arm64)" >> release-notes.md
+            echo "" >> release-notes.md
+            echo "The extension will automatically detect your platform and use the appropriate native dependencies at runtime." >> release-notes.md
+            echo "" >> release-notes.md
+            echo "**Installation:** Download \`${{ needs.determine-strategy.outputs.package_name }}-${PACKAGE_VERSION}.vsix\` and install it in VS Code." >> release-notes.md
+            echo "" >> release-notes.md
+            echo "See [CHANGELOG](./CHANGELOG.md) for details." >> release-notes.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ needs.determine-strategy.outputs.package_version }}
+          body_path: release-notes.md
+          files: |
+            vsix-packages/**/*.vsix
+            build-info/**/*.json
+          prerelease: ${{ needs.determine-strategy.outputs.pre_release == 'true' }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # 阶段 5: 发布到 VS Code Marketplace（仅正式版本）
+  # ============================================================================
+  publish-marketplace:
+    name: Publish to VS Code Marketplace
+    runs-on: ubuntu-latest
+    needs: [determine-strategy, create-release]
+    if: needs.determine-strategy.outputs.publish_marketplace == 'true'
+    environment: marketplace
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vsix-universal
+          path: .
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSIX_FILE: ${{ needs.determine-strategy.outputs.package_name }}-${{ needs.determine-strategy.outputs.package_version }}.vsix
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: pnpm exec vsce publish --packagePath "${VSIX_FILE}"

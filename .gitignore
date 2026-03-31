@@ -4,5 +4,13 @@ node_modules
 .vscode-test/
 *.vsix
 .idea/**
-test-workspace/
+/test-workspace
 docs/
+
+# 日志文件
+logs/*.log
+/coverage
+
+# 构建产物
+craftengine-vsc-universal-*.json
+craftengine-vsc-*-*.json

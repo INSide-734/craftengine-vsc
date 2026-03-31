@@ -1,0 +1,139 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://craftengine.dev/schemas/common/minimessage.schema.json",
+    "title": "MiniMessage Format",
+    "description": "Schema definitions for MiniMessage text formatting (Adventure API)",
+    "$defs": {
+        "miniMessageText": {
+            "type": "string",
+            "description": "MiniMessage formatted text",
+            "x-completion-provider": "craftengine.richText"
+        },
+        "colorNames": {
+            "type": "string",
+            "description": "Named color constants",
+            "enum": [
+                "black",
+                "dark_blue",
+                "dark_green",
+                "dark_aqua",
+                "dark_red",
+                "dark_purple",
+                "gold",
+                "gray",
+                "grey",
+                "dark_gray",
+                "dark_grey",
+                "blue",
+                "green",
+                "aqua",
+                "red",
+                "light_purple",
+                "yellow",
+                "white"
+            ]
+        },
+        "hexColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$",
+            "description": "Hex color in #RRGGBB or #RRGGBBAA format"
+        },
+        "clickActions": {
+            "type": "string",
+            "description": "Click event actions",
+            "enum": [
+                "run_command",
+                "suggest_command",
+                "open_url",
+                "open_file",
+                "copy_to_clipboard",
+                "change_page"
+            ]
+        },
+        "hoverActions": {
+            "type": "string",
+            "description": "Hover event actions",
+            "enum": [
+                "show_text",
+                "show_item",
+                "show_entity",
+                "show_achievement"
+            ]
+        },
+        "prideFlags": {
+            "type": "string",
+            "description": "Pride flag types",
+            "enum": [
+                "pride",
+                "progress",
+                "trans",
+                "bi",
+                "pan",
+                "nb",
+                "lesbian",
+                "ace",
+                "agender",
+                "demisexual",
+                "genderqueer",
+                "genderfluid",
+                "intersex",
+                "aro",
+                "baker",
+                "philly",
+                "queer",
+                "gay",
+                "bigender",
+                "demigender"
+            ]
+        },
+        "nbtSourceTypes": {
+            "type": "string",
+            "description": "NBT data source types",
+            "enum": [
+                "block",
+                "entity",
+                "storage"
+            ]
+        },
+        "keybinds": {
+            "type": "string",
+            "description": "Minecraft keybind identifiers",
+            "enum": [
+                "key.jump",
+                "key.sneak",
+                "key.sprint",
+                "key.left",
+                "key.right",
+                "key.back",
+                "key.forward",
+                "key.attack",
+                "key.pickItem",
+                "key.use",
+                "key.drop",
+                "key.hotbar.1",
+                "key.hotbar.2",
+                "key.hotbar.3",
+                "key.hotbar.4",
+                "key.hotbar.5",
+                "key.hotbar.6",
+                "key.hotbar.7",
+                "key.hotbar.8",
+                "key.hotbar.9",
+                "key.inventory",
+                "key.swapOffhand",
+                "key.loadToolbarActivator",
+                "key.saveToolbarActivator",
+                "key.playerlist",
+                "key.chat",
+                "key.command",
+                "key.socialInteractions",
+                "key.advancements",
+                "key.spectatorOutlines",
+                "key.screenshot",
+                "key.smoothCamera",
+                "key.fullscreen",
+                "key.togglePerspective"
+            ]
+        }
+    }
+}

@@ -7,13 +7,18 @@ vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map
-**/*.ts
 **/.vscode-test.*
 test-workspace/**
 docs/**
+logs/*.log
+coverage/**
+
+# 开发配置
+.github/**
+.cursorignore
+vitest.config.*
+esbuild.mjs
+pnpm-lock.yaml
+
+# 排除所有 node_modules（运行时依赖已复制到 out/node_modules）
 node_modules/**
-
-
-!node_modules/yaml/**
-!node_modules/chokidar/**
-!node_modules/chokidar/**/*

@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://craftengine.dev/schemas/common/base.schema.json",
+  "title": "CraftEngine Base Type Definitions",
+  "description": "Common base types and patterns used across all schemas",
+  "$defs": {
+    "namespace": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$",
+      "description": "Namespaced identifier (e.g., default:item_name)",
+      "examples": ["default:my_item", "minecraft:diamond_sword"]
+    },
+    "namespacedId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$",
+      "description": "Namespaced identifier",
+      "examples": ["default:template_name", "custom:my_resource"]
+    },
+    "sectionIdentifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*(#[a-z][a-z0-9_-]*)*(#[0-9]+)?$",
+      "description": "Section identifier with optional sub-identifiers (e.g., items, items#armor, items#armor#helmet)",
+      "examples": ["items", "items#weapons", "templates#models#block"]
+    },
+    "versionCondition": {
+      "type": "string",
+      "pattern": "^\\$\\$(>=|<=|<|=)?\\d+\\.\\d+(\\.\\d+)?$|^\\$\\$\\d+\\.\\d+(\\.\\d+)?~\\d+\\.\\d+(\\.\\d+)?$",
+      "description": "Version condition (e.g., $$>=1.21.4, $$>=1.21, $$<1.21.2, $$1.20.1~1.21.3)",
+      "x-completion-provider": "craftengine.versionCondition",
+      "examples": ["$$>=1.21.4", "$$>=1.21", "$$<1.21.2", "$$1.20.1~1.21.3", "$$=1.21.0"]
+    },
+    "miniMessageText": {
+      "type": "string",
+      "description": "MiniMessage formatted text string (Paper Adventure API)\n\nReference: https://docs.papermc.io/adventure/minimessage/format",
+      "x-completion-provider": "craftengine.richText",
+      "examples": [
+        "<red>Simple text</red>",
+        "<gradient:red:blue>Gradient</gradient>",
+        "<hover:show_text:'Tooltip'><click:open_url:'https://example.com'>Link</click></hover>",
+        "<i18n:item.my_sword>",
+        "<l10n:message.welcome>"
+      ]
+    },
+    "chainParameter": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*(::)[a-z][a-z0-9_-]*(::.*)?$",
+      "description": "Chain parameter using :: separator (e.g., data::item-name, data::components::minecraft:max_damage)",
+      "examples": ["data::item-name", "data::components::minecraft:max_damage", "settings::tags::0"]
+    },
+    "templateParameter": {
+      "type": "string",
+      "pattern": "^\\$\\{[a-z][a-z0-9_-]*(:-.*)?\\}$",
+      "description": "Template parameter placeholder (e.g., ${param_name}, ${param_name:-default})",
+      "examples": ["${material}", "${damage:-10}", "${name:-\"Unknown\"}"]
+    },
+    "categoryReference": {
+      "type": "string",
+      "pattern": "^#[a-z][a-z0-9_-]*:[a-z][a-z0-9_/-]*$",
+      "description": "Category reference with # prefix",
+      "x-completion-provider": "craftengine.categoryReference",
+      "examples": ["#default:weapons", "#default:armor", "#default:rarity/legendary"]
+    },
+    "translationKey": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._-]*$",
+      "description": "Translation key identifier for i18n/l10n",
+      "examples": ["item.my_item", "message.welcome", "category.weapons", "lore.rarity.legendary"]
+    },
+    "i18nReference": {
+      "type": "string",
+      "pattern": "^<i18n:[a-z][a-z0-9._-]*>$",
+      "description": "Server-side i18n translation reference (resolved on server based on player's locale)",
+      "examples": ["<i18n:item.chinese_lantern>", "<i18n:message.welcome>"]
+    },
+    "l10nReference": {
+      "type": "string",
+      "pattern": "^<l10n:[a-z][a-z0-9._-]*>$",
+      "description": "Client-side l10n translation reference (sent to client for translation)",
+      "examples": ["<l10n:item.chinese_lantern>", "<l10n:message.welcome>"]
+    },
+    "languageCode": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(_[a-z]{2})?$",
+      "description": "Language code (ISO 639-1 with optional region)",
+      "examples": ["en", "en_us", "zh_cn", "zh_tw", "ja", "ko", "de", "fr", "es", "ru", "pt_br"]
+    }
+  }
+}
+

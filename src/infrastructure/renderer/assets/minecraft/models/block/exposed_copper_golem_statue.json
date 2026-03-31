@@ -1,0 +1,6 @@
+{
+  "parent": "block/copper_golem_statue_template",
+  "textures": {
+    "0": "entity/copper_golem/exposed_copper_golem"
+  }
+}

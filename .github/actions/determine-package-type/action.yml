@@ -1,0 +1,42 @@
+name: 'Determine Package Type'
+description: 'Determine if the package should be a pre-release or release'
+
+inputs:
+  event-name:
+    description: 'GitHub event name'
+    required: true
+  release-type:
+    description: 'Release type from workflow input'
+    required: false
+    default: 'none'
+  git-ref:
+    description: 'Git reference'
+    required: true
+
+outputs:
+  pre_release:
+    description: 'Whether this is a pre-release'
+    value: ${{ steps.determine.outputs.pre_release }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Determine package type
+      id: determine
+      shell: bash
+      env:
+        EVENT_NAME: ${{ inputs.event-name }}
+        RELEASE_TYPE: ${{ inputs.release-type }}
+        GIT_REF: ${{ inputs.git-ref }}
+      run: |
+        if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+          if [[ "${RELEASE_TYPE}" == "pre-release" ]]; then
+            echo "pre_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "pre_release=false" >> $GITHUB_OUTPUT
+          fi
+        elif [[ "${GIT_REF}" == refs/tags/v*-* ]]; then
+          echo "pre_release=true" >> $GITHUB_OUTPUT
+        else
+          echo "pre_release=false" >> $GITHUB_OUTPUT
+        fi
