@@ -30,13 +30,13 @@ const changelog = fs.readFileSync(changelogFile, "utf8");
 // 解析 CHANGELOG 内容
 function parseChangelog(changelogContent, targetVersion) {
   const lines = changelogContent.split("\n");
-  let currentVersion = null;
   let inTargetVersion = false;
   let parsedChangelogContent = "";
   let majorFeatures = [];
   let newFeatures = [];
   let improvements = [];
   let bugFixes = [];
+  let currentSection = null;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -44,63 +44,40 @@ function parseChangelog(changelogContent, targetVersion) {
     // 检测版本标题
     const versionMatch = line.match(/^## \[([^\]]+)\]/);
     if (versionMatch) {
-      currentVersion = versionMatch[1];
-      inTargetVersion = currentVersion === targetVersion;
+      if (inTargetVersion) break; // 遇到下一个版本，停止
+      inTargetVersion = versionMatch[1] === targetVersion;
       if (inTargetVersion) {
         parsedChangelogContent += line + "\n";
       }
       continue;
     }
 
-    // 如果不在目标版本中，跳过
-    if (!inTargetVersion) {
-      continue;
-    }
-
-    // 如果遇到下一个版本，停止解析
-    if (line.startsWith("## [") && currentVersion !== targetVersion) {
-      break;
-    }
+    if (!inTargetVersion) continue;
 
     parsedChangelogContent += line + "\n";
 
-    // 解析不同类型的更改
+    // 检测章节
     if (line.startsWith("### Added")) {
-      // 解析 Added 部分
-      let j = i + 1;
-      while (j < lines.length && !lines[j].startsWith("###")) {
-        const featureLine = lines[j].trim();
-        if (featureLine.startsWith("-")) {
-          const feature = featureLine.substring(1).trim();
-          if (feature.includes("**")) {
-            // 提取主要功能（包含 ** 标记的）
-            const majorFeature = feature.replace(/\*\*(.*?)\*\*/g, "$1");
-            majorFeatures.push(majorFeature);
-          }
-          newFeatures.push(feature);
-        }
-        j++;
-      }
+      currentSection = "added";
     } else if (line.startsWith("### Changed")) {
-      // 解析 Changed 部分
-      let j = i + 1;
-      while (j < lines.length && !lines[j].startsWith("###")) {
-        const improvementLine = lines[j].trim();
-        if (improvementLine.startsWith("-")) {
-          improvements.push(improvementLine.substring(1).trim());
-        }
-        j++;
-      }
+      currentSection = "changed";
     } else if (line.startsWith("### Fixed")) {
-      // 解析 Fixed 部分
-      let j = i + 1;
-      while (j < lines.length && !lines[j].startsWith("###")) {
-        const fixLine = lines[j].trim();
-        if (fixLine.startsWith("-")) {
-          bugFixes.push(fixLine.substring(1).trim());
-        }
-        j++;
+      currentSection = "fixed";
+    } else if (line.startsWith("### ") && !line.startsWith("#### ")) {
+      currentSection = null;
+    }
+
+    // 提取内容
+    if (currentSection === "added") {
+      if (line.startsWith("####")) {
+        majorFeatures.push(line.replace(/^####\s*/, "").trim());
+      } else if (line.trim().startsWith("-")) {
+        newFeatures.push(line.trim().substring(1).trim());
       }
+    } else if (currentSection === "changed" && line.trim().startsWith("-")) {
+      improvements.push(line.trim().substring(1).trim());
+    } else if (currentSection === "fixed" && line.trim().startsWith("-")) {
+      bugFixes.push(line.trim().substring(1).trim());
     }
   }
 
@@ -148,45 +125,36 @@ function generateReleaseNotes(version, changelogContent) {
       ? parsed.bugFixes.map((fix) => `- ${fix}`).join("\n")
       : "- No bug fixes";
 
-  // 替换模板中的占位符
-  let releaseNotes = template
-    .replace(/{VERSION}/g, version)
-    .replace(/{RELEASE_DATE}/g, releaseDate)
-    .replace(/{MAJOR_FEATURES}/g, majorFeaturesText)
-    .replace(/{NEW_FEATURES}/g, newFeaturesText)
-    .replace(/{IMPROVEMENTS}/g, improvementsText)
-    .replace(/{BUG_FIXES}/g, bugFixesText)
-    .replace(/{CHANGELOG_CONTENT}/g, parsed.changelogContent)
-    .replace(
-      /{RELEASE_URL}/g,
-      `https://github.com/${
-        process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
-      }/releases/tag/v${version}`
-    )
-    .replace(
-      /{DOWNLOAD_URL}/g,
-      `https://github.com/${
-        process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
-      }/releases/download/v${version}/craftengine-vsc-${version}.vsix`
-    )
-    .replace(
-      /{REPO_URL}/g,
-      `https://github.com/${
-        process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
-      }`
-    )
-    .replace(
-      /{ISSUES_URL}/g,
-      `https://github.com/${
-        process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
-      }/issues`
-    )
-    .replace(
-      /{DOCS_URL}/g,
-      `https://github.com/${
-        process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
-      }#readme`
-    );
+  // 使用函数替换避免特殊字符问题
+  const replacements = {
+    '{VERSION}': version,
+    '{RELEASE_DATE}': releaseDate,
+    '{MAJOR_FEATURES}': majorFeaturesText,
+    '{NEW_FEATURES}': newFeaturesText,
+    '{IMPROVEMENTS}': improvementsText,
+    '{BUG_FIXES}': bugFixesText,
+    '{CHANGELOG_CONTENT}': parsed.changelogContent,
+    '{RELEASE_URL}': `https://github.com/${
+      process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
+    }/releases/tag/v${version}`,
+    '{DOWNLOAD_URL}': `https://github.com/${
+      process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
+    }/releases/download/v${version}/craftengine-vsc-${version}.vsix`,
+    '{REPO_URL}': `https://github.com/${
+      process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
+    }`,
+    '{ISSUES_URL}': `https://github.com/${
+      process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
+    }/issues`,
+    '{DOCS_URL}': `https://github.com/${
+      process.env.GITHUB_REPOSITORY || "INSide-734/craftengine-vsc"
+    }#readme`,
+  };
+
+  let releaseNotes = template;
+  for (const [placeholder, value] of Object.entries(replacements)) {
+    releaseNotes = releaseNotes.split(placeholder).join(value);
+  }
 
   return releaseNotes;
 }
