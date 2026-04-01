@@ -26,13 +26,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -73,7 +73,7 @@ jobs:
 
       - name: Post audit comment on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@v8
         env:
           AUDIT_TOTAL: ${{ steps.audit.outputs.total }}
           AUDIT_CRITICAL: ${{ steps.audit.outputs.critical }}
@@ -112,7 +112,7 @@ jobs:
 
       - name: Create issue for scheduled audit
         if: github.event_name == 'schedule' && steps.audit.outputs.total != '0'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           AUDIT_CRITICAL: ${{ steps.audit.outputs.critical }}
           AUDIT_HIGH: ${{ steps.audit.outputs.high }}

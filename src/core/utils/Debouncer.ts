@@ -54,8 +54,6 @@ export class Debouncer {
                 } catch (error) {
                     if (this.logger) {
                         this.logger.error(`Debounced function error for key '${key}'`, error as Error);
-                    } else {
-                        console.error(`Debounced function error for key '${key}'`, error);
                     }
                 }
             })();
