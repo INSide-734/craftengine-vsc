@@ -83,30 +83,30 @@ describe('Build Scripts Integration Tests', () => {
             expect(output).toContain('Generating release notes for version');
         });
 
-    it('should fail when CHANGELOG.md does not exist', () => {
-        const changelogPath = join(rootDir, 'CHANGELOG.md');
-        const changelogBackupPath = join(rootDir, 'CHANGELOG.md.backup');
-        const changelogExists = existsSync(changelogPath);
+        it('should fail when CHANGELOG.md does not exist', () => {
+            const changelogPath = join(rootDir, 'CHANGELOG.md');
+            const changelogBackupPath = join(rootDir, 'CHANGELOG.md.backup');
+            const changelogExists = existsSync(changelogPath);
 
-        if (changelogExists) {
-            renameSync(changelogPath, changelogBackupPath);
-        }
-
-        try {
-            expect(() => {
-                execSync('node scripts/release-notes-wrapper.js', {
-                    cwd: rootDir,
-                    stdio: 'pipe',
-                });
-            }).toThrow();
-        } finally {
-            // 恢复备份
-            if (changelogExists && existsSync(changelogBackupPath)) {
-                renameSync(changelogBackupPath, changelogPath);
+            if (changelogExists) {
+                renameSync(changelogPath, changelogBackupPath);
             }
-        }
+
+            try {
+                expect(() => {
+                    execSync('node scripts/release-notes-wrapper.js', {
+                        cwd: rootDir,
+                        stdio: 'pipe',
+                    });
+                }).toThrow();
+            } finally {
+                // 恢复备份
+                if (changelogExists && existsSync(changelogBackupPath)) {
+                    renameSync(changelogBackupPath, changelogPath);
+                }
+            }
+        });
     });
-});
 
     describe('generate-release-notes.js', () => {
         it('should show usage instructions when arguments are missing', () => {
