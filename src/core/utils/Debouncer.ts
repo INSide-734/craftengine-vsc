@@ -52,8 +52,12 @@ export class Debouncer {
                 try {
                     await fn();
                 } catch (error) {
+                    const msg = `Debounced function error for key '${key}'`;
                     if (this.logger) {
-                        this.logger.error(`Debounced function error for key '${key}'`, error as Error);
+                        this.logger.error(msg, error as Error);
+                    } else {
+                        // eslint-disable-next-line no-console
+                        console.error(msg, error);
                     }
                 }
             })();

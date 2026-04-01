@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { execSync } from 'child_process';
-import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync, renameSync } from 'fs';
 import { join, resolve } from 'path';
 
 /**
@@ -83,37 +83,30 @@ describe('Build Scripts Integration Tests', () => {
             expect(output).toContain('Generating release notes for version');
         });
 
-        it('should fail when CHANGELOG.md does not exist', () => {
-            // 临时重命名 CHANGELOG.md
-            const changelogPath = join(rootDir, 'CHANGELOG.md');
-            const changelogBackupPath = join(rootDir, 'CHANGELOG.md.backup');
-            const changelogExists = existsSync(changelogPath);
+    it('should fail when CHANGELOG.md does not exist', () => {
+        const changelogPath = join(rootDir, 'CHANGELOG.md');
+        const changelogBackupPath = join(rootDir, 'CHANGELOG.md.backup');
+        const changelogExists = existsSync(changelogPath);
 
-            if (changelogExists) {
-                execSync(`mv "${changelogPath}" "${changelogBackupPath}"`, {
+        if (changelogExists) {
+            renameSync(changelogPath, changelogBackupPath);
+        }
+
+        try {
+            expect(() => {
+                execSync('node scripts/release-notes-wrapper.js', {
                     cwd: rootDir,
-                    shell: 'bash',
+                    stdio: 'pipe',
                 });
+            }).toThrow();
+        } finally {
+            // 恢复备份
+            if (changelogExists && existsSync(changelogBackupPath)) {
+                renameSync(changelogBackupPath, changelogPath);
             }
-
-            try {
-                expect(() => {
-                    execSync('node scripts/release-notes-wrapper.js', {
-                        cwd: rootDir,
-                        stdio: 'pipe',
-                    });
-                }).toThrow();
-            } finally {
-                // 恢复 CHANGELOG.md
-                if (changelogExists) {
-                    execSync(`mv "${changelogBackupPath}" "${changelogPath}"`, {
-                        cwd: rootDir,
-                        shell: 'bash',
-                    });
-                }
-            }
-        });
+        }
     });
+});
 
     describe('generate-release-notes.js', () => {
         it('should show usage instructions when arguments are missing', () => {
