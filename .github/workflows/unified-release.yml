@@ -229,6 +229,15 @@ jobs:
           echo "Build info:"
           find build-info -name "*.json" || echo "No build info files found"
 
+      - name: Create and push tag
+        env:
+          PACKAGE_VERSION: ${{ needs.determine-strategy.outputs.package_version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${PACKAGE_VERSION}" -m "Release v${PACKAGE_VERSION}"
+          git push origin "v${PACKAGE_VERSION}"
+
       - name: Generate release notes
         id: release_notes
         env:
