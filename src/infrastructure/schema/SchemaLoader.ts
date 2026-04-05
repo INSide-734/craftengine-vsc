@@ -41,6 +41,7 @@ export class SchemaLoader implements ISchemaParser {
     async loadSchema(schemaId: string, baseSchemaPath?: string): Promise<ISchemaParseResult> {
         // 先解析为绝对路径，使用绝对路径作为缓存键（确保同一文件只加载一次）
         const filePath = this.resolveSchemaPath(schemaId, baseSchemaPath);
+        const loaderSchemaId = this.toLoaderSchemaId(filePath, schemaId);
 
         // 检查缓存（使用绝对路径作为键）
         if (this.schemaCache.has(filePath)) {
@@ -49,10 +50,10 @@ export class SchemaLoader implements ISchemaParser {
         }
 
         try {
-            this.logger.debug('Loading schema', { schemaId, baseSchemaPath, filePath });
+            this.logger.debug('Loading schema', { schemaId, baseSchemaPath, filePath, loaderSchemaId });
 
             // 委托给 ISchemaFileLoader 加载原始文件
-            const rawSchema = await this.fileLoader.loadSchema(schemaId);
+            const rawSchema = await this.fileLoader.loadSchema(loaderSchemaId);
             const schema = rawSchema as unknown as JSONSchema7;
 
             // 解析 $ref 引用（传递当前 schema 的目录路径）
@@ -260,6 +261,28 @@ export class SchemaLoader implements ISchemaParser {
         this.schemaCache.clear();
         this.fileLoader.clearCache();
         this.logger.debug('Schema cache cleared');
+    }
+
+    /**
+     * 将绝对路径转换为 SchemaFileLoader 可识别的相对路径
+     *
+     * @param filePath 解析后的绝对路径
+     * @param originalSchemaId 原始 schema 标识符
+     * @returns 相对于 schemas 根目录的 POSIX 风格路径
+     */
+    private toLoaderSchemaId(filePath: string, originalSchemaId: string): string {
+        if (path.isAbsolute(originalSchemaId)) {
+            return originalSchemaId;
+        }
+
+        const relativePath = path.relative(this.schemasBasePath, filePath);
+        const normalizedRelativePath = relativePath.split(path.sep).join('/');
+
+        if (!normalizedRelativePath || normalizedRelativePath.startsWith('..')) {
+            return originalSchemaId;
+        }
+
+        return normalizedRelativePath;
     }
 
     /**

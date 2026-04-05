@@ -19,6 +19,7 @@ coverage/**
 vitest.config.*
 esbuild.mjs
 pnpm-lock.yaml
+script/**
 
 # 排除所有 node_modules（运行时依赖已复制到 out/node_modules）
 node_modules/**

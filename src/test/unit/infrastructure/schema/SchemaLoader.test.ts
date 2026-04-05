@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SchemaLoader } from '../../../../infrastructure/schema/SchemaLoader';
 import { type ISchemaFileLoader } from '../../../../core/interfaces/ISchemaFileLoader';
 import { type ILogger } from '../../../../core/interfaces/ILogger';
-import { type JsonSchemaNode } from '../../../../core/types/JsonSchemaTypes';
+import { type IJsonSchemaNode } from '../../../../core/types/JsonSchemaTypes';
 
 describe('SchemaLoader', () => {
     let schemaLoader: SchemaLoader;
@@ -32,7 +32,7 @@ describe('SchemaLoader', () => {
 
     describe('loadSchema', () => {
         it('should load and parse schema file via fileLoader', async () => {
-            const schemaObj: JsonSchemaNode = {
+            const schemaObj: IJsonSchemaNode = {
                 $id: 'test.schema.json',
                 type: 'object',
                 properties: {
@@ -51,7 +51,7 @@ describe('SchemaLoader', () => {
         });
 
         it('should use cache for subsequent loads', async () => {
-            const schemaObj: JsonSchemaNode = {
+            const schemaObj: IJsonSchemaNode = {
                 $id: 'test.schema.json',
                 type: 'object',
             };
@@ -77,7 +77,7 @@ describe('SchemaLoader', () => {
 
     describe('resolveRef', () => {
         it('should resolve internal refs', async () => {
-            const schemaObj: JsonSchemaNode = {
+            const schemaObj: IJsonSchemaNode = {
                 $id: 'test.schema.json',
                 type: 'object',
                 properties: {
@@ -101,8 +101,48 @@ describe('SchemaLoader', () => {
             expect(result.resolved.properties?.user).toHaveProperty('$ref', '#/$defs/user');
         });
 
+        it('should normalize relative external ref paths before loading referenced schema files', async () => {
+            const mainSchemaObj: IJsonSchemaNode = {
+                $id: 'sections/items.schema.json',
+                type: 'object',
+                properties: {
+                    material: { $ref: '../common/base.schema.json#/$defs/namespacedId' },
+                },
+            };
+
+            const commonSchemaObj: IJsonSchemaNode = {
+                $id: 'common/base.schema.json',
+                $defs: {
+                    namespacedId: {
+                        type: 'string',
+                        pattern: '^[a-z0-9_:-]+$',
+                    },
+                },
+            };
+
+            vi.mocked(mockFileLoader.loadSchema).mockImplementation(async (filename: string) => {
+                if (filename === 'sections/items.schema.json') {
+                    return structuredClone(mainSchemaObj);
+                }
+                if (filename === 'common/base.schema.json') {
+                    return structuredClone(commonSchemaObj);
+                }
+                throw new Error(`Unexpected schema path: ${filename}`);
+            });
+
+            const result = await schemaLoader.loadSchema('sections/items.schema.json');
+
+            expect(result.resolved.properties?.material).toEqual(
+                expect.objectContaining({
+                    type: 'string',
+                    pattern: '^[a-z0-9_:-]+$',
+                }),
+            );
+            expect(mockFileLoader.loadSchema).toHaveBeenCalledWith('common/base.schema.json');
+        });
+
         it('should resolve external refs', async () => {
-            const mainSchemaObj: JsonSchemaNode = {
+            const mainSchemaObj: IJsonSchemaNode = {
                 $id: 'main.json',
                 type: 'object',
                 properties: {
@@ -110,7 +150,7 @@ describe('SchemaLoader', () => {
                 },
             };
 
-            const otherSchemaObj: JsonSchemaNode = {
+            const otherSchemaObj: IJsonSchemaNode = {
                 $id: 'other.json',
                 type: 'string',
             };
@@ -139,7 +179,7 @@ describe('SchemaLoader', () => {
 
     describe('findSchemaForContext', () => {
         it('should match schema path', async () => {
-            const mainSchemaObj: JsonSchemaNode = {
+            const mainSchemaObj: IJsonSchemaNode = {
                 type: 'object',
                 properties: {
                     items: {
@@ -171,7 +211,7 @@ describe('SchemaLoader', () => {
         });
 
         it('should match pattern properties', async () => {
-            const mainSchemaObj: JsonSchemaNode = {
+            const mainSchemaObj: IJsonSchemaNode = {
                 type: 'object',
                 patternProperties: {
                     '^item_.*$': {
